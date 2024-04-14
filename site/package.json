@@ -1,0 +1,29 @@
+{
+  "name": "site",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hackclub/meta": "^1.1.33",
+    "highlight.js": "^11.9.0",
+    "next": "14.2.1",
+    "next-mdx-remote": "^4.4.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "rehype-highlight": "^7.0.0",
+    "remark": "^15.0.1",
+    "remark-toc": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "sass": "^1.75.0",
+    "typescript": "^5"
+  }
+}

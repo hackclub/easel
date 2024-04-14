@@ -1,0 +1,76 @@
+---
+title: Orpheus writes a lexer
+order: 2
+---
+
+The first thing Orpheus does the next morning is she fires up the computer again, and opens a new file to start writing some code.
+
+Wait, she thinks. I'm forgetting something. She swings by the kitchen to pick up some tea. You can't forget the tea. Ambiance is rather important.
+
+![](/cartoons/tea.png)
+
+So it turns out that the first step to writing a language, is to write a _lexer_. That's a funny word, but it just represents a tool that divides a language into chunks. These chunks are called _tokens_.
+
+Orpheus thinks this is kind of like speaking English, or Dinoese. You can divide a sentence into tokens, after all.
+
+<aside>
+  I talked to Orpheus about this for quite a while and apparently Dinoese is
+  quite easy.
+</aside>
+
+![](/cartoons/english-tokens.png)
+
+See? Tokens. Orpheus collects a lot of tokens, actually.
+
+Orpheus picks up the letter and looks at the first program again. How does one go about dividing this language into tokens? Well, it's quite helpful to draw out the important chunks. Luckily, Orpheus still has the notes we took yesterday, if she can find it among her pile of other papers. She's got a really bad habit of always having a bunch of papers on her desk.
+
+<aside>
+  I just took a look at the papers on Orpheus' desk. Apparently she's running a
+  marathon soon? Wish her luck. No, no, not luck running the marathon... she
+  needs a good chunk of luck to not run over the other participants.
+</aside>
+
+[interactive look at the tokens]
+
+There! That makes a lot more sense. Hopefully. Those are the different kinds of tokens we can represent.
+
+Anyways, back to the file. Orpheus is going to represent the tokens with an object:
+
+[code snippet]
+
+<aside>
+  Some programmign languages let you use enums. JavaScript doesn't come with
+  enums so we're doing this somewhat redundantly.
+</aside>
+
+Coolio. Now that we have tokens, how do we go about creating a lexer? That's a bit of a harder thing to do. Ah, but ah! Orpheus has an idea. We know this:
+
+![](/cartoons/lexer-diagram.png)
+
+So we know we take a program, we pass it into a lexer, and we get tokens out. We just need to figure out what's in that black box exactly.
+
+Now, the idea is to read every character one by one. If a set of characters form a token that we can recognize, then we add it to a list of tokens we have.
+
+Sounds pretty simple, innit? Woah there. Where'd you get a British accent out of the blue from, Orpheus?
+
+<aside>
+  Quite a long tale, actually. Apparently Orpheus got stuck with some British
+  bloke once for two weeks in the same hostel (she's been to quite a few
+  places!)
+</aside>
+
+Anyways. This means we need some extra useful functions to read the characters and determine when we can combine a bunch of them together. Let's do that now:
+
+[code snippet to set up class. Includes constructor, and peek and advance functions.]
+
+What we really need is to start reading each character. Let's do that with `scanTokens`:
+
+[scanTokens]
+
+All `scanToken` does is go over every character and run scanToken. That probably doesn't make sense: how
+
+The power lies in
+
+Woah! Take a borw. There's our lexer, in action:
+
+[interactive look at the tokens, this time you can write code and turn it into tokens both in text form and in interactive form]
