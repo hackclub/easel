@@ -7,6 +7,10 @@ import { remark } from 'remark'
 import remarkToc from 'remark-toc'
 import 'highlight.js/styles/base16/solarized-light.min.css'
 import rehypeHighlight from 'rehype-highlight'
+import Canvas from '@/components/Canvas'
+import Lexer from '@/components/interactive/Lexer'
+
+const components = { Canvas, Lexer }
 
 export default function Index({
   parts,
@@ -50,7 +54,7 @@ export default function Index({
           <MDXRemote {...toc} />
         </div>
         <h1>{title}</h1>
-        <MDXRemote {...page} />
+        <MDXRemote {...page} components={components} />
         <div className="pagination">
           <a href="#">
             <div>

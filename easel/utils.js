@@ -1,4 +1,10 @@
-class Color {}
+class Color {
+  constructor(r, g, b) {
+    this.r = r
+    this.g = g
+    this.b = b
+  }
+}
 
 class Canvas {
   constructor(rows = 64, cols = 64) {
@@ -8,5 +14,7 @@ class Canvas {
 }
 
 export default {
-  Canvas: new Canvas()
+  Canvas: new Canvas(),
+  Color,
+  ink: args => console.log(args)
 }

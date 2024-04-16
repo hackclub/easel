@@ -1,0 +1,37 @@
+.tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.token {
+  border: 1px dotted var(--border);
+  padding: 7px 12px;
+  transition: all 0.1s;
+  cursor: help;
+  position: relative;
+
+  .popover {
+    border: 1px dotted var(--theme);
+    font: inherit;
+    background-color: white;
+    position: absolute;
+    top: 80%;
+    left: 80%;
+    z-index: 999;
+    padding: 7px 12px;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &:hover {
+    border-color: var(--theme);
+    // box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+    > code {
+      font-weight: 500;
+    }
+  }
+}

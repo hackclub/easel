@@ -21,11 +21,12 @@ export const TOKENS = {
   Gte: 'Gte',
   Lt: 'Lt',
   Lte: 'Lte',
-  Plus: '+',
-  Minus: '-',
-  Asterisk: '*',
-  Slash: '/',
-  EOF: 'EOF'
+  Plus: 'Plus',
+  Minus: 'Minus',
+  Asterisk: 'Asterisk',
+  Slash: 'Slash',
+  EOF: 'EOF',
+  Newline: 'Newline'
 }
 
 export const KEYWORDS = {
@@ -46,24 +47,27 @@ export const KEYWORDS = {
 }
 
 export class Token {
-  constructor(type, value, content) {
+  constructor(type, value, content, line, column) {
     this.type = type
     this.value = value
     this.content = content
+    this.line = line
+    this.column = column
   }
 }
 
 export class Lexer {
-  constructor(program) {
+  constructor(program, includeNewlines = false) {
     this.program = program
     this.tokens = []
     this.current = 0
     this.line = 1
-    this.col = 0
+    this.column = 0
+    this.includeNewlines = includeNewlines // Optional flag to include newlines as tokens. Useful for the interactive components in *Orpheus writes a lexer*
   }
 
   error(msg) {
-    throw new Error(`${this.line}:${this.col}: ${msg}`)
+    throw new Error(`${this.line}:${this.colum}: ${msg}`)
   }
 
   peek() {
@@ -73,7 +77,7 @@ export class Lexer {
 
   advance() {
     if (this.current >= this.program.length) return '\0'
-    this.col++
+    this.column++
     return this.program[this.current++]
   }
 
@@ -94,62 +98,109 @@ export class Lexer {
     switch (char) {
       case '>':
         if (this.match('='))
-          return this.tokens.push(new Token(TOKENS.Gte, '>=', '>='))
-        return this.tokens.push(new Token(TOKENS.Gt, '>', '>'))
+          return this.tokens.push(
+            new Token(TOKENS.Gte, '>=', '>=', this.line, this.column)
+          )
+        return this.tokens.push(
+          new Token(TOKENS.Gt, '>', '>', this.line, this.column)
+        )
       case '<':
         if (this.match('='))
-          return this.tokens.push(new Token(TOKENS.Lte, '<=', '<='))
-        return this.tokens.push(new Token(TOKENS.Lt, '<', '<'))
+          return this.tokens.push(
+            new Token(TOKENS.Lte, '<=', '<=', this.line, this.column)
+          )
+        return this.tokens.push(
+          new Token(TOKENS.Lt, '<', '<', this.line, this.column)
+        )
       case '=':
         if (this.match('='))
-          return this.tokens.push(new Token(TOKENS.Equiv, '==', '=='))
-        return this.tokens.push(new Token(TOKENS.Equal, '=', '='))
+          return this.tokens.push(
+            new Token(TOKENS.Equiv, '==', '==', this.line, this.column)
+          )
+        return this.tokens.push(
+          new Token(TOKENS.Equal, '=', '=', this.line, this.column)
+        )
       case '(':
-        return this.tokens.push(new Token(TOKENS.LeftParen, '(', '('))
+        return this.tokens.push(
+          new Token(TOKENS.LeftParen, '(', '(', this.line, this.column)
+        )
       case ')':
-        return this.tokens.push(new Token(TOKENS.RightParen, ')', ')'))
+        return this.tokens.push(
+          new Token(TOKENS.RightParen, ')', ')', this.line, this.column)
+        )
       case '{':
-        return this.tokens.push(new Token(TOKENS.LeftBrace, '{', '{'))
+        return this.tokens.push(
+          new Token(TOKENS.LeftBrace, '{', '{', this.line, this.column)
+        )
       case '}':
-        return this.tokens.push(new Token(TOKENS.RightBrace, '}', '}'))
+        return this.tokens.push(
+          new Token(TOKENS.RightBrace, '}', '}', this.line, this.column)
+        )
       case '[':
-        return this.tokens.push(new Token(TOKENS.LeftBracket, '[', '['))
+        return this.tokens.push(
+          new Token(TOKENS.LeftBracket, '[', '[', this.line, this.column)
+        )
       case ']':
-        return this.tokens.push(new Token(TOKENS.RightBracket, ']', ']'))
+        return this.tokens.push(
+          new Token(TOKENS.RightBracket, ']', ']', this.line, this.column)
+        )
       case '|':
         if (this.match('|'))
-          return this.tokens.push(new Token(TOKENS.Or, '||', '||'))
+          return this.tokens.push(
+            new Token(TOKENS.Or, '||', '||', this.line, this.column)
+          )
       case '&':
         if (this.match('&'))
-          return this.tokens.push(new Token(TOKENS.And, '&&', '&&'))
+          return this.tokens.push(
+            new Token(TOKENS.And, '&&', '&&', this.line, this.column)
+          )
       case '!':
-        return this.tokens.push(new Token(TOKENS.Not, '!', '!'))
+        return this.tokens.push(
+          new Token(TOKENS.Not, '!', '!', this.line, this.column)
+        )
       case '.':
-        return this.tokens.push(new Token(TOKENS.Period, '.', '.'))
+        return this.tokens.push(
+          new Token(TOKENS.Period, '.', '.', this.line, this.column)
+        )
       case ',':
-        return this.tokens.push(new Token(TOKENS.Comma, ',', ','))
+        return this.tokens.push(
+          new Token(TOKENS.Comma, ',', ',', this.line, this.column)
+        )
       case ':':
-        return this.tokens.push(new Token(TOKENS.Colon, ':', ':'))
+        return this.tokens.push(
+          new Token(TOKENS.Colon, ':', ':', this.line, this.column)
+        )
       case '+':
-        return this.tokens.push(new Token(TOKENS.Plus, '+', '+'))
+        return this.tokens.push(
+          new Token(TOKENS.Plus, '+', '+', this.line, this.column)
+        )
       case '-':
-        return this.tokens.push(new Token(TOKENS.Minus, '-', '-'))
+        return this.tokens.push(
+          new Token(TOKENS.Minus, '-', '-', this.line, this.column)
+        )
       case '*':
-        return this.tokens.push(new Token(TOKENS.Asterisk, '*', '*'))
+        return this.tokens.push(
+          new Token(TOKENS.Asterisk, '*', '*', this.line, this.column)
+        )
       case '/':
-        return this.tokens.push(new Token(TOKENS.Slash, '/', '/'))
+        return this.tokens.push(
+          new Token(TOKENS.Slash, '/', '/', this.line, this.column)
+        )
       case '~':
         // Comments
         while (this.peek() !== '\n') this.advance()
         return
       case ' ':
+      case '\r':
       case '\t':
         // Ignore whitespace
         return
       case '\n':
         // Also ignore, but update line
         this.line++
-        this.col = 0
+        this.column = 0
+        if (this.includeNewlines)
+          return new Token(TOKENS.Newline, '\n', '\n', this.line, this.colu)
         return
       case "'":
       case '"':
@@ -163,7 +214,9 @@ export class Lexer {
         }
         this.advance() // Skip closing quote
         string = string.join('')
-        return this.tokens.push(new Token(TOKENS.String, string, string))
+        return this.tokens.push(
+          new Token(TOKENS.String, string, string, this.line, this.column)
+        )
       default:
         if (isNumber(char)) {
           let number = [char]
@@ -175,7 +228,13 @@ export class Lexer {
           }
           number = number.join('')
           return this.tokens.push(
-            new Token(TOKENS.Number, number, Number(number))
+            new Token(
+              TOKENS.Number,
+              number,
+              Number(number),
+              this.line,
+              this.column
+            )
           )
         } else if (isChar(char)) {
           // Identifier or keyword
@@ -184,10 +243,22 @@ export class Lexer {
           identifier = identifier.join('')
           if (Object.keys(KEYWORDS).includes(identifier))
             return this.tokens.push(
-              new Token(TOKENS.Keyword, identifier, KEYWORDS[identifier])
+              new Token(
+                TOKENS.Keyword,
+                identifier,
+                KEYWORDS[identifier],
+                this.line,
+                this.column
+              )
             )
           return this.tokens.push(
-            new Token(TOKENS.Identifier, identifier, identifier)
+            new Token(
+              TOKENS.Identifier,
+              identifier,
+              identifier,
+              this.line,
+              this.column
+            )
           )
         } else this.error('Unexpected symbol ' + char)
     }
@@ -195,6 +266,7 @@ export class Lexer {
 
   scanTokens() {
     while (this.peek() != '\0') this.scanToken()
+    this.tokens.push(new Token(TOKENS.EOF, '\0', '\0'))
     return this.tokens
   }
 }

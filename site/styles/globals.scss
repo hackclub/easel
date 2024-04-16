@@ -353,7 +353,7 @@ section {
   }
 
   :not(pre) > code {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   h1,
@@ -381,7 +381,8 @@ section {
       h5,
       h6,
       p,
-      > pre {
+      > pre,
+      .interactive {
         max-width: 85vw;
         margin: 0.75em auto;
       }
@@ -395,7 +396,8 @@ section {
       h5,
       h6,
       p,
-      > pre {
+      > pre,
+      .interactive {
         max-width: 80vw;
         margin: 0.75em auto;
       }
@@ -409,7 +411,8 @@ section {
       h5,
       h6,
       p,
-      > pre {
+      > pre,
+      .interactive {
         max-width: 60vw;
         margin: 0.75em auto;
       }

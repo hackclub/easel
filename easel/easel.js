@@ -1,5 +1,7 @@
 import fs from 'fs'
+import readline from 'node:readline'
 import { Lexer } from './lexer.js'
+import utils from './utils.js'
 
 const readFile = location =>
   new Promise((resolve, reject) =>
@@ -30,5 +32,27 @@ const writeFile = (location, data) =>
     if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
   } else {
     // Interactive REPL
+    const input = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+
+    // Remember to close stream before exiting
+    process.on('SIGINT', () => {
+      input.close()
+    })
+
+    const repl = line => {
+      const lexer = new Lexer(line)
+      try {
+        lexer.scanTokens()
+      } catch {
+        // Should catch errors, and depending on type, wait for extension
+      }
+      console.log(lexer.tokens)
+      input.question('> ', repl)
+    }
+
+    input.question('> ', repl)
   }
 })()
