@@ -14,7 +14,7 @@ export function TokenComponent({
   const [popover, setPopover] = useState(false)
 
   return (
-    <div
+    <code
       className={styles.token}
       onMouseEnter={() => setPopover(true)}
       onMouseLeave={() => setPopover(false)}>
@@ -22,11 +22,12 @@ export function TokenComponent({
       {popover && (
         <div className={styles.popover}>
           <p>
-            <code>{content}</code> is {type}
+            <code>{content}</code> is a {type}
           </p>
+          <p>{JSON.stringify({ type, value, content })}</p>
         </div>
       )}
-    </div>
+    </code>
   )
 }
 
@@ -67,10 +68,33 @@ export default function LexerComponent() {
 
   return (
     <div className="interactive">
-      <div className={styles.tokens}>
-        {tokens.map((token, idx) => {
-          return <TokenComponent key={idx} {...token} />
-        })}
+      <div className={styles.wrapper}>
+        <pre className={styles.tokens}>
+          {tokens.map((token, idx) => {
+            // Restore missing whitespace
+            const newline = code.split('\n')[token.line]
+            if (newline) {
+              const prev = newline[token.column]
+              if (prev === ' ')
+                return (
+                  <>
+                    <code> </code>
+                    <TokenComponent key={idx} {...token} />
+                  </>
+                )
+            }
+            if (newline && newline.trim().startsWith(token.value)) {
+              return (
+                <>
+                  <div style={{ width: '100%' }} />
+                  <code>{'\n  '}</code>
+                  <TokenComponent key={idx} {...token} />
+                </>
+              )
+            }
+            return <TokenComponent key={idx} {...token} />
+          })}
+        </pre>
       </div>
     </div>
   )

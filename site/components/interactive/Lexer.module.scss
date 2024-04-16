@@ -1,14 +1,21 @@
+.wrapper {
+  * {
+    font-family: 'Virgil' !important;
+  }
+}
+
 .tokens {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  max-width: calc(100vw - ((100vw - 60vw) / 2)) !important;
+  width: calc(100vw - ((100vw - 60vw) / 2)) !important;
+  overflow-x: auto;
+  height: 100%;
 }
 
 .token {
-  border: 1px dotted var(--border);
-  padding: 7px 12px;
-  transition: all 0.1s;
-  cursor: help;
+  // border: 1px dotted var(--border);
+  // padding: 7px 12px;
+  // transition: all 0.1s;
+  // cursor: help;
   position: relative;
 
   .popover {

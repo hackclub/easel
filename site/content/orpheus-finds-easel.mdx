@@ -5,9 +5,15 @@ order: 1
 
 It's a normal Saturday for Orpheus the dino. She wakes up, lies in bed for a while.
 
+[orpheus]
+
 It's raining outside! She likes rainy days.
 
-First up, some setup. We're going to store our program.
+Just then, there's a knock on the doorbell. But by the time Orpheus gets to the door, it's 
+
+## Easel, the programming language
+
+First up, some setup. We're going to store our program in a file. We'll call it `test.easel`.
 
 <aside>
   Go ahead. Type it out! It's good for your health. Well, to be specific, it's
@@ -24,13 +30,123 @@ brush Cell has { x, y, live }
 
 ~ Exercise: try setting a custom pattern instead of randomness!
 sketch seed {
-  prepare cells []
+  prepare cells as []
   loop x through (0, rows) {
     loop y through (0, cols) {
+      cells.add(prep Cell(x: x, y: y, live: random(0, 1)))
+    }
+  }
+  finish cells
+}
 
+prepare cells as paint seed
+
+sketch getNeighbors needs (cell, index) {
+  ~ Get neighbors around a cell
+  prepare neighbors as [
+    cells[index - rows - 1],
+    cells[index - rows],
+    cells[index - rows + 1],
+    cells[index - 1],
+    cells[index + 1],
+    cells[index + rows - 1],
+    cells[index + rows],
+    cells[index + rows + 1]
+  ]
+  prepare alive as []
+  loop i through (0, neighbors.length()) {
+    if (neighbors[i].live) {
+      alive.add(neighbors[i])
+    }
+  }
+  finish alive
+}
+
+sketch paint {
+  ~ This loop runs every iteration and must be in every program
+  loop i through (0, cells.length()) {
+    var cell = cells[i]
+    var neighbors = paint getNeighbors with (cells, i)
+    if (cell.live) {
+      if (neighbors.length() < 2 || neighbors.length() > 3) {
+        ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
+        ~ Any live cell with more than three live neighbors dies, as if by overpopulation
+        cell.live = false
+      }
+    } elif (!(cell.live && neighbors == 3)) {
+      ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+      cell.live = true
+    }
+
+    if (cell.live) {
+      ~ Now draw the cell if it's alive!
+      prepare color as prep Color(r: 0, g: 255, b: 0)
+      Canvas.fill(x, y, color)
+    } else {
+      ~ If it's dead, turn the cell off
+      Canvas.erase(x, y)
     }
   }
 }
 ```
 
-The setup here might be a little confushing
+## Setup
+
+Let's start doing this! Orpheus wants to make sure we've got the basics now. It's like building Lego, really. The first step is to open dat terminal and start a new project:
+
+```
+mkdir easel
+npm init -y
+```
+
+<aside>
+  Orpheus wants this to be useful for anyone who knows a bit of JavaScript. Here, all we're doing is import
+</aside>
+
+Open up the `package.json` that's been created, and add this extra line:
+
+```json
+{
+  // ...
+  "type": "module"
+}
+```
+
+This will let us use the modern `import` syntax.
+
+```js
+import fs from 'fs'
+import readline from 'node:readline'
+import { Lexer } from './lexer.js'
+import utils from './utils.js'
+
+const readFile = location =>
+  new Promise((resolve, reject) =>
+    fs.readFile(location, 'utf-8', (err, data) => {
+      if (err) return reject(err)
+      resolve(data.toString())
+    })
+  )
+
+const writeFile = (location, data) =>
+  new Promise((resolve, reject) =>
+    fs.writeFile(location, data, err => {
+      if (err) return reject(err)
+      resolve()
+    })
+  )
+
+;(async () => {
+  let argv = process.argv.slice(2)
+  const debug = argv.find(cmd => cmd === '--dbg') ? true : false
+  argv = argv.filter(arg => arg !== '--dbg')
+
+  const location = argv[0]
+  if (location) {
+    const program = await readFile(location)
+    console.log(program)
+  }
+})
+```
+
+This is really just some boilerplate code for us.

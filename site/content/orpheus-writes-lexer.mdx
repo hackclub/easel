@@ -5,7 +5,7 @@ order: 2
 
 The first thing Orpheus does the next morning is she fires up the computer again, and opens a new file to start writing some code.
 
-Wait, she thinks. I'm forgetting something. She swings by the kitchen to pick up some tea. You can't forget the tea. Ambiance is rather important.
+*Wait*, she thinks. *I'm forgetting something*. She swings by the kitchen to pick up some tea. You can't forget the tea. Ambiance is rather important.
 
 ![](/cartoons/tea.png)
 
@@ -14,42 +14,79 @@ So it turns out that the first step to writing a language, is to write a _lexer_
 Orpheus thinks this is kind of like speaking English, or Dinoese. You can divide a sentence into tokens, after all.
 
 <aside>
-  I talked to Orpheus about this for quite a while and apparently Dinoese is
-  quite easy.
+  I talked to Orpheus about this for quite a while and apparently Dinoese is quite easy. It just involves a lot of *rawr*s of different intensities.
 </aside>
 
 ![](/cartoons/english-tokens.png)
 
-See? Tokens. Orpheus collects a lot of tokens, actually.
+See? Tokens. Orpheus collects a lot of tokens, actually. Anyways, the point is that you can divide a sentence into multiple chunks that describe the structure of the sentence. It's even easier to do that for a programming language because the syntax is, well, so much easier to describe. No extra edge cases like there are in the English language.
 
-Orpheus picks up the letter and looks at the first program again. How does one go about dividing this language into tokens? Well, it's quite helpful to draw out the important chunks. Luckily, Orpheus still has the notes we took yesterday, if she can find it among her pile of other papers. She's got a really bad habit of always having a bunch of papers on her desk.
+Orpheus picks up the letter and looks at the first program again. How does one go about dividing this language into tokens? Well, it's quite helpful to draw out the important chunks. Luckily, Orpheus already has notes for this something, if she can still find them among her pile of other assorted papers. She's got a really bad habit of always having a bunch of papers on her desk. 
 
 <aside>
   I just took a look at the papers on Orpheus' desk. Apparently she's running a
-  marathon soon? Wish her luck. No, no, not luck running the marathon... she
-  needs a good chunk of luck to not run over the other participants.
+  marathon soon? Wish her luck. No, no, not luck running the marathon, she can absolutely do that... it's the other participants I'm slightly worried for.
 </aside>
 
-[interactive look at the tokens]
+Found it!
 
 <Lexer/>
 
-There! That makes a lot more sense. Hopefully. Those are the different kinds of tokens we can represent.
+There! That makes a lot more sense, hopefully. These are some of the different kinds of tokens we can represent. So how do we write code to represent this? Well, that's what Orpheus is going to do right now, in `lexer.js`:
 
-Anyways, back to the file. Orpheus is going to represent the tokens with an object:
+```js
+export const TOKENS = {
+  LeftParen: 'LeftParen',
+  RightParen: 'RightParen',
+  LeftBrace: 'LeftBrace',
+  RightBrace: 'RightBrace',
+  LeftBracket: 'LeftBracket',
+  RightBracket: 'RightBracket',
+  Period: 'Period',
+  Comma: 'Comma',
+  Colon: 'Colon',
+  Keyword: 'Keyword',
+  Identifier: 'Identifier',
+  String: 'String',
+  Number: 'Number',
+  Or: 'Or',
+  Not: 'Not',
+  And: 'And',
+  Equal: 'Equal',
+  Equiv: 'Equiv',
+  Gt: 'Gt',
+  Gte: 'Gte',
+  Lt: 'Lt',
+  Lte: 'Lte',
+  Plus: 'Plus',
+  Minus: 'Minus',
+  Asterisk: 'Asterisk',
+  Slash: 'Slash',
+  EOF: 'EOF',
+  Newline: 'Newline'
+}
 
-[code snippet]
+export class Token {
+  constructor(type, value, content, line, column) {
+    this.type = type  // Any value in TOKENS
+    this.value = value
+    this.content = content
+    this.line = line
+    this.column = column
+  }
+}
+```
 
 <aside>
-  Some programming languages let you use enums. JavaScript doesn't come with
+  Some programming languages let you use [enums](https://www.reddit.com/r/learnprogramming/comments/yk8d84/whats_the_point_of_enums/). JavaScript doesn't come with
   enums so we're doing this somewhat redundantly.
 </aside>
 
-Coolio. Now that we have tokens, how do we go about creating a lexer? That's a bit of a harder thing to do. Ah, but ah! Orpheus has an idea. We know this:
+Coolio. Now that we have tokens, how do we go about creating a lexer? That's a bit of a harder thing to do. We know this:
 
 ![](/cartoons/lexer-diagram.png)
 
-So we know we take a program, we pass it into a lexer, and we get tokens out. We just need to figure out what's in that black box exactly.
+So we know we take a program, pass it into a lexer, and we get tokens out. We just need to figure out what's in that black box exactly.
 
 Now, the idea is to read every character one by one. If a set of characters form a token that we can recognize, then we add it to a list of tokens we have.
 
@@ -61,18 +98,128 @@ Sounds pretty simple, innit? Woah there. Where'd you get a British accent out of
   places!)
 </aside>
 
-Anyways. This means we need some extra useful functions to read the characters and determine when we can combine a bunch of them together. Let's do that now:
+Anyways. This means we need some extra useful functions to read the characters and determine when we can combine a bunch of them together. Let's start by just creating a class for our lexer:
 
-[code snippet to set up class. Includes constructor, and peek and advance functions.]
+```js
+export class Lexer {
+  constructor(program) {
+    this.program = program
+    this.tokens = []
+    this.current = 0
+    this.line = 1
+    this.column = 0
+  }
+}
+```
 
-What we really need is to start reading each character. Let's do that with `scanTokens`:
+What we really need is to start reading each character in our program. Let's do that with `scanTokens`:
 
-[scanTokens]
+```js
+class Lexer {
+  // ...
 
-All `scanToken` does is go over every character and run scanToken. That probably doesn't make sense: how
+  scanTokens() {
+    while (this.peek() != '\0') this.scanToken()
+    this.tokens.push(new Token(TOKENS.EOF, '\0', '\0'))
+    return this.tokens
+  }
+}
+```
+
+<aside>
+  \0 typically represents the null character. The ends of strings in memory are marked with an extra bit, and that happens to be the null character.
+</aside>
+
+All `scanToken` does is go over every character and run a method called `scanToken`, while we haven't reached the end of the program (see the sidebar for more info!). Now, before we get to `scanToken`, we've got to take a look at `peek`. This is the first of our useful utility functions for peeking ahead and checking what the next character is:
+
+```js
+class Lexer {
+  // ...
+
+  peek() {
+    if (this.current >= this.program.length) return '\0'
+    return this.program[this.current]
+  }
+
+  scanTokens() {
+    // ...
+  }
+}
+```
+
+And next, let's
+
+```js
+class Lexer {
+  // ...
+
+  scanToken() {
+    const char = this.advance()
+
+    switch (char) {
+      case '(':
+        return this.tokens.push(
+          new Token(TOKENS.LeftParen, '(', '(', this.line, this.column)
+        )
+      case ')':
+        return this.tokens.push(
+          new Token(TOKENS.RightParen, ')', ')', this.line, this.column)
+        )
+      case '{':
+        return this.tokens.push(
+          new Token(TOKENS.LeftBrace, '{', '{', this.line, this.column)
+        )
+      case '}':
+        return this.tokens.push(
+          new Token(TOKENS.RightBrace, '}', '}', this.line, this.column)
+        )
+      case '[':
+        return this.tokens.push(
+          new Token(TOKENS.LeftBracket, '[', '[', this.line, this.column)
+        )
+      case ']':
+        return this.tokens.push(
+          new Token(TOKENS.RightBracket, ']', ']', this.line, this.column)
+        )
+      case '.':
+        return this.tokens.push(
+          new Token(TOKENS.Period, '.', '.', this.line, this.column)
+        )
+      case ',':
+        return this.tokens.push(
+          new Token(TOKENS.Comma, ',', ',', this.line, this.column)
+        )
+      case ':':
+        return this.tokens.push(
+          new Token(TOKENS.Colon, ':', ':', this.line, this.column)
+        )
+      case '+':
+        return this.tokens.push(
+          new Token(TOKENS.Plus, '+', '+', this.line, this.column)
+        )
+      case '-':
+        return this.tokens.push(
+          new Token(TOKENS.Minus, '-', '-', this.line, this.column)
+        )
+      case '*':
+        return this.tokens.push(
+          new Token(TOKENS.Asterisk, '*', '*', this.line, this.column)
+        )
+      case '/':
+        return this.tokens.push(
+          new Token(TOKENS.Slash, '/', '/', this.line, this.column)
+        )
+    }
+  }
+
+  scanTokens() {
+    // ...
+  }
+}
+```
 
 The power lies in
 
-Woah! Take a borw. There's our lexer, in action:
+Woah! Take a bow. Here's our lexer, in action:
 
 [interactive look at the tokens, this time you can write code and turn it into tokens both in text form and in interactive form]

@@ -63,6 +63,14 @@ export class While {
   }
 }
 
+export class Conditional {
+  constructor(condition, body, otherwise) {
+    this.condition = condition
+    this.body = body
+    this.otherwise = otherwise
+  }
+}
+
 export default {
   Literal,
   Binary,
@@ -72,5 +80,6 @@ export default {
   Call,
   Get,
   For,
-  While
+  While,
+  Conditional
 }

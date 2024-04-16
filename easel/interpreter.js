@@ -3,4 +3,6 @@ class Interpreter {
     this.ast = ast
     this.scope = scope
   }
+
+  run(ast, scope = {}) {}
 }

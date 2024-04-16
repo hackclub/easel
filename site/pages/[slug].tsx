@@ -23,6 +23,10 @@ export default function Index({
   page: MDXRemoteSerializeResult
   toc: MDXRemoteSerializeResult
 }) {
+  const curr = parts.findIndex(part => part.title === title)
+  const prev = parts[curr - 1]
+  const next = parts[curr + 1]
+
   return (
     <>
       <header>
@@ -56,18 +60,24 @@ export default function Index({
         <h1>{title}</h1>
         <MDXRemote {...page} components={components} />
         <div className="pagination">
-          <a href="#">
-            <div>
-              <p className="hint">&larr; Previous</p>
-              <p>Orpheus finds an easel in the mail</p>
-            </div>
-          </a>
-          <a href="#">
-            <div>
-              <p className="hint">Next &rarr;</p>
-              <p>Orpheus writes a parser</p>
-            </div>
-          </a>
+          {prev ? (
+            <Link href={prev.slug}>
+              <div>
+                <p className="hint">&larr; Previous</p>
+                <p>{prev.title}</p>
+              </div>
+            </Link>
+          ) : (
+            <div style={{ minWidth: '50%' }} />
+          )}
+          {next && (
+            <Link href={next.slug}>
+              <div>
+                <p className="hint">Next &rarr;</p>
+                <p>{next.title}</p>
+              </div>
+            </Link>
+          )}
         </div>
         <footer></footer>
       </div>

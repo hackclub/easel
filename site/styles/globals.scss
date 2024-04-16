@@ -42,6 +42,11 @@ $lg: 991.98px;
   src: url('../public/Newsreader-Italic.ttf') format('truetype');
 }
 
+@font-face {
+  font-family: 'Virgil';
+  src: url('../public/Virgil.woff2') format('woff2');
+}
+
 :root {
   --theme: #ec3750;
   --yellow: #fefaa7;
@@ -140,6 +145,13 @@ header {
   }
 }
 
+.sp-wrapper {
+  max-width: calc(100vw - ((100vw - 60vw) / 2));
+  width: calc(100vw - ((100vw - 60vw) / 2)) !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
 .canvas {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -207,13 +219,12 @@ section {
 
   a {
     color: black;
-    text-decoration: none;
-    background-color: var(--yellow);
-    cursor: pointer;
-    transition: all 0.1s;
+    transition: 0.1s all;
+    text-decoration-style: dotted;
+    font-style: italic;
 
     &:hover {
-      opacity: 0.9;
+      background-color: var(--yellow);
     }
   }
 
@@ -222,6 +233,10 @@ section {
     position: relative;
     border-top: 1px solid var(--border);
     padding: 1em;
+
+    p:nth-child(1) {
+      margin-top: 0;
+    }
 
     @media screen and (max-width: $lg) {
       border-bottom: 1px solid var(--border);
@@ -262,6 +277,8 @@ section {
         font-size: 1.5rem;
         margin-bottom: 0 !important;
       }
+
+      margin-top: 1.5em !important;
     }
 
     p {
@@ -330,7 +347,7 @@ section {
 
   code,
   pre {
-    font-family: 'Fira Code', monospace;
+    font-family: 'Menlo', 'Fira Code', monospace;
   }
 
   hr {
@@ -342,13 +359,23 @@ section {
   > pre {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    background-color: transparent;
+    background-color: transparent !important;
     font-size: 1.1rem;
     user-select: none;
     padding: 0;
 
     code {
-      background-color: transparent;
+      background-color: transparent !important;
+    }
+  }
+
+  > :not(.canvas) pre {
+    padding: 0 !important;
+    background-color: transparent !important;
+
+    code {
+      background-color: transparent !important;
+      padding: 0 !important;
     }
   }
 
