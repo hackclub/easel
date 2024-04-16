@@ -12,10 +12,9 @@ export const TOKENS = {
   Identifier: 'Identifier',
   String: 'String',
   Number: 'Number',
+  Boolean: 'Boolean',
   Or: 'Or',
   Not: 'Not',
-  And: 'And',
-  Equal: 'Equal',
   Equiv: 'Equiv',
   Gt: 'Gt',
   Gte: 'Gte',
@@ -33,6 +32,7 @@ export const KEYWORDS = {
   prepare: 'prepare',
   as: 'as', // Variables
   brush: 'brush',
+  prep: 'prep',
   has: 'has', // Structs
   sketch: 'sketch',
   paint: 'paint',
@@ -57,13 +57,12 @@ export class Token {
 }
 
 export class Lexer {
-  constructor(program, includeNewlines = false) {
+  constructor(program) {
     this.program = program
     this.tokens = []
     this.current = 0
     this.line = 1
     this.column = 0
-    this.includeNewlines = includeNewlines // Optional flag to include newlines as tokens. Useful for the interactive components in *Orpheus writes a lexer*
   }
 
   error(msg) {
@@ -192,15 +191,12 @@ export class Lexer {
         return
       case ' ':
       case '\r':
-      case '\t':
         // Ignore whitespace
         return
       case '\n':
         // Also ignore, but update line
         this.line++
         this.column = 0
-        if (this.includeNewlines)
-          return new Token(TOKENS.Newline, '\n', '\n', this.line, this.colu)
         return
       case "'":
       case '"':
@@ -250,6 +246,10 @@ export class Lexer {
                 this.line,
                 this.column
               )
+            )
+          else if (identifier === 'true' || identifier === 'false')
+            return this.tokens.push(
+              new Token(TOKENS.Boolean, identifier, identifier === 'true')
             )
           return this.tokens.push(
             new Token(
