@@ -16,6 +16,7 @@ export const TOKENS = {
   Or: 'Or',
   Not: 'Not',
   Equiv: 'Equiv',
+  NotEquiv: 'NotEquiv',
   Gt: 'Gt',
   Gte: 'Gte',
   Lt: 'Lt',
@@ -35,7 +36,6 @@ export const KEYWORDS = {
   prep: 'prep',
   has: 'has', // Structs
   sketch: 'sketch',
-  paint: 'paint',
   needs: 'needs',
   finished: 'finished', // Functions
   loop: 'loop',
@@ -62,7 +62,7 @@ export class Lexer {
     this.tokens = []
     this.current = 0
     this.line = 1
-    this.column = 0
+    this.column = 1
   }
 
   error(msg) {
@@ -93,6 +93,7 @@ export class Lexer {
       (char >= 'A' && char <= 'Z') ||
       (char >= 'a' && char <= 'z') ||
       char == '_'
+    const isAlphanumeric = char => isNumber(char) || isChar(char)
 
     switch (char) {
       case '>':
@@ -154,6 +155,10 @@ export class Lexer {
             new Token(TOKENS.And, '&&', '&&', this.line, this.column)
           )
       case '!':
+        if (this.match('='))
+          return this.tokens.push(
+            new Token(TOKENS.NotEquiv, '!=', '!=', this.line, this.column)
+          )
         return this.tokens.push(
           new Token(TOKENS.Not, '!', '!', this.line, this.column)
         )
@@ -187,7 +192,7 @@ export class Lexer {
         )
       case '~':
         // Comments
-        while (this.peek() !== '\n') this.advance()
+        while (this.peek() !== '\n' && this.peek() !== '\0') this.advance()
         return
       case ' ':
       case '\r':
@@ -235,7 +240,7 @@ export class Lexer {
         } else if (isChar(char)) {
           // Identifier or keyword
           let identifier = [char]
-          while (isChar(this.peek())) identifier.push(this.advance())
+          while (isAlphanumeric(this.peek())) identifier.push(this.advance())
           identifier = identifier.join('')
           if (Object.keys(KEYWORDS).includes(identifier))
             return this.tokens.push(
