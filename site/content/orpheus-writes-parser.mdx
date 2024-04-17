@@ -3,19 +3,327 @@ title: Orpheus writes a parser
 order: 3
 ---
 
-Ok. We have a bunch of nice tokens now. It's breakfast time again. Normally, Orpheus has dinner for breakfast, but I see that she's been making Froot Loop necklaces instead today.
+Ok. We have a bunch of nice tokens now.
 
-<aside>
-  Both are certainly interesting. Sometimes you do interesting things to make
-  life exciting.
-</aside>
-
-Orpheus has drawn another diagram in preparation of this great day.
-
-[tokens -> parser -> abstract syntax tree]
+Our lexer produces a bunch of tokens, but we still can't do much with them quite yet. The next step to solving this problem is to write a *parser*, which will turn our currently rather one-dimensional list of tokens into what's known as an *abstract syntax tree*.
 
 ## Abstract syntax trees
 
-Another black box! But before we get to the black
+Orpheus drew a diagram for us last chapter on how lexers turn a blob of text that's meant to be our program into a list of tokens.
 
-note to self: the whole concept of parsers is that you define how much main type looks like and then a grammar to create a tree
+Parsers take these tokens and in turn output a tree of sorts that describes how tokens apply to one another. Here's an example of such an transformation:
+
+<LexerParserTransform/>
+
+We took five tokens and smooshed them one *node*. The five tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
+
+We're going to write that parser now. It's actually, surprisingly, similar to how we wrote our lexer, except that we're working with a tree now, which means we'll need some form of recursion. 
+
+Let's start with the usual! Orpheus opens a file called `parser.js` and throw this in there:
+
+```js
+export class Parser {
+  constructor(tokens) {
+    this.tokens = tokens
+    this.ast = []
+    this.current = 0
+  }
+
+  error(token, msg) {
+    throw new Error(`${token.line}:${token.column}: ${msg}`)
+  }
+}
+```
+
+Based on the diagram, the most intuitive next step is to loop through every token that we get. Let's do that in our `parse()` method:
+
+```js
+export class Parser {
+  // ...
+
+  parse() {
+    while (this.peekType() !== TOKENS.EOF) continue; // TODO
+    return this.ast
+  }
+}
+```
+
+This is pretty similar to our `scanTokens()` method in our lexer, but last time, we dealt with each character at a time. Tokens have more information then that - we also get a token's type - so we have two helper `peek()` methods this time instead of one:
+
+```js
+export class Parser {
+  // ...
+
+  peek() {
+    if (this.current >= this.tokens.length) return null
+    return this.tokens[this.current]
+  }
+
+  peekType() {
+    if (this.current >= this.tokens.length) return null
+    return this.tokens[this.current].type
+  }
+
+  parse() {
+    // ...
+  }
+}
+```
+
+Cool! Now, what exactly do with these tokens?
+
+## Recursive descent
+
+With our lexer, we looped through every character and checked if it could be a token or belong to set of characters that would belong to a token. Here, we're going to do something different - we're going to define a grammar for what our program could look like and work our way up until we can describe an entire chunk of code.
+
+First up: what do these have in similar?
+
+![](/cartoons/types.png)
+
+<aside>Like Froot Loop chunks sitting in Orpheus' stomach. Protests Orpheus: they're the best cereal to exist.</aside>
+
+Orpheus has an answer! *They're all super basic.* They're what we'll call **literals** - we can't really break them down further, or they'd just be unintelligible chunks that we can't use, and they also happen to be the most basic values we can reference.
+
+To give an exact definition we'll reference later when writing our parser, literals in Easel can be: strings, numbers, or booleans.
+
+Ok, what's the next obvious step from here? I'm thinking like arrays, or data types that build off literals by collecting them and storing them together. In Easel, it's quite simple - I can think of two data types and those are arrays and structs (or maps or whatever you want to call them. Orpheus decided to stick to structs while editing this, although that might not semantically be the best.)
+
+I bet you already have ideas forming in your head on how to parse these. Arrays? LeftBracket &rarr; parse stuff in between &rarr; RightBracket.
+
+But let's not get too far ahead of ourselves yet. What is this stuff "in between"? 
+
+<aside>
+  Or 0th item.
+</aside>
+
+Well, I imagine we might have an array that looks like `[2 + 3, 5, 7]`. That first item in the array is not a literal anymore. It's a binary expression!
+
+<img src="/cartoons/binop.png" style={{ width: "25%" }}/>
+
+So things are kind of coming together now. Literals can form expressions. We don't just have to form binary expressions - we can also form *unary* ones. Bet those are more rare, but surely you've seen them before: the NOT operator `!true`, for example.
+
+Ok. So we know literals can form expressions. What can expressions form? It turns out almost everything else we can think of, especially for a language like Easel. This is because everything else is a *statement* - a set of expressions. Let's see:
+
+<aside>
+  For-loops and while loops and Fruit Loops are all the same thing really. For-loops are basically while loops in Easel, where the condition is that the number is between two numbers.
+</aside>
+
+* Variables. Specifically, assignment! `prepare phoneVolume as 50` is assigning a literal (see what I did there?) to a variable.
+* Structs. Specifically, defining what a struct looks like. `brush Phone has { phoneVolume }` is a statement.
+* Functions are blocks of expressions with attached metadata of sorts, like what arguments we might need to pass in!
+* Return statements
+* For-loops and while loops are bloc
+
+Our job now is to write a parser that can understand this hierarchy. The parser will start by looking for statements, which are made of expressions, which are made of literals. In other words: basic recursive descent! 
+
+## Back to writing code
+
+Ok! Sturp talking! Let's get to smacking the keyboard instead. By then, it should be pretty obvious that we'll need another utility method we're desparately missing: the good ole' `eat` method for eating tokens up:
+
+```js
+class Parser {
+  // ...
+  
+  eat(type) {
+    if (this.peekType() === type) return this.tokens[this.current++]
+    this.error(
+      this.peek(),
+      `Expected ${type} but got ${this.peekType().toString()}`
+    )
+  }
+  
+  // ...
+}
+```
+
+<aside>
+  At this point we're going to stop putting the class definition around each method or Orpheus is going to have to start writing on napkins soon.
+</aside>
+
+Welp, looks like we need an error method too:
+
+```js
+error(token, msg) {
+  throw new Error(`${token.line}:${token.column}: ${msg}`)
+}
+```
+
+Now let's begin our descent... into the <strike>underworld</strike> writing of a parser! Let's start with this basic structure:
+
+```js
+class Parser {
+  simple() {
+
+  }
+
+  expr() {
+    let left = this.simple()
+    // Let's deal with the right side later
+    return left
+  }
+
+  stmt() {
+    case next = this.peek() 
+    switch (next.type) {
+      // Can you guess what's coming here later?
+      default:
+        return this.expr()
+    }
+  }
+}
+```
+
+Ok, understandable enough! Although this isn't going to do anything right now. Let's fix that by updating `simple()`:
+
+```js
+simple() {
+  let token = this.eat(this.peekType())
+  switch (token.type) {
+    case TOKENS.String:
+    case TOKENS.Number:
+    case TOKENS.Boolean:
+      return new Ast.Literal(token.content)
+  }
+  this.error(token, "Expected expression but got " + token)
+}
+```
+
+Notice how we throw an error if we don't get anything. Since this is the last method we reach when we're looking at a token, there must be a *syntax error* if we can't get a proper node.
+
+Something we didn't consider ahead of time was how we would define how these nodes look like. We'll do this really easily. Let's create a new file called `ast.js`, and put our first kind of node in there:
+
+```js
+export class Literal {
+  constructor(value) {
+    this.type = 'Literal'
+    this.value = value
+  }
+}
+
+export default {
+  Literal
+}
+```
+
+Make sure to import this in `parser.js`!
+
+```js
+import Ast from "./ast.js";
+```
+
+Perfect. Back to `simple()` now - we're also going to add arrays as a literal too just because it's simple and JavaScript is one of those languages where we don't have to worry about type anyways:
+
+```js
+simple() {
+  let token = this.eat(this.peekType())
+  switch (token.type) {
+    // ...
+    case TOKENS.LeftBracket:
+      let items = []
+      if (this.peekType() !== TOKENS.RightBracket) items = this.exprList()
+      this.eat(TOKENS.RightBracket)
+      return new Ast.Literal(items)
+  }
+  this.error(token, "Expected expression but got " + token)
+}
+```
+
+<aside>
+  You've got to thank Orpheus for this, she was smart and decided it would be useful to have a separate method because we'd use it again in the future. And she was right.
+</aside>
+
+Our predictions were correct. We gobble up the left bracket, create a new array, and if we haven't already reached the right bracket (i.e. empty array), we grab the list of expressions in between.
+
+Now, we make use of an extra helper called `exprList()` to do this.
+
+```js
+exprList() {
+  let exprs = []
+  exprs.push(this.expr())
+  while (this.peekType() === TOKENS.Comma) {
+    this.eat(TOKENS.Comma)
+    exprs.push(this.expr())
+  }
+  return exprs
+}
+```
+
+One last thing we'll add for now to `simple()` is:
+
+```js
+simple() {
+  // ...
+  switch (token.type) {
+    // ...
+    case TOKENS.Identifier:
+        return new Ast.Var(token.value)
+  }
+}
+```
+
+This might confuse you a bit - didn't we say variables were statements? Yes, but this is not that - this is referring to when we reference a variable, not direct assignment.
+
+This does make use of a new kind of node though, so let's add that to `ast.js`:
+
+```js
+export class Var {
+  constructor(name, value) {
+    this.type = 'Var'
+    this.name = name
+    this.value = value
+  }
+}
+
+export default {
+  // ...
+  Var
+}
+```
+
+Cool. That takes care of `simple()` for now. Let's move up the hierarchy and tweak `expr()`! Right now, we only print
+
+Now let's pass in a test program and see what happens!
+
+Oh wait. You can't see anything quite yet. Let's resolve that.
+
+### Dealing with order of operations
+
+```js
+class Parser {
+  // ...
+
+  expr() {
+    // expr has two sides
+    let left = this.call()
+    if (isOp(this.peekType())) {
+      const op = this.eat(this.peekType()).value
+      let right = this.expr()
+      if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
+        // Quick reording based on precedence
+        return new Ast.Binary(
+          new Ast.Binary(left, op, right.left),
+          right.operator,
+          right.right
+        )
+      return new Ast.Binary(left, op, right)
+    }
+    return left
+  }
+
+  // ...
+}
+```
+
+## Blocks
+
+### What about calls?
+
+Bring, bling! Bring, bring!
+
+I think that's Orpheus' phone ringing. She's going to answer
+
+I think Orpheus knows a little more than we've been let onto. Is that what was up with all the, uh, phone-related examples earlier? Probs.
+
+Awesome! We've got a parser working. Clap yourself on the back - that wasn't so hard, was it?
+
+That was definitely longer than writing a lexer, for sure, but rev up - we're going to see our programming language in action in the next part!

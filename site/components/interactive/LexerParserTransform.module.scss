@@ -1,0 +1,20 @@
+.wrapper {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+
+  .left,
+  .right {
+    flex: 50%;
+  }
+
+  .left,
+  .right {
+    pre {
+      border: 15px;
+      font-size: 0.995rem;
+      border: 1px dotted var(--theme);
+      padding: 1em !important;
+    }
+  }
+}

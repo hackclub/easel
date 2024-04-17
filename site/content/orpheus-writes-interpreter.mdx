@@ -3,4 +3,61 @@ title: Orpheus writes an interpreter
 order: 4
 ---
 
-Orpheus has her smock and beret on today. She's ready to do some painting. She sits down at the computer. The smock is slightly awkward. The beret's about to fall off. Maybe
+Orpheus has her smock and beret on today. She's ready to do some painting. She sits down at the computer. The smock is slightly awkward. The beret's about to fall off. 
+
+But today's an exciting day! Because today, we'll get the interpreter up and running, and we'll be able to run programs for real now. And Orpheus will finally be able to get this 
+
+## How the interpreter's going to work
+
+The interpreter's going to be a little different from the lexer and parser, but not too differently. It's going to take the nodes that the parser created, and make actual things happen. 
+
+```js
+export class Interpreter {
+  
+}
+```
+
+## The standard library
+
+This is great and dandy, but there's one thing we can't really do, and that is: print something to the console! What's the point of our programming language if we can't write "Hello, world!" in it? Not much, honestly. Let's fix that now with a standard library in `stdlib.js`:
+
+```js
+export default {
+  ink: args => console.log(...args),
+  random: range => {
+    const [min, max] = range
+    return Math.random() * (max - min + 1) + min
+  },
+  round: number => Math.round(number)
+}
+```
+
+Since our scope is literally just a key-value store, it turns out it's pretty easy to add a few starter items.
+
+Let
+
+```plaintext
+ink("Hello, world!")
+
+---
+
+Hello, world!
+```
+
+## What about... interactivity?
+
+What happened to interactivity? What's the point of an interpreter otherwise :(
+
+<video controls>
+  <source src="https://cloud-1cma98jhs-hack-club-bot.vercel.app/0screen_recording_2024-04-17_at_12_07_43_pm_adobeexpress.mp4"/>
+</video>
+
+<aside>
+  Orpheus: This reminds me... we should get an easel in the terminal working. Or that could be a challenge for you.
+</aside>
+
+Let's get a REPL (read, evaluate, print, loop) working! It's actually quite easy to do, and we have left a placeholder for it, if you remember in part one! 
+
+![](/cartoons/repl-time.png)
+
+Let's head on over and fill that sad and empty else-statement now. First step: setting up the interpreter and scope

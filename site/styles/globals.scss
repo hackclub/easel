@@ -50,7 +50,7 @@ $lg: 991.98px;
 :root {
   --theme: #ec3750;
   --yellow: #fefaa7;
-  --border: #c8c8c8;
+  --border: #e8e8e8;
   --hint: #404040;
 }
 
@@ -100,7 +100,8 @@ header {
 
   h1 {
     color: var(--theme);
-    line-height: 1.3;
+    line-height: 1.2;
+    font-style: italic;
     margin: 0;
   }
 
@@ -193,13 +194,15 @@ header {
 
 section {
   background-color: var(--yellow);
+  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
   padding: 1em;
   margin: 1em 0;
 
   a {
     font-style: italic;
-    border-bottom: 1px dotted;
     font-weight: 500;
+    text-decoration-style: dotted;
   }
 
   button {
@@ -216,6 +219,14 @@ section {
   line-height: 1.6;
   font-size: 1.2rem;
   position: relative;
+
+  .markdown-node-label {
+    text-align: left;
+  }
+
+  img {
+    max-width: 100%;
+  }
 
   a {
     color: black;
@@ -320,6 +331,7 @@ section {
       flex: 50%;
       padding: 1em;
       transition: all 0.1s;
+      text-decoration: none;
 
       &:hover {
         color: var(--theme);
@@ -394,7 +406,8 @@ section {
     margin-bottom: 0 !important;
   }
 
-  img {
+  img,
+  video {
     display: block;
     margin: auto;
   }
@@ -409,7 +422,10 @@ section {
       h6,
       p,
       > pre,
-      .interactive {
+      .interactive,
+      ol,
+      li,
+      video {
         max-width: 85vw;
         margin: 0.75em auto;
       }
@@ -424,7 +440,10 @@ section {
       h6,
       p,
       > pre,
-      .interactive {
+      .interactive,
+      ol,
+      li,
+      video {
         max-width: 80vw;
         margin: 0.75em auto;
       }
@@ -439,7 +458,10 @@ section {
       h6,
       p,
       > pre,
-      .interactive {
+      .interactive,
+      ol,
+      li,
+      video {
         max-width: 60vw;
         margin: 0.75em auto;
       }

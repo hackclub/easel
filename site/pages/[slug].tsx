@@ -9,8 +9,12 @@ import 'highlight.js/styles/base16/solarized-light.min.css'
 import rehypeHighlight from 'rehype-highlight'
 import Canvas from '@/components/Canvas'
 import Lexer from '@/components/interactive/Lexer'
+import LexerParserTransform from '@/components/interactive/LexerParserTransform'
+import dynamic from 'next/dynamic'
 
-const components = { Canvas, Lexer }
+const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
+
+const components = { Canvas, Lexer, Mermaid, LexerParserTransform }
 
 export default function Index({
   parts,
@@ -48,15 +52,22 @@ export default function Index({
       </header>
       <section className="prose">
         <p>
-          High schooler? <a href="https://hackclub.com">Hack Club</a> is running
-          a <a href="#">programming language jam</a>. Build a fun programming
-          language with friends, get a terminal-in-a-box to run it on!
+          High schooler?{' '}
+          <a href="https://hackclub.com" target="_blank">
+            Hack Club
+          </a>{' '}
+          is running a{' '}
+          <a href="https://github.com/hackclub/langjam" target="_blank">
+            programming language jam
+          </a>
+          . Build a fun programming language with friends, get a
+          terminal-in-a-box to run it on!
         </p>
       </section>
       <div className="prose">
-        <div className="toc">
+        {/* <div className="toc">
           <MDXRemote {...toc} />
-        </div>
+        </div> */}
         <h1>{title}</h1>
         <MDXRemote {...page} components={components} />
         <div className="pagination">
