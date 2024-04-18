@@ -11,6 +11,7 @@ import Canvas from '@/components/Canvas'
 import Lexer from '@/components/interactive/Lexer'
 import LexerParserTransform from '@/components/interactive/LexerParserTransform'
 import dynamic from 'next/dynamic'
+import path from 'path'
 
 const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
 
@@ -110,7 +111,7 @@ export async function getServerSideProps({
   const readdir = (dir: string) =>
     fs.readdirSync(dir, { withFileTypes: true }).map(dirent => dirent.name)
 
-  const parts = readdir('content')
+  const parts = readdir(path.resolve(process.cwd(), 'content'))
   let titles = []
   for (let part of parts) {
     const content = fs.readFileSync(path.join('content', part), 'utf-8')
