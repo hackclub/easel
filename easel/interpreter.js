@@ -1,4 +1,4 @@
-import Ast, { Func } from './ast.js'
+import Ast from './ast.js'
 import { EaselError } from './stdlib.js'
 
 Array.prototype.add = function (args) {
@@ -13,64 +13,63 @@ export class ReturnException extends Error {
 }
 
 export class Interpreter {
-  error(node, msg) {
-    throw new EaselError(msg)
+  error(msg) {
+    throw new EaselError(`Runtime error: ${msg}`)
+  }
+
+  inScope(scope, name) {
+    return Object.keys(scope).includes(name)
   }
 
   evaluate(value, scope) {
     switch (value.constructor) {
       case Ast.Var:
-        if (!Object.keys(scope).includes(value.name))
-          this.error(value, `${value.name} is not defined in current scope`)
+        if (!this.inScope(scope, value.name))
+          this.error(`${value.name} is not defined in current scope`)
         return scope[value.name]
       case Ast.Instance:
-        if (!Object.keys(scope).includes(value.name))
-          this.error(value, `${value.value} is not defined in current scope`)
+        if (!this.inScope(scope, value.name))
+          this.error(`${value.name} is not defined in current scope`)
+
         const constructor = scope[value.name]
-
         let members = {}
-        for (let [member, memberValue] of Object.entries(value.members)) {
+        for (let [member, memberValue] of Object.entries(value.members))
           members[member] = this.evaluate(memberValue, scope)
-        }
-
         return constructor(members)
       case Ast.Call: {
         const caller = this.evaluate(value.caller, scope)
-        if (!caller)
-          this.error(value, `${value.name} is not defined in current scope`)
+        if (!caller) this.error('Caller did not resolve to a defined value')
         let args = []
         for (let arg of value.args) args.push(this.evaluate(arg, scope))
         return caller(args)
       }
       case Ast.Get:
         const caller = this.evaluate(value.caller, scope)
-        // [] can hold expr but .identifier cannot
+
         let get
-        if (value.isExpr) {
-          get = caller[this.evaluate(value.property, scope)]
-        } else get = caller[value.property]
+        if (value.isExpr) get = caller[this.evaluate(value.property, scope)]
+        else get = caller[value.property]
+
         if (get instanceof Function) return get.bind(caller)
         return get
       case Ast.Unary: {
-        const operations = {
-          '!': apply => !apply
-        }
+        const operations = { '!': apply => !apply }
         return operations[value.operator](this.evaluate(value.apply, scope))
       }
       case Ast.Binary:
         const operations = {
+          '<': (left, right) => left < right,
+          '<=': (left, right) => left <= right,
+          '>': (left, right) => left > right,
+          '>=': (left, right) => left >= right,
+          '!=': (left, right) => left != right,
+          '==': (left, right) => left == right,
+          '&&': (left, right) => left && right,
+          '||': (left, right) => left || right,
           '+': (left, right) => left + right,
           '-': (left, right) => left - right,
           '*': (left, right) => left * right,
-          '/': (left, right) => left / right,
-          '||': (left, right) => left || right,
-          '&&': (left, right) => left && right,
-          '==': (left, right) => left == right,
-          '!=': (left, right) => left != right,
-          '>': (left, right) => left > right,
-          '>=': (left, right) => left >= right,
-          '<': (left, right) => left < right,
-          '<=': (left, right) => left <= right
+          '/': (left, right) => left / right
         }
         return operations[value.operator](
           this.evaluate(value.left, scope),
@@ -81,7 +80,7 @@ export class Interpreter {
       case Ast.Array:
         return value.value.map(expr => this.evaluate(expr, scope))
       default:
-      // this.error(value, 'Unexpected')
+        this.error('Expected expression but got statement')
     }
   }
 
@@ -91,17 +90,18 @@ export class Interpreter {
         scope[node.name] = this.evaluate(node.value, scope)
         break
       case Ast.Set:
-        if (!Object.keys(scope).includes(node.caller))
-          this.error(node, `${node.caller} is not defined in current scope`)
+        if (!this.inScope(scope, node.caller))
+          this.error(`${node.caller} is not defined in current scope`)
         scope[node.caller][node.property] = this.evaluate(node.value, scope)
+        break
       case Ast.Struct:
-        scope[node.name] = options => {
-          // Make sure there are no invalid keys
+        scope[node.name] = members => {
+          // Make sure therer are no invalid keys
           let instance = {}
-          for (let key of Object.keys(options)) {
+          for (let key of Object.keys(members)) {
             if (!node.members.includes(key))
-              this.error(node, `Unexpected member ${key}`)
-            instance[key] = options[key]
+              this.error(`Unexpected member ${key}`)
+            instance[key] = members[key]
           }
           return instance
         }
@@ -136,7 +136,7 @@ export class Interpreter {
       case Ast.Conditional:
         if (this.evaluate(node.condition, scope)) this.run(node.body, scope)
         else
-          for (let conditional of node.otherwise)
+          for (const conditional of node.otherwise)
             this.execute(conditional, scope)
         break
       default:
@@ -145,9 +145,7 @@ export class Interpreter {
   }
 
   run(ast, scope) {
-    for (let node of ast) {
-      this.execute(node, scope)
-    }
+    for (const node of ast) this.execute(node, scope)
     return scope
   }
 }

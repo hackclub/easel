@@ -3,18 +3,18 @@ import { TOKENS } from './lexer.js'
 import Ast from './ast.js'
 
 const opOrder = {
+  '<': 0,
+  '<=': 0,
+  '>': 0,
+  '>=': 0,
+  '!=': 0,
+  '==': 0,
+  '&&': 0,
+  '||': 0,
   '+': 1,
   '-': 1,
   '*': 2,
-  '/': 2,
-  '||': 0,
-  '&&': 0,
-  '==': 0,
-  '!=': 0,
-  '>': 0,
-  '>=': 0,
-  '<': 0,
-  '<=': 0
+  '/': 2
 }
 
 const isOp = type => {
@@ -42,7 +42,9 @@ export class Parser {
   }
 
   error(token, msg) {
-    throw new EaselError(`${token.line}:${token.column}: ${msg}`)
+    throw new EaselError(
+      `Syntax error on ${token.line}:${token.column}: ${msg}`
+    )
   }
 
   peek() {
@@ -63,10 +65,7 @@ export class Parser {
 
   eat(type) {
     if (this.peekType() === type) return this.tokens[this.current++]
-    this.error(
-      this.peek(),
-      `Expected ${type} but got ${this.peekType().toString()}`
-    )
+    this.error(this.peek(), `Expected ${type} but got ${this.peekType()}`)
   }
 
   eatKeyword(keyword) {
@@ -110,22 +109,21 @@ export class Parser {
         return new Ast.Var(token.value)
       case TOKENS.Keyword:
         if (token.value === 'prep') {
-          // Instance is essentially a struct instance
+          // Instance is essentially a struct copy
           const id = this.eat(TOKENS.Identifier).value
 
           this.eat(TOKENS.LeftParen)
           let members = {}
           while (this.peekType() !== TOKENS.RightParen) {
-            const member = this.eat(TOKENS.Identifier)
+            const member = this.eat(TOKENS.Identifier).value
             this.eat(TOKENS.Colon)
-            members[member.value] = this.expr()
+            members[member] = this.expr()
             if (this.peekType() === TOKENS.Comma) this.eat(TOKENS.Comma)
           }
           this.eat(TOKENS.RightParen)
 
           return new Ast.Instance(id, members)
         }
-        return new Ast.Literal()
       case TOKENS.String:
       case TOKENS.Number:
       case TOKENS.Boolean:
@@ -140,7 +138,7 @@ export class Parser {
         this.eat(TOKENS.RightParen)
         return expr
     }
-    this.error(token, 'Expected expression but got ' + token)
+    this.error(token, 'Expected expression but got ' + token.type)
   }
 
   call() {
@@ -153,7 +151,7 @@ export class Parser {
         this.eat(TOKENS.RightParen)
         expr = new Ast.Call(expr, args)
       } else if (this.peekType() === TOKENS.LeftBracket) {
-        // This is also a getter, but we can accept an expression, rather than just an identifier
+        // This is also a getter, but we accept an expression rather than just an identifier
         this.eat(TOKENS.LeftBracket)
         const property = this.expr()
         this.eat(TOKENS.RightBracket)
@@ -184,7 +182,7 @@ export class Parser {
       const op = this.eat(this.peekType()).value
       let right = this.expr()
       if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
-        // Quick reording based on precedence
+        // Quick reordering based on precedence
         return new Ast.Binary(
           new Ast.Binary(left, op, right.left),
           right.operator,
@@ -199,7 +197,7 @@ export class Parser {
     const assignStmt = () => {
       this.eatKeyword('prepare')
       const name = this.eat(TOKENS.Identifier).value
-      if (this.peekType() == TOKENS.Period) {
+      if (this.peekType() === TOKENS.Period) {
         // Setter
         this.eat(TOKENS.Period)
         const property = this.eat(TOKENS.Identifier).value
@@ -228,7 +226,7 @@ export class Parser {
 
       let params = []
       if (this.peekKeyword('needs')) {
-        // Parameters to pass in
+        // Parameters
         this.eatKeyword('needs')
         this.eat(TOKENS.LeftParen)
         params = this.identifierList()

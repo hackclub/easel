@@ -1,6 +1,6 @@
 import fs from 'fs'
 import readline from 'node:readline'
-import { Lexer } from './lexer.js'
+import { Lexer, TOKENS } from './lexer.js'
 import { Parser } from './parser.js'
 import { Interpreter } from './interpreter.js'
 import stdlib, { EaselError } from './stdlib.js'
@@ -34,8 +34,10 @@ const writeFile = (location, data) =>
     try {
       lexer.scanTokens()
     } catch (err) {
-      // Only log errors thrown by our lexer
-      if (err instanceof EaselError) console.log(err)
+      if (err instanceof EaselError) {
+        console.log(err)
+        process.exit(1)
+      }
     } finally {
       if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
     }
@@ -44,23 +46,22 @@ const writeFile = (location, data) =>
     try {
       parser.parse()
     } catch (err) {
-      // Only log errors throw by our parser
-      console.log(err)
-      if (err instanceof EaselError) console.log(err)
+      if (err instanceof EaselError) {
+        console.log(err)
+        process.exit(2)
+      }
     } finally {
       if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
     }
 
-    // Run what's currently been parsed
     const interpreter = new Interpreter()
     try {
       interpreter.run(parser.ast, stdlib)
     } catch (err) {
-      // Only log errors throw by our interpreter
       if (err instanceof EaselError) console.log(err.toString())
     }
   } else {
-    // Interactive REPL time
+    // Interactive REPL
     const interpreter = new Interpreter()
     let scope = stdlib
 
@@ -75,21 +76,37 @@ const writeFile = (location, data) =>
     })
 
     const repl = line => {
+      let hadError = false
+
       const lexer = new Lexer(line)
       try {
         lexer.scanTokens()
-      } catch {
-        // Should catch errors
+      } catch (err) {
+        if (err instanceof EaselError) {
+          hadError = true
+          console.log(err.toString())
+        }
       }
 
-      const parser = new Parser(lexer.tokens)
-      try {
-        parser.parse()
-      } catch {
-        // Should catch errors, and depending on type, wait for extension
-      }
+      if (!hadError) {
+        const parser = new Parser(lexer.tokens)
+        try {
+          parser.parse()
+        } catch (err) {
+          if (err instanceof EaselError) {
+            hadError = true
+            console.log(err.toString())
+          }
+        }
 
-      scope = interpreter.run(parser.ast, scope)
+        if (!hadError) {
+          try {
+            scope = interpreter.run(parser.ast, scope)
+          } catch (err) {
+            if (err instanceof EaselError) console.log(err.toString())
+          }
+        }
+      }
 
       input.question('> ', repl)
     }

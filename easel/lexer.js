@@ -68,7 +68,7 @@ export class Lexer {
   }
 
   error(msg) {
-    throw new EaselError(`${this.line}:${this.colum}: ${msg}`)
+    throw new EaselError(`Error on ${this.line}:${this.column}: ${msg}`)
   }
 
   peek() {
@@ -211,7 +211,7 @@ export class Lexer {
         let string = []
         while (this.peek() !== char) {
           string.push(this.advance())
-          if (this.peek() === '\0')
+          if (this.peek() == '\0')
             // String wasn't closed
             this.error('Unexpected end of file; expected a closing quote')
         }
@@ -273,7 +273,7 @@ export class Lexer {
 
   scanTokens() {
     while (this.peek() != '\0') this.scanToken()
-    this.tokens.push(new Token(TOKENS.EOF, '\0', '\0'))
+    this.tokens.push(new Token(TOKENS.EOF, '\0', '\0', this.line, this.column))
     return this.tokens
   }
 }
