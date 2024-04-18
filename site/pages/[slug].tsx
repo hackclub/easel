@@ -39,7 +39,9 @@ export default function Index({
             id="logo"
             src="https://assets.hackclub.com/flag-orpheus-top.svg"
           />
-          <h1>orpheus' hacky guide to writing a programming language</h1>
+          <h1>
+            orpheus' hacky guide to writing a programming language (beta draft!)
+          </h1>
         </div>
         <div>
           <h2>chapters</h2>

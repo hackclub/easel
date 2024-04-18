@@ -16,5 +16,9 @@ export default function Mermaid({ chart }: MermaidProps): JSX.Element {
     mermaid.contentLoaded()
   }, [])
 
-  return <div className="mermaid">{chart}</div>
+  return (
+    <div className="interactive">
+      <div className="mermaid">{chart}</div>
+    </div>
+  )
 }

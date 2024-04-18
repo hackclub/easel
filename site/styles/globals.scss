@@ -372,7 +372,7 @@ section {
     height: 1px;
   }
 
-  > pre {
+  pre {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     background-color: transparent !important;
@@ -385,13 +385,12 @@ section {
     }
   }
 
-  > :not(.canvas) pre {
+  :not(.canvas) pre {
     padding: 0 !important;
     background-color: transparent !important;
 
     code {
       background-color: transparent !important;
-      padding: 0 !important;
     }
   }
 
@@ -429,7 +428,8 @@ section {
       .interactive,
       ol,
       li,
-      video {
+      video,
+      details {
         max-width: 85vw;
         margin: 0.75em auto;
       }
@@ -447,7 +447,8 @@ section {
       .interactive,
       ol,
       li,
-      video {
+      video,
+      details {
         max-width: 80vw;
         margin: 0.75em auto;
       }
@@ -465,7 +466,8 @@ section {
       .interactive,
       ol,
       li,
-      video {
+      video,
+      details {
         max-width: 60vw;
         margin: 0.75em auto;
       }

@@ -3,17 +3,37 @@ title: Orpheus finds an easel in the mail
 order: 1
 ---
 
-It's a normal Saturday for Orpheus the dino. She wakes up, lies in bed for a while.
+It's a normal Saturday for Orpheus the dino. She wakes up, lies in bed for a while, and looks out the window.
 
-[orpheus]
+It's raining outside! She likes rainy days. You can hear the rain splattering every time a car comes by, and the soft pitter patter on the windows. It's the best sound. Add pancakes for breakfast and lunch but especially dinner and it's got to be the best day ever.
 
-It's raining outside! She likes rainy days.
+<aside>
+  Yes, Orpheus gets fan mail. If you want to send her some after reading this you can send them to 15 Falls Road, Shelburne VT 05482.
+</aside>
 
-Just then, there's a knock on the doorbell. But by the time Orpheus gets to the door, it's 
+Just then, the post office truck passes by and stops. Normally the mailman just stops by to drop off fan mail in the mailbox, but today he has a bigger, bulkier package. Orpheus hops up and walks to the 
 
 ## Easel, the programming language
 
-First up, some setup. We're going to store our program in a file. We'll call it `test.easel`.
+Orpheus gingerly opens the package and pulls out the contents one by one. She recognizes the first item instantly. It's an easel!
+
+*Here's the [easel in question](https://www.adafruit.com/product/5362?gad_source=1&gclid=Cj0KCQjwiYOxBhC5ARIsAIvdH526LPYOruOasZj9FkW5TYN6OlXZMV3q0ER-CwS5_S9a3JUZIJ-4d2UaAkGhEALw_wcB).*
+
+Orpheus has wanted 
+
+Orpheus reads the letter.
+
+---
+
+I hope this letter finds you well.
+
+Signed,
+
+your mysterious benefactor
+
+---
+
+Ooh.
 
 <aside>
   Go ahead. Type it out! It's good for your health. Well, to be specific, it's
@@ -28,67 +48,46 @@ prepare cols as 20
 
 brush Cell has { x, y, live }
 
-~ Exercise: try setting a custom pattern instead of randomness!
+~ Exercise: try setting a custom pattern instead of randomness! 
 sketch seed {
   prepare cells as []
   loop x through (0, rows) {
     loop y through (0, cols) {
-      cells.add(prep Cell(x: x, y: y, live: random(0, 1)))
-    }
-  }
-  finish cells
-}
-
-prepare cells as paint seed
-
-sketch getNeighbors needs (cell, index) {
-  ~ Get neighbors around a cell
-  prepare neighbors as [
-    cells[index - rows - 1],
-    cells[index - rows],
-    cells[index - rows + 1],
-    cells[index - 1],
-    cells[index + 1],
-    cells[index + rows - 1],
-    cells[index + rows],
-    cells[index + rows + 1]
-  ]
-  prepare alive as []
-  loop i through (0, neighbors.length()) {
-    if (neighbors[i].live) {
-      alive.add(neighbors[i])
-    }
-  }
-  finish alive
-}
-
-sketch paint {
-  ~ This loop runs every iteration and must be in every program
-  loop i through (0, cells.length()) {
-    var cell = cells[i]
-    var neighbors = paint getNeighbors with (cells, i)
-    if (cell.live) {
-      if (neighbors.length() < 2 || neighbors.length() > 3) {
-        ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
-        ~ Any live cell with more than three live neighbors dies, as if by overpopulation
-        cell.live = false
+      prepare live as false
+      prepare chance as random(0, 100)
+      if (chance < 20) {
+        prepare live as true
       }
-    } elif (!(cell.live && neighbors == 3)) {
-      ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
-      cell.live = true
-    }
-
-    if (cell.live) {
-      ~ Now draw the cell if it's alive!
-      prepare color as prep Color(r: 0, g: 255, b: 0)
-      Canvas.fill(x, y, color)
-    } else {
-      ~ If it's dead, turn the cell off
-      Canvas.erase(x, y)
+      cells.add(prep Cell(x: x, y: y, live: live))
     }
   }
+  finished cells
+}
+
+prepare cells as seed()
+
+sketch getNeighbors needs (cells, index) {
+  ~ Get neighbors around seed
 }
 ```
+
+I bet you can already start to see the different features Easel has.
+
+### Variables
+
+Variables are created with the `prepare` keyword and `as` keywords, like `prepare [name] as [value]`. We can have strings, numbers, or booleans.
+
+### Comments
+
+<aside>
+  Grammar mistake! It's not "Me and Orpheus", it's "Orpheus and I"! Call the grammar police!
+</aside>
+
+Comments are dictated by the tilde symbol. Me and Orpheus have decided that it looks pretty similar to 
+
+## Functions
+
+We call functions sketches, so 
 
 ## Setup
 
@@ -96,11 +95,12 @@ Let's start doing this! Orpheus wants to make sure we've got the basics now. It'
 
 ```
 mkdir easel
+cd easel
 npm init -y
 ```
 
 <aside>
-  Orpheus wants this to be useful for anyone who knows a bit of JavaScript. Here, all we're doing is import
+  Orpheus wants this to be useful for anyone who knows a bit of JavaScript. Here, all we're doing is creating a imprt
 </aside>
 
 Open up the `package.json` that's been created, and add this extra line:
@@ -112,13 +112,10 @@ Open up the `package.json` that's been created, and add this extra line:
 }
 ```
 
-This will let us use the modern `import` syntax.
+This will let us use the modern `import` syntax. Next, let's start writing some code! Here's some boilerplate code to go inside `easel.js`:
 
 ```js
 import fs from 'fs'
-import readline from 'node:readline'
-import { Lexer } from './lexer.js'
-import utils from './utils.js'
 
 const readFile = location =>
   new Promise((resolve, reject) =>
@@ -149,4 +146,4 @@ const writeFile = (location, data) =>
 })
 ```
 
-This is really just some boilerplate code for us.
+You can run `node easel.js test.easel` now and it's rather boring. We could probably spruce it up a bit by writing that programming language. Let's get a-moving!

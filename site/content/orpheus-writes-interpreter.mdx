@@ -9,17 +9,225 @@ But today's an exciting day! Because today, we'll get the interpreter up and run
 
 ## How the interpreter's going to work
 
-The interpreter's going to be a little different from the lexer and parser, but not too differently. It's going to take the nodes that the parser created, and make actual things happen. 
+The interpreter's going to be a little different from the lexer and parser, but not too differently. It's going to take the nodes that the parser created, and make actual things happen. The best part is that it's surprisingly easy - we've done all the hard work in the parser and now we can glide on by.
+
+Orpheus opens up her computer. It's time to start writing the interpreter in `interpreter.js`:
 
 ```js
 export class Interpreter {
-  
+  error(msg) {
+    throw new EaselError(`Runtime error: ${msg}`)
+  }
+
+  run(ast, scope) {
+  }
 }
+```
+
+Just a little boilerplate here. Our main entry point is going to `run()`, which takes in the abstract syntax tree our lovely parser has created and something new: *scope*.
+
+## So how does this scope thing work?
+
+Scope is what's going to make magic. I mean, turn our programming language into a power to be reckoned with. Like an actual programming language - in fact, one of the biggest criteria for a language to be Turing-complete is that it should be able to keep track of state. That's what scope is for - it'll keep track of what variables exist, what functions exist, what structs exist, and any other info we'll have. It's also we'll inject our *standard library* into, as we'll see later.
+
+We're going to use a simple key-value store to store our scope, especially since JavaScript is so lenient. While we're at it, let's add a quick util function to check if a value exists in our scope that'll come in handy later:
+
+```js
+export class Interpreter {
+  // ...
+
+  inScope(scope, name) {
+    return Object.keys(scope).includes(name)
+  }
+}
+```
+
+## Let's get this working
+
+Ok, awesome. How exactly should we go about doing this? Well, it's quite simple really - we're going to loop over every node, and run whatever is inside that node. We can take advantage of the fact that we have different kinds of nodes and do different things based on what the node needs. For example, say we have a while statement:
+
+```plaintext
+{
+    "type": "While",
+    "condition": {
+      "type": "Binary",
+      "left": { "type": "Var", "name": "countdown" },
+      "operator": ">",
+      "right": { "type": "Literal", "value": 0 }
+    },
+    "body": [
+      {
+        "type": "Call",
+        "caller": { "type": "Var", "name": "ink" },
+        "args": [{ "type": "Var", "name": "countdown" }]
+      },
+      {
+        "type": "Var",
+        "name": "countdown",
+        "value": {
+          "type": "Binary",
+          "left": { "type": "Var", "name": "countdown" },
+          "operator": "-",
+          "right": { "type": "Literal", "value": 1 }
+        }
+      }
+    ]
+  }
+```
+
+Every while loop node will have a condition and a body. So when we encounter a while loop node, we know we'll need to run `while(condition) { run(body) }`. See where I'm going here?
+
+When we were writing our lexer, we differentiated between different token types. When we were writing our parser, we differentiated between different nodes. Now, we'll differentiate between values that need to be stored in memory and values that are just literals or references to values in memory. This turns into two main methods:
+
+<aside>
+  Reminder that this all goes inside `Interpreter`.
+</aside>
+
+```js
+evaluate(value, scope) {}
+
+execute(node, scope) {}
+```
+
+`execute()` will call `evaluate()` for *evaluating* basic expressions, but `execute()` will be doing the actual
+
+C'mon, let's fill out `execute()`, and maybe you'll understand this better!
+
+```js
+execute(node, scope) {
+  switch(node.constructor) {
+    case Ast.Var:
+    case Ast.Set:
+    case Ast.Struct:
+    case Ast.Func:
+    case Ast.Return:
+    case Ast.For:
+    case Ast.While:
+    case Ast.Conditional:
+    default:
+      return this.evaluate(node, scope)
+  }
+}
+```
+
+`node.constructor` returns the class that the node is a child of, effectively letting us check what class it belongs to.
+
+Do you notice something:
+
+Let's fill these out one by one. `Ast.Var`:
+
+<Mermaid chart={`
+classDiagram
+  class Var {
+    type = "Var"
+    name is an Identifier
+    value is a Expression
+  }
+`}/>
+
+```js
+case Ast.Var:
+  scope[node.name] = this.evaluate(node.value, scope)
+  break
+```
+
+`Ast.Set`:
+
+<Mermaid chart={`
+classDiagram 
+  class Set {
+    type = "Set"
+    name is an Identifier
+    property is an Identifier
+    value is a Expression
+  }
+`}/>
+
+```js
+case Ast.Set:
+  if (!this.inScope(scope, node.caller))
+    this.error(`${node.caller} is not defined in current scope`)
+  scope[node.caller][node.property] = this.evaluate(node.value, scope)
+  break
+```
+
+`Ast.Struct`:
+
+```js
+case Ast.Struct:
+  scope[node.name] = members => {
+    // Make sure therer are no invalid keys
+    let instance = {}
+    for (let key of Object.keys(members)) {
+      if (!node.members.includes(key))
+        this.error(`Unexpected member ${key}`)
+      instance[key] = members[key]
+    }
+    return instance
+  }
+  break
+```
+
+`Ast.Func`:
+
+```js
+case Ast.Func:
+  const func = args => {
+    let localScope = { ...scope }
+    for (let [i, param] of node.params.entries())
+      localScope[param] = args[i]
+    try {
+      this.run(node.body, localScope)
+    } catch (err) {
+      if (err instanceof ReturnException) return err.value
+      else throw err
+    }
+  }
+
+  scope[node.name] = func
+  break
+```
+
+`Ast.Return`:
+
+```js
+case Ast.Return:
+  throw new ReturnException(this.evaluate(node.value, scope))
+```
+
+`Ast.For`:
+
+```js
+case Ast.For:
+  let localScope = { ...scope, [node.id]: this.evaluate(node.range[0]) }
+  while (localScope[node.id] < this.evaluate(node.range[1], scope)) {
+    this.run(node.body, localScope)
+    localScope[node.id]++
+  }
+  break
+```
+`Ast.While`:
+
+```js
+case Ast.While:
+  while (this.execute(node.condition, scope)) this.run(node.body, scope)
+  break
+```
+
+`Ast.Conditional`:
+
+```js
+case Ast.Conditional:
+  if (this.evaluate(node.condition, scope)) this.run(node.body, scope)
+  else
+    for (const conditional of node.otherwise)
+      this.execute(conditional, scope)
+  break
 ```
 
 ## The standard library
 
-This is great and dandy, but there's one thing we can't really do, and that is: print something to the console! What's the point of our programming language if we can't write "Hello, world!" in it? Not much, honestly. Let's fix that now with a standard library in `stdlib.js`:
+This is great and dandy, but there's one thing we can't really do, and that is: print something to the console! What's the point of our programming language if we can't write "Hello, world!" in it and view what our values are? Not much, honestly. Let's fix that now with a standard library in `stdlib.js`:
 
 ```js
 export default {
@@ -32,21 +240,137 @@ export default {
 }
 ```
 
-Since our scope is literally just a key-value store, it turns out it's pretty easy to add a few starter items.
+<aside>
+  Ayy. It's the answer to the meaning of life!
+</aside>
 
-Let
+Let's try it out now:
 
 ```plaintext
 ink("Hello, world!")
+ink(round(random(0, 100)))
 
 ---
 
 Hello, world!
+42
 ```
+
+Oh smokes. Our programming language is working! 🎉 🎉 🎉
+
+Can we run that program that was at the beginning of this journey? Let's try it:
+
+<details open>
+  <summary>`test.easel`</summary>
+
+```plaintext
+prepare rows as 50
+prepare cols as 20
+
+brush Cell has { x, y, live }
+
+~ Exercise: try setting a custom pattern instead of randomness!
+sketch seed {
+  prepare cells as []
+
+  loop x through (0, rows) {
+    loop y through (0, cols) {
+      prepare live as false
+      prepare chance as random(0, 100)
+      if (chance < 20) {
+        prepare live as true
+      }
+      cells.add(prep Cell(x: x, y: y, live: live))
+    }
+  }
+  finished cells
+}
+
+prepare cells as seed()
+
+sketch getNeighbors needs (cells, index) {
+  ~ Get neighbors around a cell
+  prepare neighbors as []
+
+  ~ Populate neighbors
+  if (index - rows - 1 > 0) {
+    neighbors.add(cells[index - rows - 1])
+  }
+  if (index - rows > 0) {
+    neighbors.add(cells[index - rows])
+  }
+  if (index - rows + 1 > 0) {
+    neighbors.add(cells[index - rows + 1])
+  }
+  if (index > 0) {
+    neighbors.add(cells[index - 1])
+  }
+  if (index < cells.length - 1) {
+    neighbors.add(cells[index + 1])
+  }
+  if (index + rows - 1 < cells.length - 1) {
+    neighbors.add(cells[index + rows - 1])
+  }
+  if (index + rows < cells.length - 1) {
+    neighbors.add(cells[index + 1])
+  }
+  if (index + rows + 1 < cells.length - 1) {
+    neighbors.add(cells[index + rows - 1])
+  }
+
+  prepare alive as []
+  loop i through (0, neighbors.length) {
+    if (neighbors[i].live) {
+      alive.add(neighbors[i])
+    }
+  }
+
+  finished alive
+}
+
+sketch painting {
+  loop i through (0, cells.length) {
+    prepare cell as cells[i]
+    prepare neighbors as getNeighbors(cells, i)
+    if (cell.live) {
+      if (neighbors.length < 2 || neighbors.length > 3) {
+        ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
+        ~ Any live cell with more than three live neighbors dies, as if by overpopulation
+        prepare cell.live as false
+      } elif (!(cell.live && neighbors == 3)) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    }
+
+    if (cell.live) {
+      ~ Now draw the cell if it's alive!
+      prepare color as prep Color(r: 0, g: 255, b: 0)
+      Canvas.fill(cell.x, cell.y)
+      ink(Canvas.get(cell.x, cell.y))
+    } else {
+      ~ If it's dead, turn the cell off
+      Canvas.erase(cell.x, cell.y)
+      ink(Canvas.get(cell.x, cell.y))
+    }
+  }
+}
+
+painting()
+
+---
+
+
+```
+</details>
+
+Congrats. You just wrote a programming language. That was pretty magical, wasn't it?
+
+<img src="/cartoons/wizard.png" style={{ width: "40%" }} />
 
 ## What about... interactivity?
 
-What happened to interactivity? What's the point of an interpreter otherwise :(
+What happened to interactivity? What if we don't want to run a program from a file? Let's add a REPL (read, evaluate, print, loop) now.
 
 <video controls>
   <source src="https://cloud-1cma98jhs-hack-club-bot.vercel.app/0screen_recording_2024-04-17_at_12_07_43_pm_adobeexpress.mp4"/>
@@ -56,8 +380,90 @@ What happened to interactivity? What's the point of an interpreter otherwise :(
   Orpheus: This reminds me... we should get an easel in the terminal working. Or that could be a challenge for you.
 </aside>
 
-Let's get a REPL (read, evaluate, print, loop) working! It's actually quite easy to do, and we have left a placeholder for it, if you remember in part one! 
+It's actually quite easy to do, and we have left a placeholder for it, if you remember in part one! 
 
 ![](/cartoons/repl-time.png)
 
-Let's head on over and fill that sad and empty else-statement now. First step: setting up the interpreter and scope
+Let's head on over and fill that sad and empty else-statement now. The obvious first step: let's set up the interpreter and the scope.
+
+```js
+//  ...
+if (location) {
+  // ...
+} else {
+  // Interactive REPL
+  const interpreter = new Interpreter()
+  let scope = {
+    ...stdlib,
+    exit: () => process.exit(0)
+  }
+}
+```
+
+I've added an extra `exit()` function so we can exit from the REPL.
+
+Let's read a line from the terminal now. We'll need `node:readline`:
+
+```js
+import readline from "node:readline"
+```
+
+And back in the else statement:
+
+```js
+const input = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
+
+// Remember to close stream before exiting
+process.on('SIGINT', () => {
+  input.close()
+})
+
+const repl = line => {
+  console.log(line)
+  input.question("> ", repl)
+}
+
+input.question("> ", repl)
+```
+
+There's the infinite loop we need. Now, instead of reading a file, we're going to read the line:
+
+```js
+const repl = line => {
+  let hadError = false
+
+  const lexer = new Lexer(line)
+  try {
+    lexer.scanTokens()
+  } catch (err) {
+    if (err instanceof EaselError) {
+      hadError = true
+      console.log(err.toString())
+    }
+  }
+
+  if (!hadError) {
+    const parser = new Parser(lexer.tokens)
+    try {
+      parser.parse()
+    } catch (err) {
+      if (err instanceof EaselError) console.log(err.toString())
+    }
+
+    try {
+      scope = interpreter.run(parser.ast, scope)
+    } catch (err) {
+      if (err instanceof EaselError) console.log(err.toString())
+    }
+  }
+}
+```
+
+The only different here, frankly, is that we introduce `hadError`. The logic is that if our lexer runs into an error, we don't want to keep going. For the parser it's a little bit different - when we run into an error, we can technically keep going because we're always guaranteed to have a valid AST (or an empty one).
+
+And that's really all! Now you can fire up a terminal, run `node easel.js`, and boom! you have an interpreter that reads line by line.
+
+What about multiple lines? Well, the logic behind multiple lines is that we'll check if the end of our first line is representative of a list of sorts. Basically, then: left brackets, left braces, and left parentheses. Then we'll keep reading and keeping track of the given operator until we reach the matching closing one. [TODO]

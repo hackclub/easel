@@ -1,3 +1,13 @@
+TODO for interactivity:
+
+* Interactive terminal in interpreter
+* Typing out terminal animation in interpreter
+* Local code editor that follows after every code snippet and can be extended to half height
+* Fixed table of contents
+* Program for Orpheus' pancake recipe
+* Program for Orpheus' ground floor plan and a cartoon too
+* The leaning tower of plates - a cartoon
+
 Write a programming language, get a terminal-in-a-box to run your programming language on!
 
 Check out [#langjam](https://app.slack.com/client/T0266FRGM/C06T22ZFQGP) on the Slack to hang out with fellow teenagers hacking on programming languages.

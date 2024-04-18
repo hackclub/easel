@@ -63,7 +63,10 @@ const writeFile = (location, data) =>
   } else {
     // Interactive REPL
     const interpreter = new Interpreter()
-    let scope = stdlib
+    let scope = {
+      ...stdlib,
+      exit: () => process.exit(0)
+    }
 
     const input = readline.createInterface({
       input: process.stdin,
@@ -93,18 +96,13 @@ const writeFile = (location, data) =>
         try {
           parser.parse()
         } catch (err) {
-          if (err instanceof EaselError) {
-            hadError = true
-            console.log(err.toString())
-          }
+          if (err instanceof EaselError) console.log(err.toString())
         }
 
-        if (!hadError) {
-          try {
-            scope = interpreter.run(parser.ast, scope)
-          } catch (err) {
-            if (err instanceof EaselError) console.log(err.toString())
-          }
+        try {
+          scope = interpreter.run(parser.ast, scope)
+        } catch (err) {
+          if (err instanceof EaselError) console.log(err.toString())
         }
       }
 
