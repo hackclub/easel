@@ -15,7 +15,7 @@ Parsers take these tokens and in turn output a tree of sorts that describes how 
 
 <LexerParserTransform/>
 
-We took five tokens and smooshed them one *node*. The five tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
+We took five tokens and smooshed them into one *node*. The five tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
 
 We're going to write that parser now. It's actually, surprisingly, similar to how we wrote our lexer, except that we're working with a tree now, which means we'll need some form of recursion. 
 
@@ -112,7 +112,8 @@ Ok. So we know literals can form expressions. What can expressions form? It turn
 * Structs. Specifically, defining what a struct looks like. `brush Phone has { phoneVolume }` is a statement.
 * Functions are blocks of expressions with attached metadata of sorts, like what arguments we might need to pass in!
 * Return statements
-* For-loops and while loops are bloc
+* For loops and while loops are blocks of expressions also with attached metadata too, like what condition we should check for every iteration.
+* Last but not least in Easel - if-else statements are blocks of expressions with, you guessed it, attached metadata like what conditions we shoud check for.
 
 Our job now is to write a parser that can understand this hierarchy. The parser will start by looking for statements, which are made of expressions, which are made of literals. In other words: basic recursive descent! 
 
@@ -280,39 +281,179 @@ export default {
 }
 ```
 
-Cool. That takes care of `simple()` for now. Let's move up the hierarchy and tweak `expr()`! Right now, we only print
+Cool. That takes care of `simple()` for now. Let's move up the hierarchy and tweak `expr()`! Right now, we've only grabbed the left side of what should be a binary operation. Let's grab the operator and the right side after that:
 
-Now let's pass in a test program and see what happens!
+```js
+expr() {
+  // expr has two sides
+  let left = this.call()
+  if (isOp(this.peekType())) {
+    const op = this.eat(this.peekType()).value
+    let right = this.expr()
+    return new Ast.Binary(left, op, right)
+  }
+  return left
+}
+```
 
-Oh wait. You can't see anything quite yet. Let's resolve that.
+Looks like we need an extra `isOp` function. I'll put this at the top of `parser.js`:
+
+```js
+const isOp = type => {
+  return [
+    TOKENS.Or,
+    TOKENS.And,
+    TOKENS.Equiv,
+    TOKENS.NotEquiv,
+    TOKENS.Gt,
+    TOKENS.Gte,
+    TOKENS.Lt,
+    TOKENS.Lte,
+    TOKENS.Plus,
+    TOKENS.Minus,
+    TOKENS.Asterisk,
+    TOKENS.Slash
+  ].includes(type)
+}
+```
+
+Our binary expression node is pretty simple:
+
+```js
+export class Binary {
+  constructor(left, operator, right) {
+    this.type = "Binary"
+    this.left = left
+    this.operator = operator
+    this.right = right
+  }
+}
+
+export default {
+  // ...
+  Binary
+}
+```
+
+Ok, I think we've got enough here where we can test the parser out and see what happens. We should, of course, start using our parser in `easel.js`:
+
+```js
+// ...
+if (location) {
+  const program = await readFile(location)
+
+  const lexer = new Lexer(program)
+  try {
+    lexer.scanTokens()
+  } catch (err) {
+    // Only log errors thrown by our lexer
+    if (err instanceof EaselError) console.log(err)
+  } finally {
+    if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
+  }
+
+  const parser = new Parser(lexer.tokens)
+  try {
+    parser.parse()
+  } catch (err) {
+    // Only log errors thrown by our parser
+    if (err instanceof EaselError) console.log
+  } finally {
+    if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
+  }
+} 
+// ...
+```
+
+Cool! Let's test this out with a test program:
+
+```js
+[4 + 21]
+2006 / 4012 + 2
+```
+
+It's not really a complete program because we haven't taken care of statements yet, but I digress. You'll get something like this `ast.json`:
+
+<aside>
+  Yours probably looks like a mumble-jumble in one line. I use [Prettier](https://prettier.io/docs/en/install), but fun fact - you can also try `JSON.stringify(parser.ast, null, 2)`.
+</aside>
+
+```js
+[
+  {
+    "type": "Literal",
+    "value": [
+      {
+        "type": "Binary",
+        "left": { "type": "Literal", "value": 4 },
+        "operator": "+",
+        "right": { "type": "Literal", "value": 21 }
+      }
+    ]
+  },
+  {
+    "type": "Binary",
+    "left": { "type": "Literal", "value": 2006 },
+    "operator": "/",
+    "right": {
+      "type": "Binary",
+      "left": { "type": "Literal", "value": 4012 },
+      "operator": "+",
+      "right": { "type": "Literal", "value": 2 }
+    }
+  }
+]
+```
+
+This looks right, but there's just one minor problem... if we run that second node, this is what we get:
+
+![](/cartoons/pemdas.png)
 
 ### Dealing with order of operations
 
+<aside>
+  Orpheus needs an acronym.
+</aside>
+
+Oopsies. We forgot about PEMDAS. We should fix that. Never fear! Orpheus has put on her wizard hat and come up with a rather ingenious way to tackle this.
+
+First things first, all operators should have a precedence hierarchy. If I see an addition operator and a multiplication operator in the same expression, then I should combine the operators next to the multiplication operator first before moving onto the addition operator. But if we've already parsed the addition operator, we can do a little switcheroo. Orpheus wants to show you what she means by this. Read the following in what you might imagine to be her voice.
+
+First things first, at the top of `parser.js`!
+
 ```js
-class Parser {
-  // ...
-
-  expr() {
-    // expr has two sides
-    let left = this.call()
-    if (isOp(this.peekType())) {
-      const op = this.eat(this.peekType()).value
-      let right = this.expr()
-      if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
-        // Quick reording based on precedence
-        return new Ast.Binary(
-          new Ast.Binary(left, op, right.left),
-          right.operator,
-          right.right
-        )
-      return new Ast.Binary(left, op, right)
-    }
-    return left
-  }
-
-  // ...
+const opOrder = {
+  '+': 0,
+  '-': 0,
+  '*': 1,
+  '/': 1,
+  '||': 1,
+  '&&': 1,
+  '==': 1,
+  '!=': 1,
+  '>': 1,
+  '>=': 1,
+  '<': 1,
+  '<=': 1
 }
 ```
+
+Next, I am going to add a little if-statement that checks if `right` is also a binary expression node, and compare the operators if so:
+
+```
+```
+
+Ok. Back to me. I'll take the mic back. Thanks. [grabs mic]
+
+And that fixes all our problems! Well, not all of our problems, of course. We still have a few more things left to do until our parser is fully functional. Let's move onto the big leagues now!
+
+## Statements
+
+<aside>
+  If you feel like you need to take a break, take one! I think Orpheus is slightly mad at me so she's left to go eat Indian food and talk about Berlin with her friends.
+</aside>
+
+Ok, awesome cool. Statements. Statements! Let's take care of that now. The f
 
 ## Blocks
 
@@ -327,3 +468,5 @@ I think Orpheus knows a little more than we've been let onto. Is that what was u
 Awesome! We've got a parser working. Clap yourself on the back - that wasn't so hard, was it?
 
 That was definitely longer than writing a lexer, for sure, but rev up - we're going to see our programming language in action in the next part!
+
+*The complete code here is at [parser.js](https://github.com/hackclub/langjam/blob/main/easel/parser.js).*

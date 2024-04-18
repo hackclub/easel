@@ -1,3 +1,5 @@
+import { EaselError } from './stdlib.js'
+
 export const TOKENS = {
   LeftParen: 'LeftParen',
   RightParen: 'RightParen',
@@ -66,7 +68,7 @@ export class Lexer {
   }
 
   error(msg) {
-    throw new Error(`${this.line}:${this.colum}: ${msg}`)
+    throw new EaselError(`${this.line}:${this.colum}: ${msg}`)
   }
 
   peek() {

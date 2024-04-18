@@ -1,3 +1,11 @@
+export class EaselError extends Error {
+  constructor(msg) {
+    super()
+    this.message = msg
+    this.value = msg
+  }
+}
+
 class Canvas {
   constructor(rows = 64, cols = 64) {
     this.rows = rows

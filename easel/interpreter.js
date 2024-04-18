@@ -1,4 +1,5 @@
-import Ast, { Return } from './ast.js'
+import Ast from './ast.js'
+import { EaselError } from './stdlib.js'
 
 Array.prototype.add = function (args) {
   console.log(this)
@@ -13,10 +14,8 @@ export class ReturnException extends Error {
 
 export class Interpreter {
   error(node, msg) {
-    throw new Error(msg)
+    throw new EaselError(msg)
   }
-
-  search(scope, key, msg) {}
 
   evaluate(value, scope) {
     switch (value.constructor) {

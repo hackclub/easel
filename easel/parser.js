@@ -1,3 +1,4 @@
+import { EaselError } from './stdlib.js'
 import { TOKENS } from './lexer.js'
 import Ast from './ast.js'
 
@@ -41,7 +42,7 @@ export class Parser {
   }
 
   error(token, msg) {
-    throw new Error(`${token.line}:${token.column}: ${msg}`)
+    throw new EaselError(`${token.line}:${token.column}: ${msg}`)
   }
 
   peek() {
@@ -172,13 +173,13 @@ export class Parser {
     if (isOp(this.peekType())) {
       const op = this.eat(this.peekType()).value
       let right = this.expr()
-      if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
-        // Quick reording based on precedence
-        return new Ast.Binary(
-          new Ast.Binary(left, op, right.left),
-          right.operator,
-          right.right
-        )
+      // if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
+      //   // Quick reording based on precedence
+      //   return new Ast.Binary(
+      //     new Ast.Binary(left, op, right.left),
+      //     right.operator,
+      //     right.right
+      //   )
       return new Ast.Binary(left, op, right)
     }
     return left

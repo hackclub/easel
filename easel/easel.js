@@ -3,7 +3,7 @@ import readline from 'node:readline'
 import { Lexer } from './lexer.js'
 import { Parser } from './parser.js'
 import { Interpreter } from './interpreter.js'
-import stdlib from './stdlib.js'
+import stdlib, { EaselError } from './stdlib.js'
 
 const readFile = location =>
   new Promise((resolve, reject) =>
@@ -35,6 +35,7 @@ const writeFile = (location, data) =>
       lexer.scanTokens()
     } catch (err) {
       // Only log errors thrown by our lexer
+      if (err instanceof EaselError) console.log(err)
     } finally {
       if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
     }
@@ -44,7 +45,7 @@ const writeFile = (location, data) =>
       parser.parse()
     } catch (err) {
       // Only log errors throw by our parser
-      console.log(err)
+      if (err instanceof EaselError) console.log(err)
     } finally {
       if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
     }
@@ -58,7 +59,7 @@ const writeFile = (location, data) =>
       console.log(err)
     }
   } else {
-    // Interactive REPL
+    // Interactive REPL time
     const interpreter = new Interpreter()
     let scope = stdlib
 
@@ -77,15 +78,17 @@ const writeFile = (location, data) =>
       try {
         lexer.scanTokens()
       } catch {
-        // Should catch errors, and depending on type, wait for extension
+        // Should catch errors
       }
 
       const parser = new Parser(lexer.tokens)
       try {
         parser.parse()
-      } catch {}
+      } catch {
+        // Should catch errors, and dpeneding on type, wait for extension
+      }
 
-      scope = interpreter.run(parser.ast, stdlib)
+      scope = interpreter.run(parser.ast, scope)
 
       input.question('> ', repl)
     }

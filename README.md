@@ -1,6 +1,6 @@
 Write a programming language, get a terminal-in-a-box to run your programming language on!
 
-Check out [#programming-lang-jam](https://app.slack.com/client/T0266FRGM/C06T22ZFQGP) on the Slack to hang out with fellow teenagers hacking on programming languages.
+Check out [#langjam](https://app.slack.com/client/T0266FRGM/C06T22ZFQGP) on the Slack to hang out with fellow teenagers hacking on programming languages.
 
 ## Step one: learn how to write a programming language (or jump to step two!)
 
@@ -49,74 +49,6 @@ begin painting
 end painting
 ```
 
-```
-var rows = 50
-var cols = 20
-
-define Cell { x, y, live }
-
-# Exercise: try setting a custom pattern instead of randomness!
-function seed() {
-  var cells = []
-  for x through (0, rows) {
-    for y through (0, cols) {
-      cells.push(Cell(x: x, y: y, live: random(0, 1)))
-    }
-  }
-  return cells
-}
-
-var cells = seed()
-
-function getNeighbors(cells, index) {
-  # Get neighbors around a cell
-  var neighbors = [
-    cells[index - rows - 1],
-    cells[index - rows],
-    cells[index - rows + 1],
-    cells[index - 1],
-    cells[index + 1],
-    cells[index + rows - 1],
-    cells[index + rows],
-    cells[index + rows + 1]
-  ]
-  var alive = []
-  for i through (0, neighbors.length()) {
-    if (neighbors[i].live) {
-      alive.push(neighbors[i])
-    }
-  }
-  return alive
-}
-
-function loop() {
-  # This loop runs every iteration and must be in every program
-  for i through (0, cells.length()) {
-    var cell = cells[i]
-    var neighbors = getNeighbors(cells, i)
-    if (cell.live) {
-      if (neighbors.length() < 2 || neighbors.length() > 3) {
-        # Any live cell with fewer than two neighbors dies, as if by underpopulation
-        # Any live cell with more than three live neighbors dies, as if by overpopulation
-        cell.live = false
-      } 
-    } elif (!(cell.live && neighbors == 3)) {
-      # Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
-      cell.live = true
-    }
-
-    if (cell.live) {
-      # Now draw the cell if it's alive!
-      var color = Color(r: 0, g: 255, b: 0)
-      Canvas.fill(x, y, color)
-    } else {
-      # If it's dead, turn the cell off
-      Canvas.erase(x, y)
-    }
-  }
-}
-```
-
 (Conway's Game of Life)
 
 ## Step two: now write your own!
@@ -162,20 +94,3 @@ Looking at a hard limit of $40 - $45 based on time it would take to write a prog
 * Extra wires - HDMI out ($5.95), power cables that come with Sprig
 
 While @Shawn was here, we also considered doing something like [this](https://github.com/ncrawforth/VT2040) but it requires more consideration cost-wise.
-
-## Timeline
-
-### First initial draft and website: next Tuesday sync (04/16)
-
-Initial draft of the guide to be reviewed internally on deployed website. Deployed website should have 6 pages: a main page (what is this? call to action and demo/playground section) and a page for each of the parts of the guide.
-
-Order a Raspberry Pi Zero 2W as soon as approved for prototyping.
-
-### First initial layout of terminal-in-a-box: next Friday (04/19)
-
-Set
-
-### Shipping
-
-- [ ] Iterate on feedback: by the end of the Monday I get back (04/28)
-- [ ] Polish and ship/announce (figuring out manufacturing and shipping process for the "We Ship" part, doing one last one-over) by Friday (05/03) latest

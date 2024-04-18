@@ -245,6 +245,10 @@ section {
     border-top: 1px solid var(--border);
     padding: 1em;
 
+    code {
+      font-size: 0.9rem !important;
+    }
+
     p:nth-child(1) {
       margin-top: 0;
     }
