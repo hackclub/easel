@@ -1,8 +1,8 @@
-import Ast from './ast.js'
+import Ast, { Func } from './ast.js'
 import { EaselError } from './stdlib.js'
 
 Array.prototype.add = function (args) {
-  console.log(this)
+  this.push(...args)
 }
 
 export class ReturnException extends Error {
@@ -44,7 +44,19 @@ export class Interpreter {
       }
       case Ast.Get:
         const caller = this.evaluate(value.caller, scope)
-        return caller[value.property.value]
+        // [] can hold expr but .identifier cannot
+        let get
+        if (value.isExpr) {
+          get = caller[this.evaluate(value.property, scope)]
+        } else get = caller[value.property]
+        if (get instanceof Function) return get.bind(caller)
+        return get
+      case Ast.Unary: {
+        const operations = {
+          '!': apply => !apply
+        }
+        return operations[value.operator](this.evaluate(value.apply, scope))
+      }
       case Ast.Binary:
         const operations = {
           '+': (left, right) => left + right,
@@ -66,6 +78,8 @@ export class Interpreter {
         )
       case Ast.Literal:
         return value.value
+      case Ast.Array:
+        return value.value.map(expr => this.evaluate(expr, scope))
       default:
       // this.error(value, 'Unexpected')
     }
@@ -76,6 +90,10 @@ export class Interpreter {
       case Ast.Var:
         scope[node.name] = this.evaluate(node.value, scope)
         break
+      case Ast.Set:
+        if (!Object.keys(scope).includes(node.caller))
+          this.error(node, `${node.caller} is not defined in current scope`)
+        scope[node.caller][node.property] = this.evaluate(node.value, scope)
       case Ast.Struct:
         scope[node.name] = options => {
           // Make sure there are no invalid keys
@@ -107,7 +125,7 @@ export class Interpreter {
         throw new ReturnException(this.evaluate(node.value, scope))
       case Ast.For:
         let localScope = { ...scope, [node.id]: this.evaluate(node.range[0]) }
-        while (localScope[node.id] < this.evaluate(node.range[1])) {
+        while (localScope[node.id] < this.evaluate(node.range[1], scope)) {
           this.run(node.body, localScope)
           localScope[node.id]++
         }
@@ -116,7 +134,7 @@ export class Interpreter {
         while (this.execute(node.condition, scope)) this.run(node.body, scope)
         break
       case Ast.Conditional:
-        if (this.execute(node.condition, scope)) this.run(node.body, scope)
+        if (this.evaluate(node.condition, scope)) this.run(node.body, scope)
         else
           for (let conditional of node.otherwise)
             this.execute(conditional, scope)

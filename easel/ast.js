@@ -5,6 +5,13 @@ export class Literal {
   }
 }
 
+export class Array {
+  constructor(value) {
+    this.type = 'Array'
+    this.value = value
+  }
+}
+
 export class Unary {
   constructor(operator, apply) {
     this.type = 'Unary'
@@ -71,10 +78,20 @@ export class Call {
 }
 
 export class Get {
-  constructor(caller, property) {
+  constructor(caller, property, isExpr = false) {
     this.type = 'Get'
     this.caller = caller
     this.property = property
+    this.isExpr = isExpr
+  }
+}
+
+export class Set {
+  constructor(caller, property, value) {
+    this.type = 'Set'
+    this.caller = caller
+    this.property = property
+    this.value = value
   }
 }
 
@@ -106,6 +123,7 @@ export class Conditional {
 
 export default {
   Literal,
+  Array,
   Unary,
   Binary,
   Var,
@@ -115,6 +133,7 @@ export default {
   Return,
   Call,
   Get,
+  Set,
   For,
   While,
   Conditional

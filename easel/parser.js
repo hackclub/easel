@@ -3,18 +3,18 @@ import { TOKENS } from './lexer.js'
 import Ast from './ast.js'
 
 const opOrder = {
-  '+': 0,
-  '-': 0,
-  '*': 1,
-  '/': 1,
-  '||': 1,
-  '&&': 1,
-  '==': 1,
-  '!=': 1,
-  '>': 1,
-  '>=': 1,
-  '<': 1,
-  '<=': 1
+  '+': 1,
+  '-': 1,
+  '*': 2,
+  '/': 2,
+  '||': 0,
+  '&&': 0,
+  '==': 0,
+  '!=': 0,
+  '>': 0,
+  '>=': 0,
+  '<': 0,
+  '<=': 0
 }
 
 const isOp = type => {
@@ -134,7 +134,7 @@ export class Parser {
         let items = []
         if (this.peekType() !== TOKENS.RightBracket) items = this.exprList()
         this.eat(TOKENS.RightBracket)
-        return new Ast.Literal(items)
+        return new Ast.Array(items)
       case TOKENS.LeftParen:
         const expr = this.expr()
         this.eat(TOKENS.RightParen)
@@ -157,38 +157,56 @@ export class Parser {
         this.eat(TOKENS.LeftBracket)
         const property = this.expr()
         this.eat(TOKENS.RightBracket)
-        expr = new Ast.Get(expr, property)
+        expr = new Ast.Get(expr, property, true)
       } else if (this.peekType() === TOKENS.Period) {
         this.eat(TOKENS.Period)
-        const property = this.eat(TOKENS.Identifier)
+        const property = this.eat(TOKENS.Identifier).value
         expr = new Ast.Get(expr, property)
       } else break
     }
     return expr
   }
 
+  unary() {
+    // unary has one side
+    if (this.peekType() === TOKENS.Not) {
+      const op = this.eat(this.peekType()).value
+      return new Ast.Unary(op, this.unary())
+    }
+
+    return this.call()
+  }
+
   expr() {
     // expr has two sides
-    let left = this.call()
+    let left = this.unary()
     if (isOp(this.peekType())) {
       const op = this.eat(this.peekType()).value
       let right = this.expr()
-      // if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
-      //   // Quick reording based on precedence
-      //   return new Ast.Binary(
-      //     new Ast.Binary(left, op, right.left),
-      //     right.operator,
-      //     right.right
-      //   )
+      if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
+        // Quick reording based on precedence
+        return new Ast.Binary(
+          new Ast.Binary(left, op, right.left),
+          right.operator,
+          right.right
+        )
       return new Ast.Binary(left, op, right)
     }
     return left
   }
 
   stmt() {
-    const varStmt = () => {
+    const assignStmt = () => {
       this.eatKeyword('prepare')
       const name = this.eat(TOKENS.Identifier).value
+      if (this.peekType() == TOKENS.Period) {
+        // Setter
+        this.eat(TOKENS.Period)
+        const property = this.eat(TOKENS.Identifier).value
+        this.eatKeyword('as')
+        const value = this.expr()
+        return new Ast.Set(name, property, value)
+      }
       this.eatKeyword('as')
       const value = this.expr()
       return new Ast.Var(name, value)
@@ -270,9 +288,12 @@ export class Parser {
     const conditionalStmt = keyword => {
       this.eatKeyword(keyword)
 
-      this.eat(TOKENS.LeftParen)
-      const condition = this.expr()
-      this.eat(TOKENS.RightParen)
+      let condition = new Ast.Literal(true)
+      if (keyword !== 'else') {
+        this.eat(TOKENS.LeftParen)
+        condition = this.expr()
+        this.eat(TOKENS.RightParen)
+      }
 
       this.eat(TOKENS.LeftBrace)
       let body = []
@@ -291,7 +312,7 @@ export class Parser {
       case TOKENS.Keyword:
         switch (next.value) {
           case 'prepare':
-            return varStmt()
+            return assignStmt()
           case 'brush':
             return structStmt()
           case 'sketch':

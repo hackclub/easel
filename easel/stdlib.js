@@ -8,18 +8,31 @@ export class EaselError extends Error {
 
 class Canvas {
   constructor(rows = 64, cols = 64) {
+    this.default = { r: 0, g: 0, b: 0 }
     this.rows = rows
     this.cols = cols
     this.grid = []
     for (let i = 0; i < cols * rows; i++) {
-      this.grid.push({ r: 0, g: 0, b: 0 })
+      this.grid.push(this.default)
     }
   }
 
-  fill(x, y, color) {}
+  get([x, y]) {
+    return this.grid[y * this.cols + x]
+  }
 
-  erase(x, y) {
-    let index = y * this.cols
+  fill([x, y, color]) {
+    let cell = this.grid[y * this.cols + x]
+    if (!cell) throw new EaselError('Cell out of range')
+    cell.r = color.r
+    cell.g = color.g
+    cell.b = color.b
+  }
+
+  erase([x, y]) {
+    let cell = this.grid[y * this.cols + x]
+    if (!cell) throw new EaselError('Cell out of range')
+    cell = { ...this.default }
   }
 }
 
@@ -37,6 +50,7 @@ export default {
   ink: args => console.log(...args),
   random: range => {
     const [min, max] = range
+    if (min >= 0 && max <= 1) return Math.random()
     return Math.random() * (max - min + 1) + min
   },
   round: number => Math.round(number)

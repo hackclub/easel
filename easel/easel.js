@@ -45,6 +45,7 @@ const writeFile = (location, data) =>
       parser.parse()
     } catch (err) {
       // Only log errors throw by our parser
+      console.log(err)
       if (err instanceof EaselError) console.log(err)
     } finally {
       if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
@@ -56,7 +57,7 @@ const writeFile = (location, data) =>
       interpreter.run(parser.ast, stdlib)
     } catch (err) {
       // Only log errors throw by our interpreter
-      console.log(err)
+      if (err instanceof EaselError) console.log(err.toString())
     }
   } else {
     // Interactive REPL time
@@ -85,7 +86,7 @@ const writeFile = (location, data) =>
       try {
         parser.parse()
       } catch {
-        // Should catch errors, and dpeneding on type, wait for extension
+        // Should catch errors, and depending on type, wait for extension
       }
 
       scope = interpreter.run(parser.ast, scope)
