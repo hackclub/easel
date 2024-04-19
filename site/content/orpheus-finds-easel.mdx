@@ -238,4 +238,19 @@ const writeFile = (location, data) =>
 })
 ```
 
+Let's also get some error handling in there. It'll be useful later on for checking if errors are being thrown by our programming language or by JavaScript. Create a new file named `stdlib.js` and throw this in there:
+
+```js
+export class EaselError extends Error {
+  constructor(msg) {
+    super()
+    this.message = msg
+  }
+
+  toString() {
+    return this.message
+  }
+}
+```
+
 You can run `node easel.js test.easel` now and it's rather boring. We could probably spruce it up a bit by writing that programming language. Let's get a-moving!

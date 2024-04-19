@@ -30,7 +30,7 @@ Orpheus picks up the letter and looks at the first program again. How does one g
 
 Found it!
 
-<Lexer/>
+![](/cartoons/placeholder.png)
 
 There! That makes a lot more sense, hopefully. These are some of the different kinds of tokens we can represent. So how do we write code to represent this? Well, that's what Orpheus is going to do right now, in `lexer.js`:
 
@@ -449,7 +449,27 @@ case '\n':
   We've crimped it because it is rather long. It's like that one time Orpheus tried to print a program out but it accidentally came out on the sticker printer.
 </aside>
 
-Ok! Let's test out lexer now! Run `node easel.js test.easel --dbg` and you'll get this:
+Ok! Let's test out our lexer now! In `easel.js`:
+
+```js
+// ...
+
+const program = await readFile(location)
+
+const lexer = new Lexer(program)
+try {
+  lexer.scanTokens()
+} catch (err) {
+  if (err instanceof EaselError) {
+    console.log(err)
+    process.exit(1)
+  }
+} finally {
+  if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
+}
+```
+
+Run `node easel.js test.easel --dbg` and you'll get this:
 
 <details>
   <summary>`tokens.json`</summary>

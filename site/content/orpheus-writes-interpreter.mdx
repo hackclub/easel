@@ -535,7 +535,31 @@ Array.prototype.add = function (args) {
 }
 ```
 
-Ok! Go ahead and run `node easel.js test.easel`.
+Ok! Let's add our interpreter to `easel.js` now:
+
+```js
+// ...
+const parser = new Parser(lexer.tokens)
+try {
+  parser.parse()
+} catch (err) {
+  if (err instanceof EaselError) {
+    console.log(err)
+    process.exit(2)
+  }
+} finally {
+  if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
+}
+
+const interpreter = new Interpreter()
+try {
+  interpreter.run(parser.ast, stdlib)
+} catch (err) {
+  if (err instanceof EaselError) console.log(err.toString())
+}
+```
+
+Go ahead and run `node easel.js test.easel`.
 
 <details open>
   <summary>`test.easel`</summary>

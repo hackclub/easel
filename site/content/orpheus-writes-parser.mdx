@@ -1033,7 +1033,38 @@ expr() {
 }
 ```
 
-Let's test out everything we have so far. Try running `node easel.js test.easel --dbg`, and you'll get a new debug file containing the AST in `ast.json`. Mine looks something like this:
+Let's test out everything we have so far. Let's add our parser to `easel.js`:
+
+```js
+// ...
+const program = await readFile(location)
+
+const lexer = new Lexer(program)
+try {
+  lexer.scanTokens()
+} catch (err) {
+  if (err instanceof EaselError) {
+    console.log(err)
+    process.exit(1)
+  }
+} finally {
+  if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
+}
+
+const parser = new Parser(lexer.tokens)
+try {
+  parser.parse()
+} catch (err) {
+  if (err instanceof EaselError) {
+    console.log(err)
+    process.exit(2)
+  }
+} finally {
+  if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
+}
+```
+
+Try running `node easel.js test.easel --dbg`, and you'll get a new debug file containing the AST in `ast.json`. Mine looks something like this:
 
 <details>
   <summary>`ast.json`</summary>
