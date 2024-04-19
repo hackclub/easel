@@ -235,7 +235,7 @@ const writeFile = (location, data) =>
     const program = await readFile(location)
     console.log(program)
   }
-})
+})()
 ```
 
 Let's also get some error handling in there. It'll be useful later on for checking if errors are being thrown by our programming language or by JavaScript. Create a new file named `stdlib.js` and throw this in there:
