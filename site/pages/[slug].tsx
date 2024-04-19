@@ -39,6 +39,10 @@ export default function Index({
       <Meta
         as={Head}
         title={`Orpheus' Hacky Guide to Writing a Programming Language | ${title}`}
+        name="Orpheus' Hacky Guide to Writing a Programming Language"
+        description="Learn how to write a programming language with Orpheus the dino and me, the narrator!"
+        image="/cartoons/wizard.png"
+        color="#ec3750"
       />
       <header>
         <div>

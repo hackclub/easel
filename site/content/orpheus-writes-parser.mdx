@@ -30,7 +30,7 @@ export class Parser {
   }
 
   error(token, msg) {
-    throw new Error(`${token.line}:${token.column}: ${msg}`)
+    throw new Error(`Syntax error on ${token.line}:${token.column}: ${msg}`)
   }
 }
 ```
@@ -193,6 +193,10 @@ Notice how we throw an error if we don't get anything. Since this is the last me
 
 Something we didn't consider ahead of time was how we would define how these nodes look like. We'll do this really easily. Let's create a new file called `ast.js`, and put our first kind of node in there:
 
+<aside>
+  We technically don't need the `type` property, but we'll include it because it's useful debug info.
+</aside>
+
 ```js
 export class Literal {
   constructor(value) {
@@ -212,7 +216,7 @@ Make sure to import this in `parser.js`!
 import Ast from "./ast.js";
 ```
 
-Perfect. Back to `simple()` now - we're also going to add arrays as a literal too just because it's simple and JavaScript is one of those languages where we don't have to worry about type anyways:
+Perfect. Back to `simple()` now - we're going to add arrays now:
 
 ```js
 simple() {
@@ -223,9 +227,25 @@ simple() {
       let items = []
       if (this.peekType() !== TOKENS.RightBracket) items = this.exprList()
       this.eat(TOKENS.RightBracket)
-      return new Ast.Literal(items)
+      return new Ast.Array(items)
   }
   this.error(token, "Expected expression but got " + token)
+}
+```
+
+That means we'll need to add a new kind of node:
+
+```js
+export class Array {
+  constructor(value) {
+    this.type = 'Array'
+    this.value = value
+  }
+}
+
+return {
+  Array,
+  // ...
 }
 ```
 
@@ -276,8 +296,8 @@ export class Var {
 }
 
 export default {
+  Var,
   // ...
-  Var
 }
 ```
 
@@ -466,7 +486,22 @@ expr() {
 
 Ok. Back to me. I'll take the mic back. Thanks. [grabs mic]
 
-And that fixes all our problems! Well, not all of our problems, of course. We still have a few more things left to do until our parser is fully functional. Let's move onto the big leagues now!
+And that fixes all our problems! Well, not all of our problems, of course. Right now it might also be a good time to deal with parentheses:
+
+```plaintext
+(15 + 15) / 3
+```
+
+If you run this currently, it'll throw a syntax error, because we haven't dealt with parentheses in this scenario! In this scenario, the parentheses represent an expression inside an expression that we should evaluate first. To take care of this precendence, we can place this in `simple()` to take care of this:
+
+```js
+case TOKENS.LeftParen:
+  const expr = this.expr()
+  this.eat(TOKENS.RightParen)
+  return expr
+```
+
+An expression inside an expression, essentially. This works because now `expr()` will call `simple()` and evaluate `(15 + 15)` on its own, before peeking at `/`. Now if we run our parser on this, we'll get the proper looking AST and not a syntax error:
 
 ## Statements
 
@@ -474,7 +509,290 @@ And that fixes all our problems! Well, not all of our problems, of course. We st
   If you feel like you need to take a break, take one! I think Orpheus is slightly mad at me so she's left to go eat Indian food and talk about Berlin with her friends.
 </aside>
 
-Ok, awesome cool. Statements. Statements! Let's take care of that now.
+Ok, awesome cool. What's next? Statements! Let's take care of that now. Remember this earlier?
+
+```js
+stmt() {
+  case next = this.peek() 
+  switch (next.type) {
+    // Can you guess what's coming here later?
+    default:
+      return this.expr()
+  }
+}
+```
+
+Now we'll going to replace that comment with some actual code. What exactly is going there? Well, we're going to parse anything that could lead to a block of expressions or be used to store expressions.
+
+### Functions
+
+Perhaps the best example to run through first is parsing functions, so let's take a look at that! The structure of a function is as follows: it starts with the `sketch` keyword, then a identifier that's the name of the function. If it takes in parameters, we'll know because the `needs` keyword will come afterwards, followed by a list of identifiers that represent the parameters. Of course, we have the braces and the body that follow afterwards.
+
+We'll have a nested function inside `stmt()`:
+
+```js
+stmt() {
+  const funcStmt = () => {
+    this.eatKeyword('sketch')
+    const name = this.eat(TOKENS.Identifier).value
+
+    let params = []
+    if (this.peekKeyword('needs')) {
+      // Parameters
+      this.eatKeyword('needs')
+      this.eat(TOKENS.LeftParen)
+      params = this.identifierList()
+      this.eat(TOKENS.RightParen)
+    }
+
+    this.eat(TOKENS.LeftBrace)
+    let body = []
+    while (this.peekType() !== TOKENS.RightBrace) body.push(this.stmt())
+    this.eat(TOKENS.RightBrace)
+
+    return new Ast.Func(name, params, body)
+  }
+
+  const next = this.peek()
+  switch (next.type) {
+    case TOKENS.Keyword:
+      switch (next.value) {
+        case 'sketch':
+          return funcStmt()
+        //...
+      }
+    // ...
+  }
+}
+```
+
+We need two extra utilities that wrap `peek()` and `eat()`: `peekKeyword()` and `eatKeyword()`. `eatKeyword()` will throw an error if the next token isn't a keyword or if it doesn't match up to the keyword provided:
+
+```js
+peekKeyword(keyword) {
+  if (this.peekType() !== TOKENS.Keyword || this.peek().value !== keyword)
+    return null
+  return this.peek()
+}
+
+eatKeyword(keyword) {
+  if (this.peekType() !== TOKENS.Keyword)
+    this.error(
+      this.peek(),
+      `Expected ${TOKENS.Keyword} but got ${this.peekType()}`
+    )
+  else if (this.peek().value !== keyword)
+    this.error(
+      this.peek(),
+      `Expected keyword ${keyword} but got keyword ${this.peek().value}`
+    )
+  return this.eat(TOKENS.Keyword)
+}
+```
+
+We also need an extra helper method, similar to `exprList()`, called `identifierList()`:
+
+```js
+identifierList() {
+  let identifiers = []
+  identifiers.push(this.eat(TOKENS.Identifier).value)
+  while (this.peekType() === TOKENS.Comma) {
+    this.eat(TOKENS.Comma)
+    identifiers.push(this.eat(TOKENS.Identifier).value)
+  }
+  return identifiers
+}
+```
+
+Instead of returning a list of expressions by calling `expr()`, `identifierList()` just returns a list of identifiers by gobbling them up.
+
+With functions come return statements. Let's work on those next. They're really simple, just eat the return keyword and return an expression:
+
+```js
+stmt() {
+  const returnStmt = () => {
+    this.eatKeyword('finished')
+    return new Ast.Return(this.expr())
+  }
+
+  // ...
+
+  const next = this.peek()
+  switch (next.type) {
+    case TOKENS.Keyword:
+      switch (next.value) {
+        case 'finished':
+          return returnStmt()
+        // ...
+      }
+    // ...
+  }
+}
+```
+
+Of course, `Ast.Return`:
+
+```js
+export class Return {
+  constructor(value) {
+    this.type = 'Return'
+    this.value = value
+  }
+}
+
+export default {
+  Return,
+  // ...
+}
+```
+
+<aside>
+  This is pretty repetitive, ain't it? There are [parser generators](https://web.mit.edu/6.005/www/fa15/classes/18-parser-generators/) and such to deal with this out there (especially once things get more complicated), but buckle up, because we're writing this from scratch!
+</aside>
+
+### Loops
+
+Let's deal with the loops next. For loops will gobble up the `loop` keyword, grab the identifier we'll be using to keep track of the current iteration, the range, and of course, the body:
+
+```js
+const forStmt = () => {
+  this.eatKeyword('loop')
+  const id = this.eat(TOKENS.Identifier).value
+  this.eatKeyword('through')
+
+  this.eat(TOKENS.LeftParen)
+  const range = this.exprList()
+  if (range.length !== 2)
+    this.error(
+      range[range.length - 1],
+      'Expected (start, end) range but received more arguments than expected'
+    )
+  this.eat(TOKENS.RightParen)
+
+  this.eat(TOKENS.LeftBrace)
+  let body = []
+  while (this.peekType() !== TOKENS.RightBrace) body.push(this.stmt())
+  this.eat(TOKENS.RightBrace)
+
+  return new Ast.For(id, range, body)
+}
+
+const next = this.peek() 
+switch (next.type) {
+  case TOKENS.Keyword:
+    switch (next.value) {
+      case 'loop':
+        return forStmt()
+      // ...
+    }
+  // ...
+}
+```
+
+In `ast.js`:
+
+```js
+export class For {
+  constructor(id, range, body) {
+    this.type = 'For'
+    this.id = id
+    this.range = range
+    this.body = body
+  }
+}
+```
+
+Lovely. While loops are simpler, all we have to do is grab the condition and the body afterwards:
+
+```js
+const whileStmt = () => {
+  this.eatKeyword('while')
+
+  this.eat(TOKENS.LeftParen)
+  const condition = this.expr()
+  this.eat(TOKENS.RightParen)
+
+  this.eat(TOKENS.LeftBrace)
+  let body = []
+  while (this.peekType() !== TOKENS.RightBrace) body.push(this.stmt())
+  this.eat(TOKENS.RightBrace)
+
+  return new Ast.While(condition, body)
+}
+```
+
+In `ast.js`:
+
+```js
+export class While {
+  constructor(condition, body) {
+    this.type = 'While'
+    this.condition = condition
+    this.body = body
+  }
+}
+```
+
+### Conditionals
+
+Conditionals are also pretty intuitive. We'll do this recursively - we'll start by eating up the `if` keyword, parsing the condition, and the body. If `elif` or `else` pops up afterwards, we'll also deal with those by calling `conditionalStmt` again:
+
+```js
+const conditionalStmt = keyword => {
+  this.eatKeyword(keyword)
+
+  let condition = new Ast.Literal(true)
+  if (keyword !== 'else') {
+    this.eat(TOKENS.LeftParen)
+    condition = this.expr()
+    this.eat(TOKENS.RightParen)
+  }
+
+  this.eat(TOKENS.LeftBrace)
+  let body = []
+  while (this.peekType() !== TOKENS.RightBrace) body.push(this.stmt())
+  this.eat(TOKENS.RightBrace)
+
+  let otherwise = []
+  while (this.peekKeyword('elif') || this.peekKeyword('else'))
+    otherwise.push(conditionalStmt(this.peek().value))
+
+  return new Ast.Conditional(condition, body, otherwise)
+}
+
+const next = this.peek()
+switch (next.type) {
+  case TOKENS.Keyword:
+    switch (next.value) {
+      case 'if':
+        return conditionalStmt('if')
+      // ...
+    }
+  // ...
+}
+```
+
+In `ast.js`:
+
+```js
+export class Conditional {
+  constructor(condition, body, otherwise) {
+    this.type = 'Conditional'
+    this.condition = condition
+    this.body = body
+    this.otherwise = otherwise
+  }
+}
+
+export default {
+  Conditional,
+  // ...
+}
+```
+
+### Assignment
+
+We should be able to assign values to a variable, but we should also be able to assign values to a property, like `prepare cell.live as false`. We can do this in the same function by simply checking that first identifier and checking if a Period token comes afterward:
 
 ```js
 const assignStmt = () => {
@@ -494,7 +812,116 @@ const assignStmt = () => {
 }
 ```
 
-### What about calls?
+`Ast.Var` exists, but `Ast.Set` doesn't, so let's add that in `ast.js`:
+
+```js
+export class Set {
+  constructor(caller, property, value) {
+    this.type = 'Set'
+    this.caller = caller
+    this.property = property
+    this.value = value
+  }
+}
+
+export default {
+  Set,
+  // ...
+}
+```
+
+### Structs
+
+Last but not least, structs! We need to have a statement for defining structs. Defining a struct looks like `brush Cell has { x, y, live }`, so we'll gobble up the `brush` keyword, get the name of the struct, gobble up the `has` keyword, the braces, and then get the members of the struct (a list of identifiers):
+
+```js
+const structStmt = () => {
+  this.eatKeyword('brush')
+  const name = this.eat(TOKENS.Identifier).value
+  this.eatKeyword('has')
+  this.eat(TOKENS.LeftBrace)
+  const members = this.identifierList()
+  this.eat(TOKENS.RightBrace)
+  return new Ast.Struct(name, members)
+}
+
+const next = this.peek()∂
+switch (next.type) {
+  case TOKENS.Keyword:
+    switch (next.value) {
+      case 'brush':
+        return structStmt()
+      // ...
+    }
+  // ...
+}
+```
+
+In `ast.js`:
+
+```js
+export class Struct {
+  constructor(name, members) {
+    this.type = 'Struct'
+    this.name = name
+    this.members = members
+  }
+}
+
+export default {
+  Struct,
+  // ...
+}
+```
+
+We haven't accounted for actual struct copies with values yet, so let's take care of that!
+
+```js
+simple() {
+  let token = this.eat(this.peekType())
+  switch (token.type) {
+    case TOKENS.Keyword:
+      if (token.value === 'prep') {
+        // Instance is essentially a struct copy
+        const id = this.eat(TOKENS.Identifier).value
+
+        this.eat(TOKENS.LeftParen)
+        let members = {}
+        while (this.peekType() !== TOKENS.RightParen) {
+          const member = this.eat(TOKENS.Identifier).value
+          this.eat(TOKENS.Colon)
+          members[member] = this.expr()
+          if (this.peekType() === TOKENS.Comma) this.eat(TOKENS.Comma)
+        }
+        this.eat(TOKENS.RightParen)
+
+        return new Ast.Instance(id, members)
+      }
+      break
+    // ...
+  }
+  // ...
+}
+```
+
+Let's add `Instance` to `ast.js`:
+
+```js
+export class Instance {
+  constructor(name, members) {
+    this.type = 'Instance'
+    this.name = name
+    this.members = members
+  }
+}
+
+export default {
+  Instance,
+  // ...
+}
+```
+
+## What about calls?
 
 Bring, bling! Bring, bring!
 
@@ -502,22 +929,118 @@ I think that's Orpheus' phone ringing. She's going to answer it.
 
 I think Orpheus knows a little more than we've been let onto. Is that what was up with all the, uh, phone-related examples earlier? Probs.
 
-It's our mysterious benefactor, just reminding us about... calls? OH! Calls
+It's our mysterious benefactor, just reminding us about... calls? Calls! That's right! We're missing a extra step between binary expressions and simple literals, and that happens to be function calls and getters. I like to think of this like a chain, like `orpheus.picksUp(phone).numbers[0]`. It's an intermediate step between `expr()` and `simple()` because it can be one half of an expression but evaluates down to a simple value.
+
+```js
+call() {
+  let expr = this.simple()
+  while (true) {
+    if (this.peekType() === TOKENS.LeftParen) {
+      this.eat(TOKENS.LeftParen)
+      let args = []
+      if (this.peekType() !== TOKENS.RightParen) args = this.exprList()
+      this.eat(TOKENS.RightParen)
+      expr = new Ast.Call(expr, args)
+    } else if (this.peekType() === TOKENS.LeftBracket) {
+      // This is also a getter, but we accept an expression rather than just an identifier
+      this.eat(TOKENS.LeftBracket)
+      const property = this.expr()
+      this.eat(TOKENS.RightBracket)
+      expr = new Ast.Get(expr, property, true)
+    } else if (this.peekType() === TOKENS.Period) {
+      this.eat(TOKENS.Period)
+      const property = this.eat(TOKENS.Identifier).value
+      expr = new Ast.Get(expr, property)
+    } else break
+  }
+  return expr
+}
+
+expr() {
+  let left = this.call()
+  // ...
+}
+```
+
+Once again, we have the cascading value. We call `simple()` first, and while we can keep chaining, we keep chaining and wrapping around that initial `simple()` with one of two kinds of nodes: `Ast.Call`, which represents a function call, or `Ast.Get`, which represents a property getter. Let's add them to `ast.js` now:
+
+```js
+export class Call {
+  constructor(caller, args) {
+    this.type = 'Call'
+    this.caller = caller
+    this.args = args
+  }
+}
+
+export class Get {
+  constructor(caller, property, isExpr = false) {
+    this.type = 'Get'
+    this.caller = caller
+    this.property = property
+    this.isExpr = isExpr
+  }
+}
+
+export default {
+  Call,
+  Get,
+  // ...
+}
+```
 
 ## Unary operators
 
 There's just one last token we haven't accounted for. I'll give you a moment to think about it. Which token could we possibly be forgetting about?
 
-The NOT operator! That's right - our only unary operator. We haven't dealt with unary operators yet. Let's take care of that now.
+The NOT operator! That's right - our only unary operator. We haven't dealt with unary operators yet. Let's take care of that now. It makes the most sense to cascade from `expr()` (binary expressions) to unary expressions to `call()`, so let's first add a `unary()` method:
+
+```js
+unary() {
+  // unary has one side
+  if (this.peekType() === TOKENS.Not) {
+    const op = this.eat(this.peekType()).value
+    return new Ast.Unary(op, this.unary())
+  }
+
+  return this.call()
+}
+```
+
+In `ast.js`:
+
+```js
+export class Unary {
+  constructor(operator, apply) {
+    this.type = 'Unary'
+    this.operator = operator
+    this.apply = apply
+  }
+}
+
+export default {
+  Unary,
+  // ...
+}
+```
+
+Instead of calling `call()` in `expr()` now, we'll replace it with `unary()`, which will cascade down to `call()`: 
+
+```js
+expr() {
+  let left = this.unary()
+  // ...
+}
+```
 
 Let's test out everything we have so far. Try running `node easel.js test.easel --dbg`, and you'll get a new debug file containing the AST in `ast.json`. Mine looks something like this:
 
 <aside>
-  We've crimped it because it is rather long. It's like that one time Orpheus tried to print a program out but it accidentally came out on the sticker printer. Let's just say it was more than a few feet long.
+  We've crimped it because it is rather long. It's like that one time Orpheus tried to print a program out but it accidentally came out on the sticker printer.
 </aside>
 
 <details>
-  <summary>`ast.json</summary>
+  <summary>`ast.json`</summary>
 
 ```json
 [
