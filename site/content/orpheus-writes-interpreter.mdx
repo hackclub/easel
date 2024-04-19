@@ -5,11 +5,11 @@ order: 4
 
 Orpheus has her smock and beret on today. She's ready to do some painting. She sits down at the computer. The smock is slightly awkward. The beret's about to fall off. 
 
-But today's an exciting day! Because today, we'll get the interpreter up and running, and we'll be able to run programs for real now. And Orpheus will finally be able to get this 
+But today's an exciting day! Because today, we'll get the interpreter up and running, and we'll be able to run programs for real now. And Orpheus will finally be able to get this easel to work.
 
 ## How the interpreter's going to work
 
-The interpreter's going to be a little different from the lexer and parser, but not too differently. It's going to take the nodes that the parser created, and make actual things happen. The best part is that it's surprisingly easy - we've done all the hard work in the parser and now we can glide on by.
+The interpreter's going to be a little different from the lexer and parser, but not too different! It's going to take the nodes that the parser created, and make actual things happen. The best part is that it's surprisingly easy - we've done all the hard work in the parser and now we can glide on by, although it'll be bit longer-winded.
 
 Orpheus opens up her computer. It's time to start writing the interpreter in `interpreter.js`:
 
@@ -89,9 +89,9 @@ evaluate(value, scope) {}
 execute(node, scope) {}
 ```
 
-`execute()` will call `evaluate()` for *evaluating* basic expressions, but `execute()` will be doing the actual
+`execute()` will call `evaluate()` for *evaluating* basic expressions, but `execute()` will be doing the. It's similar to the recursive descent we applied while writing our parser, except now we've condensed it down to three methods - `run()` for blocks of statements, `execute()` for those statements, and `evaluate()` for expressions.
 
-C'mon, let's fill out `execute()`, and maybe you'll understand this better!
+C'mon, let's fill out `execute()`!
 
 ```js
 execute(node, scope) {
@@ -101,8 +101,8 @@ execute(node, scope) {
     case Ast.Struct:
     case Ast.Func:
     case Ast.Return:
-    case Ast.For:
     case Ast.While:
+    case Ast.For:
     case Ast.Conditional:
     default:
       return this.evaluate(node, scope)
@@ -112,18 +112,21 @@ execute(node, scope) {
 
 `node.constructor` returns the class that the node is a child of, effectively letting us check what class it belongs to.
 
-Do you notice something:
+Do you notice something? Compare this to `Parser.stmt()`, and you'll notice that they basically match up! This makes sense, since statements make changes to state.
 
 Let's fill these out one by one. `Ast.Var`:
 
-<Mermaid chart={`
-classDiagram
-  class Var {
-    type = "Var"
-    name is an Identifier
-    value is a Expression
-  }
-`}/>
+<aside>
+  By the way, these diagrams are meant to help you understand what properties the node in question has, i.e. this node has name and value &rarr; `node.name` and `node.value`.
+</aside>
+
+<Node title="Ast.Var">
+  type = "Var"
+
+  name is Identifier
+
+  value is Expression
+</Node>
 
 ```js
 case Ast.Var:
@@ -131,27 +134,69 @@ case Ast.Var:
   break
 ```
 
-`Ast.Set`:
+This is pretty self-explanatory, but it looks like...
 
-<Mermaid chart={`
-classDiagram 
-  class Set {
-    type = "Set"
-    name is an Identifier
-    property is an Identifier
-    value is a Expression
-  }
-`}/>
+## Quick detour to evaluate
+
+Here's our first usage of `evaluate()`! So let's take a quick detour to fill it out. It looks super similar, except we won't really be tweaking what's in `scope` here:
 
 ```js
-case Ast.Set:
-  if (!this.inScope(scope, node.caller))
-    this.error(`${node.caller} is not defined in current scope`)
-  scope[node.caller][node.property] = this.evaluate(node.value, scope)
-  break
+evaluate(value, scope) {
+  switch (value.constructor) {
+    case Ast.Var:
+        if (!this.inScope(scope, value.name))
+          this.error(`${value.name} is not defined in current scope`)
+        return scope[value.name]
+    case Ast.Unary: {
+      const operations = { '!': apply => !apply }
+        return operations[value.operator](this.evaluate(value.apply, scope))
+    }
+    case Ast.Binary:
+      const operations = {
+        '<': (left, right) => left < right,
+        '<=': (left, right) => left <= right,
+        '>': (left, right) => left > right,
+        '>=': (left, right) => left >= right,
+        '!=': (left, right) => left != right,
+        '==': (left, right) => left == right,
+        '&&': (left, right) => left && right,
+        '||': (left, right) => left || right,
+        '+': (left, right) => left + right,
+        '-': (left, right) => left - right,
+        '*': (left, right) => left * right,
+        '/': (left, right) => left / right
+      }
+      return operations[value.operator](
+        this.evaluate(value.left, scope),
+        this.evaluate(value.right, scope)
+      )
+    case Ast.Literal:
+      return value.value
+    case Ast.Array:
+      return value.value.map(expr => this.evaluate(expr, scope))
+    default:
+      this.error("Expected expression but got statement")
+  }
+}
 ```
 
+I started out with the most obvious ones here. If we get a reference to a variable, we'll search `scope` and return a value if it's there. If it's a unary or a binary operator, we apply the operator to the appropriate expression(s). Literals and arrays are also pretty simple.
+
+Notice how it's recursive! Some of these also call `evaluate()` to further evaluate an expression until we get to the simplest possible value - either a reference to another value or the value itself.
+
+## Back up the rabbit hole
+
+Ok, let's move back up the rabbit hole now and keep working our way through `execute`:
+
 `Ast.Struct`:
+
+<Node title="Ast.Struct">
+  type = "Struct"
+  
+  name is Identifier
+
+  members is Identifier[]
+</Node>
 
 ```js
 case Ast.Struct:
@@ -168,7 +213,35 @@ case Ast.Struct:
   break
 ```
 
+This is run when we create a struct definition, like `brush Cell has { x, y, live }`. Notice how it's a function. When we create a struct using `prep Cell(x: x, y: y, live: live)`, it's like a function, except we're passing
+
+Where does the code for creating a struct go then? Since it evaluates to an expression (`{ x: 1, y: 1, live: false }`), we'll tackle an extra case in `evaluate()`:
+
+```js
+case Ast.Instance:
+  if (!this.inScope(scope, value.name))
+    this.error(`${value.name} is not defined in current scope`)
+
+  const constructor = scope[value.name]
+  let members = {}
+  for (let [member, memberValue] of Object.entries(value.members))
+    members[member] = this.evaluate(memberValue, scope)
+  return constructor(members)
+```
+
+That's where the constructor comes into play! And notice that when we create a struct, we pass in a list of expressions rather than a list of identifiers.
+
 `Ast.Func`:
+
+<Node title="Ast.Func">
+  type = "Func"
+
+  name is Identifier
+
+  params is Identifier[]
+
+  body is Statement[]
+</Node>
 
 ```js
 case Ast.Func:
@@ -188,14 +261,83 @@ case Ast.Func:
   break
 ```
 
+What we're doing here is pretty ingenious. (Or really, this whole thing has been quite ingenious. Seriously, pat yourself on the back for coming this far along!). We have a wrapper function - it'll take a list of arguments. We create a copy of the scope - here's where local scope comes into play! - and update the local scope with the arguments, and then use `run`. The reason why we use `run` instead of, say `execute`, is that a function is a block of statements, which is what `run` accounts for.
+
+The extra special thing here is that we've wrapped our call to `run` with a try-catch block, but we specifically check if we get a ReturnException, and it turns out: 
+
 `Ast.Return`:
+
+<Node title="Ast.Return">
+  type = "Return"
+
+  value is Expression
+</Node>
 
 ```js
 case Ast.Return:
   throw new ReturnException(this.evaluate(node.value, scope))
 ```
 
+<aside>
+  Just as a reminder, return statements can be anywhere in a function, which is why exceptions work so well.
+</aside>
+
+`ReturnException` doesn't exist yet, so let's make it happen. And hopefully now the pieces are clicking into place - throwing an exception is a really useful way of exiting running a block of code, it turns out. 
+
+```js
+export class ReturnException extends Error {
+  constructor(value) {
+    super()
+    this.value = value
+  }
+}
+```
+
+(Towards the top of `interpreter.js`.)
+
+Now that we have functions that can return shtuff, we need to be able to actually call functions. This is a job for `evaluate`, since ultimately we'll use a function we find in our scope to return a value.
+
+```js
+case Ast.Call: {
+  const caller = this.evaluate(value.caller, scope)
+  if (!caller) this.error('Caller did not resolve to a defined value')
+  let args = []
+  for (let arg of value.args) args.push(this.evaluate(arg, scope))
+  return caller(args)
+}
+```
+
+Pretty simple, right?
+
+`Ast.While`:
+
+<Node title="Ast.While">
+  type = "While"
+
+  condition is Expression
+
+  body is Statement[]
+</Node>
+
+```js
+case Ast.While:
+  while (this.execute(node.condition, scope)) this.run(node.body, scope)
+  break
+```
+
+We've finally reached our first example! This one you probably understand now :)
+
 `Ast.For`:
+
+<Node title="Ast.For">
+  type = "For"
+
+  id is Identifier
+
+  range is Expression[]
+
+  body is Statement[]
+</Node>
 
 ```js
 case Ast.For:
@@ -206,15 +348,20 @@ case Ast.For:
   }
   break
 ```
-`Ast.While`:
 
-```js
-case Ast.While:
-  while (this.execute(node.condition, scope)) this.run(node.body, scope)
-  break
-```
+For loops are really just variations on while loops. Here, we set up a local scope and inject the variable we'll use to keep track of what iteration we're on.
 
 `Ast.Conditional`:
+
+<Node title="Ast.Conditional">
+  type = "Conditional"
+
+  condition is Expression
+
+  body is Statement[]
+
+  otherwise is Ast.Conditional[]
+</Node>
 
 ```js
 case Ast.Conditional:
@@ -225,9 +372,75 @@ case Ast.Conditional:
   break
 ```
 
+This is pretty expected. We evaluate the condition, and if it's true, we run the if-statement's body. Otherwise, we loop through the other conditions left and do the same exact thing by recursively calling `execute()`. The useful thing is that if there is an else statement in there, we've set its condition to always be true so it'll always run if the other conditions don't match up.
+
+`Ast.Set`:
+
+<Node title="Ast.Set">
+  type = "Set"
+
+  name is Identifier
+
+  property is Identifer
+
+  value is Expression
+</Node>
+
+```js
+case Ast.Set:
+  if (!this.inScope(scope, node.caller))
+    this.error(`${node.caller} is not defined in current scope`)
+  scope[node.caller][node.property] = this.evaluate(node.value, scope)
+  break
+```
+
+Of course, with a setter, one has to have a getter. That sounds like a duty for `evaluate`, of course, since we're getting a value:
+
+<Node title="Ast.Get">
+  name = "Get"
+
+  caller is Identifier
+
+  property is Identifier
+
+  isExpr is boolean
+</Node>
+
+```js
+case Ast.Get:
+  const caller = this.evaluate(value.caller, scope)
+
+  let get
+  if (value.isExpr) get = caller[this.evaluate(value.property, scope)]
+  else get = caller[value.property]
+
+  if (get instanceof Function) return get.bind(caller)
+  return get
+```
+
+We're finally going to make use of that extra `isExpr` property we've attached to our getter nodes!
+
+But also, notice the last part of this - we have a special case for properties that actually happen to be functions - we make sure to *bind* the function to the caller. What does this mean exactly? Well, let me give you a quick example in JavaScript. Run `node` in a terminal somewhere:
+
+```js
+let test = [1, 2, 3]
+let push = test.push  // References the push method on test
+push(4)
+
+// > Uncaught TypeError: Cannot convert undefined or null to object at push (<anonymous>)
+```
+
+This doesn't work because the `push` method is no longer "attached" to the original array, the caller. We don't want to run into this kind of problem, so we've just made sure to bind methods with their caller.
+
+And that wraps up our interpreter! We've tackled every type of node our AST could possibly generate, so we're done. There's just one last step, and this one's actually a lot of fun!
+
 ## The standard library
 
 This is great and dandy, but there's one thing we can't really do, and that is: print something to the console! What's the point of our programming language if we can't write "Hello, world!" in it and view what our values are? Not much, honestly. Let's fix that now with a standard library in `stdlib.js`:
+
+<aside>
+  By a lot of fun, I mean there's a ton of options you can add here!
+</aside>
 
 ```js
 export default {
@@ -258,7 +471,63 @@ Hello, world!
 
 Oh smokes. Our programming language is working! 🎉 🎉 🎉
 
-Can we run that program that was at the beginning of this journey? Let's try it:
+Can we run that program that was at the beginning of this journey? Let's add a few more features to our standard library first and try again:
+
+<aside>
+  Orpheus is going to use `Canvas` and `Color` to simulate changes on a digital easel, and then map it to a real easel.
+</aside>
+
+```js
+class Canvas {
+  constructor(rows = 64, cols = 64) {
+    this.default = { r: 0, g: 0, b: 0 }
+    this.rows = rows
+    this.cols = cols
+    this.grid = []
+    for (let i = 0; i < cols * rows; i++) this.grid.push(this.default)
+  }
+
+  get([x, y]) {
+    return this.grid[y * this.cols + x]
+  }
+
+  fill([x, y, color]) {
+    let cell = this.grid[y * this.cols + x]
+    if (!cell)
+      throw new Error(
+        `Cell at (${x}, ${y}) out of range for ${this.rows}x${this.cols} canvas`
+      )
+    cell.r = color.r
+    cell.g = color.g
+    cell.b = color.b
+  }
+
+  erase([x, y]) {
+    let cell = this.grid[y * this.cols + x]
+    if (!cell)
+      throw new Error(
+        `Cell at (${x}, ${y}) out of range for ${this.rows}x${this.cols} canvas`
+      )
+    cell = { ...this.default }
+  }
+}
+
+export default {
+  Canvas: new Canvas(),
+  Color: members => {
+    let instance = {}
+    for (let key of Object.keys(members)) {
+      if (!['r', 'g', 'b'].includes(key))
+        throw new Error(`Unexpected member ${key} when creating color`)
+      instance[key] = members[key]
+    }
+    return instance
+  },
+  // ...
+}
+```
+
+Ok! Go ahead and run `node easel.js test.easel`.
 
 <details open>
   <summary>`test.easel`</summary>
@@ -360,11 +629,20 @@ painting()
 
 ---
 
+~ ...
+
+{ r: 0, g: 255, b: 0}
+{ r: 0, g: 0, b: 0 }
+{ r: 0, g: 255, b: 0 }
+{ r: 0, g: 255, b: 0 }
+{ r: 0, g: 255, b: 0 }
+
+~ ...
 
 ```
 </details>
 
-Congrats. You just wrote a programming language. That was pretty magical, wasn't it?
+Congrats. You, you just wrote a programming language. That was pretty magical, wasn't it?
 
 <img src="/cartoons/wizard.png" style={{ width: "40%" }} />
 
@@ -467,3 +745,5 @@ The only different here, frankly, is that we introduce `hadError`. The logic is 
 And that's really all! Now you can fire up a terminal, run `node easel.js`, and boom! you have an interpreter that reads line by line.
 
 What about multiple lines? Well, the logic behind multiple lines is that we'll check if the end of our first line is representative of a list of sorts. Basically, then: left brackets, left braces, and left parentheses. Then we'll keep reading and keeping track of the given operator until we reach the matching closing one. [TODO]
+
+*The complete code here is at [intepreter.js](https://github.com/hackclub/langjam/blob/main/easel/interpreter.js).*

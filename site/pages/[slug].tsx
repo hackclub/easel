@@ -2,7 +2,6 @@ import fs from 'fs'
 import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
 import { serialize } from 'next-mdx-remote/serialize'
 import Link from 'next/link'
-import path from 'path'
 import { remark } from 'remark'
 import remarkToc from 'remark-toc'
 import 'highlight.js/styles/base16/solarized-light.min.css'
@@ -12,10 +11,13 @@ import Lexer from '@/components/interactive/Lexer'
 import LexerParserTransform from '@/components/interactive/LexerParserTransform'
 import dynamic from 'next/dynamic'
 import path from 'path'
+import Head from 'next/head'
+import Meta from '@hackclub/meta'
+import Node from '@/components/interactive/Node'
 
 const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
 
-const components = { Canvas, Lexer, Mermaid, LexerParserTransform }
+const components = { Canvas, Lexer, Mermaid, LexerParserTransform, Node }
 
 export default function Index({
   parts,
@@ -34,6 +36,10 @@ export default function Index({
 
   return (
     <>
+      <Meta
+        as={Head}
+        title={`Orpheus' Hacky Guide to Writing a Programming Language | ${title}`}
+      />
       <header>
         <div>
           <img

@@ -1,0 +1,21 @@
+.node {
+  border: 2px solid var(--theme);
+  width: fit-content;
+
+  > div {
+    padding-inline: 1rem;
+
+    p {
+      margin: 0 !important;
+    }
+  }
+
+  > div:nth-child(1) {
+    border-bottom: 2px dotted var(--theme);
+    text-align: center;
+  }
+
+  > div:nth-child(2) {
+    padding: 1rem;
+  }
+}
