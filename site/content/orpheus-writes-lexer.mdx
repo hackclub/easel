@@ -147,7 +147,17 @@ class Lexer {
 }
 ```
 
-Cool! Now we can see what the next character is. The most logical step, now that we can peek at the next character, is to actually move to the next character. Let's call this *eating*. It'll look pretty similar to `peek()`, except we'll update the
+Cool! Now we can see what the next character is. The most logical step, now that we can peek at the next character, is to actually move to the next character. Let's call this advancing. It'll look pretty similar to `peek()`, except we'll update what character we're on rather then just looking ahead:
+
+```js
+advance() {
+  if (this.current >= this.program.length) return '\0'
+  this.column++
+  return this.program[this.current++]
+}
+```
+
+Ok. Let's start writing this `scanToken` method:
 
 ```js
 class Lexer {
@@ -218,10 +228,3062 @@ class Lexer {
 }
 ```
 
+<aside>
+  Repetitive but fun!
+</aside>
 
+Perfect. Let's take a look at our tokens. LeftParen, check. RightParen, check. LeftBrace, check. RightBrace, check. LeftBracket, check. RightBracket, check. Period, check. Comma, check. Colon, check. Keyword, Identifier - we'll get to those later.
 
-Woah! Take a bow. Here's our lexer, in action:
+Strings! Let's add a case to take care of strings now. The idea is that we'll keep going until we reach a matching closing quote. That looks something like:
 
-[interactive look at the tokens, this time you can write code and turn it into tokens both in text form and in interactive form]
+```js
+case "'":
+case '"':
+  // String
+  let string = []
+  while (this.peek() !== char) {
+    string.push(this.advance())
+    if (this.peek() == '\0')
+      // String wasn't closed
+      this.error('Unexpected end of file; expected a closing quote')
+  }
+  this.advance() // Skip closing quote
+  string = string.join('')
+  return this.tokens.push(
+    new Token(TOKENS.String, string, string, this.line, this.column)
+  )
+```
+
+We remember to deal with both quotes, and if we reach the end of the file without finding a closing quote, that's a problem and we make sure to let the user know. Pretty solid, eh?
+
+Cool. String, check. Number, Boolean - we'll get to those later. Or - let's work on Or! The operator has two pipe characters. That means we need to see the next-next character. A smarter way of doing this, actually, is to introduce a new helper method, called `match()`, that will try to move to the next character but only if it matches up with what we expect the next character to be:
+
+```js
+match(char) {
+  if (this.peek() === char) return this.advance()
+  return false
+}
+```
+
+That packs a double suckerpunch like so:
+
+```js
+case '|':
+  if (this.match('|'))
+    return this.tokens.push(
+      new Token(TOKENS.Or, '||', '||', this.line, this.column)
+    )
+```
+
+Pretty ingenious. We can take care of a bunch of other tokens using this strat too:
+
+```js
+case '>':
+  if (this.match('='))
+    return this.tokens.push(
+      new Token(TOKENS.Gte, '>=', '>=', this.line, this.column)
+    )
+  return this.tokens.push(
+    new Token(TOKENS.Gt, '>', '>', this.line, this.column)
+  )
+case '<':
+  if (this.match('='))
+    return this.tokens.push(
+      new Token(TOKENS.Lte, '<=', '<=', this.line, this.column)
+    )
+  return this.tokens.push(
+    new Token(TOKENS.Lt, '<', '<', this.line, this.column)
+  )
+case '=':
+  if (this.match('='))
+    return this.tokens.push(
+      new Token(TOKENS.Equiv, '==', '==', this.line, this.column)
+    )
+  return this.tokens.push(
+    new Token(TOKENS.Equal, '=', '=', this.line, this.column)
+  )
+case '&':
+  if (this.match('&'))
+    return this.tokens.push(
+      new Token(TOKENS.And, '&&', '&&', this.line, this.column)
+    )
+case '!':
+  if (this.match('='))
+    return this.tokens.push(
+      new Token(TOKENS.NotEquiv, '!=', '!=', this.line, this.column)
+    )
+  return this.tokens.push(
+    new Token(TOKENS.Not, '!', '!', this.line, this.column)
+  )
+```
+
+That takes care of most of our possible tokens.
+
+Finally. What if our character doesn't match any of these tokens? In that case, a set of characters might match up to an appropriate token - I'm thinking either a Number, Identifier, or Keyword. Let's deal with all of this in our default branch!
+
+```js
+default:
+  // Let's fill this in!
+```
+
+Ok. Let's fill this in one by one with all the cases. How about numbers first? The criteria is easy: numbers are made up of numeric digits. Because we don't distinguish between ints and floats, a number could also include a singular period. Thus, we can do something like this:
+
+```js
+default:
+  if (isNumber(char)) {
+    let number = [char]
+    while (isNumber(this.peek()) || (this.peek() === "." && !number.includes("."))) 
+      number.push(this.advance())
+    numnber = number.join("")
+    return this.tokens.push(
+      new Token(
+        TOKENS.Number,
+        number,
+        Number(number),
+        this.line,
+        this.column
+      )
+    )
+  }
+```
+
+Our first number is our current character. Then, we keep eating the next character while it's a number or it's the first period we encounter. When we finally hit a character that doesn't meet either criteria, we have a Number token!
+
+This relies on a helper function we don't have yet, `isNumber`. Let's nest that function inside `scanToken()`:
+
+```js
+const isNumber = char => char >= '0' && char <= '9'
+```
+
+Ok, the next obvious next step is to read a string without spaces in. That's what identifiers and keywords are all about - the only extra thing we'll need to do for keywords is check if they belong to a list of reserved keywords. Let's set up that list first at the top of `lexer.js`:
+
+```js
+export const KEYWORDS = {
+  prepare: 'prepare',
+  as: 'as', // Variables
+  brush: 'brush',
+  prep: 'prep',
+  has: 'has', // Structs
+  sketch: 'sketch',
+  needs: 'needs',
+  finished: 'finished', // Functions
+  loop: 'loop',
+  through: 'through',
+  while: 'while', // Loops
+  if: 'if',
+  elif: 'elif',
+  else: 'else' // Conditionals
+}
+```
+
+Now that we've got that, we can deal with identifiers and keywords:
+
+```js
+if (isNumber(char)) {
+  // ...
+} else if (isChar(char)) {
+  // Identifier or keyword
+  let identifier = [char]
+  while (isAlphanumeric(this.peek())) identifier.push(this.advance())
+  identifier = identifier.join('')
+  if (Object.keys(KEYWORDS).includes(identifier)) 
+    return this.tokens.push(
+      new Token(
+        TOKENS.Keyword,
+        identifier,
+        KEYWORDS[identifier],
+        this.line,
+        this.column
+      )
+    )
+  else if (identifier === 'true' || identifier === 'false')
+    return this.tokens.push(
+      new Token(TOKENS.Boolean, identifier, identifier === 'true')
+    )
+  return this.tokens.push(
+    new Token(
+      TOKENS.Identifier,
+      identifier,
+      identifier,
+      this.line,
+      this.column
+    )
+  )
+} else this.error('Unexpected symbol ' + char)
+```
+
+Notice how it's not an else statement but an else-if statement that checks if the current character meets the criteria of `isChar()`. We don't want to accept all characters for our identifiers and keywords - for example, variable names like `~testVar` shouldn't be allowed, and so we have a final else statement that will throw an error if we encounter an unexpected symbol. Let's see what we can accept in `isChar()`:
+
+```js
+const isChar = char =>
+  (char >= 'A' && char <= 'Z') ||
+  (char >= 'a' && char <= 'z') ||
+  char == '_'
+```
+
+Inside the else-if statement though, we use a different function, `isAlphanumeric`, since our identifiers can have numbers in them (just not the first character!):
+
+```js
+const isAlphanumeric = char => isNumber(char) || isChar(char)
+```
+
+Awesome. This is all that we really need for our lexer, but there's just two cases we need to deal with: comments and whitespace. Since Easel doesn't rely on whitespace, it makes sense to just ignore any characters that are whitespace-related. Let's deal with these two cases:
+
+```js
+case '~':
+  // Comments
+  while (this.peek() !== '\n' && this.peek() !== '\0') this.advance()
+  return
+case ' ':
+case '\r':
+  // Ignore whitespace
+  return
+case '\n':
+  // Also ignore, but update line
+  this.line++
+  this.column = 0
+  return
+```
+
+<aside>
+  We've crimped it because it is rather long. It's like that one time Orpheus tried to print a program out but it accidentally came out on the sticker printer.
+</aside>
+
+Ok! Let's test out lexer now! Run `node easel.js test.easel --dbg` and you'll get this:
+
+<details>
+  <summary>`tokens.json`</summary>
+
+```json
+[
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 1,
+    "column": 8
+  },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 1,
+    "column": 13
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 1,
+    "column": 16
+  },
+  { "type": "Number", "value": "50", "content": 50, "line": 1, "column": 19 },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 2,
+    "column": 7
+  },
+  {
+    "type": "Identifier",
+    "value": "cols",
+    "content": "cols",
+    "line": 2,
+    "column": 12
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 2,
+    "column": 15
+  },
+  { "type": "Number", "value": "20", "content": 20, "line": 2, "column": 18 },
+  {
+    "type": "Keyword",
+    "value": "brush",
+    "content": "brush",
+    "line": 4,
+    "column": 5
+  },
+  {
+    "type": "Identifier",
+    "value": "Cell",
+    "content": "Cell",
+    "line": 4,
+    "column": 10
+  },
+  {
+    "type": "Keyword",
+    "value": "has",
+    "content": "has",
+    "line": 4,
+    "column": 14
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 4,
+    "column": 16
+  },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 4,
+    "column": 18
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 4, "column": 19 },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 4,
+    "column": 21
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 4, "column": 22 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 4,
+    "column": 27
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 4,
+    "column": 29
+  },
+  {
+    "type": "Keyword",
+    "value": "sketch",
+    "content": "sketch",
+    "line": 7,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "seed",
+    "content": "seed",
+    "line": 7,
+    "column": 11
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 7,
+    "column": 13
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 8,
+    "column": 9
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 8,
+    "column": 15
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 8,
+    "column": 18
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 8,
+    "column": 20
+  },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 8,
+    "column": 21
+  },
+  {
+    "type": "Keyword",
+    "value": "loop",
+    "content": "loop",
+    "line": 10,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 10,
+    "column": 8
+  },
+  {
+    "type": "Keyword",
+    "value": "through",
+    "content": "through",
+    "line": 10,
+    "column": 16
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 10,
+    "column": 18
+  },
+  { "type": "Number", "value": "0", "content": 0, "line": 10, "column": 19 },
+  { "type": "Comma", "value": ",", "content": ",", "line": 10, "column": 20 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 10,
+    "column": 25
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 10,
+    "column": 26
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 10,
+    "column": 28
+  },
+  {
+    "type": "Keyword",
+    "value": "loop",
+    "content": "loop",
+    "line": 11,
+    "column": 8
+  },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 11,
+    "column": 10
+  },
+  {
+    "type": "Keyword",
+    "value": "through",
+    "content": "through",
+    "line": 11,
+    "column": 18
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 11,
+    "column": 20
+  },
+  { "type": "Number", "value": "0", "content": 0, "line": 11, "column": 21 },
+  { "type": "Comma", "value": ",", "content": ",", "line": 11, "column": 22 },
+  {
+    "type": "Identifier",
+    "value": "cols",
+    "content": "cols",
+    "line": 11,
+    "column": 27
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 11,
+    "column": 28
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 11,
+    "column": 30
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 12,
+    "column": 13
+  },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 12,
+    "column": 18
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 12,
+    "column": 21
+  },
+  { "type": "Boolean", "value": "false", "content": false },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 13,
+    "column": 13
+  },
+  {
+    "type": "Identifier",
+    "value": "chance",
+    "content": "chance",
+    "line": 13,
+    "column": 20
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 13,
+    "column": 23
+  },
+  {
+    "type": "Identifier",
+    "value": "random",
+    "content": "random",
+    "line": 13,
+    "column": 30
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 13,
+    "column": 31
+  },
+  { "type": "Number", "value": "0", "content": 0, "line": 13, "column": 32 },
+  { "type": "Comma", "value": ",", "content": ",", "line": 13, "column": 33 },
+  {
+    "type": "Number",
+    "value": "100",
+    "content": 100,
+    "line": 13,
+    "column": 37
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 13,
+    "column": 38
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 14,
+    "column": 8
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 14,
+    "column": 10
+  },
+  {
+    "type": "Identifier",
+    "value": "chance",
+    "content": "chance",
+    "line": 14,
+    "column": 16
+  },
+  { "type": "Lt", "value": "<", "content": "<", "line": 14, "column": 18 },
+  { "type": "Number", "value": "20", "content": 20, "line": 14, "column": 21 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 14,
+    "column": 22
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 14,
+    "column": 24
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 15,
+    "column": 15
+  },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 15,
+    "column": 20
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 15,
+    "column": 23
+  },
+  { "type": "Boolean", "value": "true", "content": true },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 16,
+    "column": 7
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 17,
+    "column": 11
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 17, "column": 12 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 17,
+    "column": 15
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 17,
+    "column": 16
+  },
+  {
+    "type": "Keyword",
+    "value": "prep",
+    "content": "prep",
+    "line": 17,
+    "column": 20
+  },
+  {
+    "type": "Identifier",
+    "value": "Cell",
+    "content": "Cell",
+    "line": 17,
+    "column": 25
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 17,
+    "column": 26
+  },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 17,
+    "column": 27
+  },
+  { "type": "Colon", "value": ":", "content": ":", "line": 17, "column": 28 },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 17,
+    "column": 30
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 17, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 17,
+    "column": 33
+  },
+  { "type": "Colon", "value": ":", "content": ":", "line": 17, "column": 34 },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 17,
+    "column": 36
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 17, "column": 37 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 17,
+    "column": 42
+  },
+  { "type": "Colon", "value": ":", "content": ":", "line": 17, "column": 43 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 17,
+    "column": 48
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 17,
+    "column": 49
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 17,
+    "column": 50
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 18,
+    "column": 5
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 19,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "finished",
+    "content": "finished",
+    "line": 20,
+    "column": 10
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 20,
+    "column": 16
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 21,
+    "column": 1
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 23,
+    "column": 7
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 23,
+    "column": 13
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 23,
+    "column": 16
+  },
+  {
+    "type": "Identifier",
+    "value": "seed",
+    "content": "seed",
+    "line": 23,
+    "column": 21
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 23,
+    "column": 22
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 23,
+    "column": 23
+  },
+  {
+    "type": "Keyword",
+    "value": "sketch",
+    "content": "sketch",
+    "line": 25,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "getNeighbors",
+    "content": "getNeighbors",
+    "line": 25,
+    "column": 19
+  },
+  {
+    "type": "Keyword",
+    "value": "needs",
+    "content": "needs",
+    "line": 25,
+    "column": 25
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 25,
+    "column": 27
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 25,
+    "column": 32
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 25, "column": 33 },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 25,
+    "column": 39
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 25,
+    "column": 40
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 25,
+    "column": 42
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 27,
+    "column": 9
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 27,
+    "column": 19
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 27,
+    "column": 22
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 27,
+    "column": 24
+  },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 27,
+    "column": 25
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 30,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 30,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 30,
+    "column": 11
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 30, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 30,
+    "column": 18
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 30, "column": 20 },
+  { "type": "Number", "value": "1", "content": 1, "line": 30, "column": 22 },
+  { "type": "Gt", "value": ">", "content": ">", "line": 30, "column": 24 },
+  { "type": "Number", "value": "0", "content": 0, "line": 30, "column": 26 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 30,
+    "column": 27
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 30,
+    "column": 29
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 31,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 31, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 31,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 31,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 31,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 31,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 31,
+    "column": 29
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 31, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 31,
+    "column": 36
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 31, "column": 38 },
+  { "type": "Number", "value": "1", "content": 1, "line": 31, "column": 40 },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 31,
+    "column": 41
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 31,
+    "column": 42
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 32,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 33,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 33,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 33,
+    "column": 11
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 33, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 33,
+    "column": 18
+  },
+  { "type": "Gt", "value": ">", "content": ">", "line": 33, "column": 20 },
+  { "type": "Number", "value": "0", "content": 0, "line": 33, "column": 22 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 33,
+    "column": 23
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 33,
+    "column": 25
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 34,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 34, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 34,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 34,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 34,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 34,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 34,
+    "column": 29
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 34, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 34,
+    "column": 36
+  },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 34,
+    "column": 37
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 34,
+    "column": 38
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 35,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 36,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 36,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 36,
+    "column": 11
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 36, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 36,
+    "column": 18
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 36, "column": 20 },
+  { "type": "Number", "value": "1", "content": 1, "line": 36, "column": 22 },
+  { "type": "Gt", "value": ">", "content": ">", "line": 36, "column": 24 },
+  { "type": "Number", "value": "0", "content": 0, "line": 36, "column": 26 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 36,
+    "column": 27
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 36,
+    "column": 29
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 37,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 37, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 37,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 37,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 37,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 37,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 37,
+    "column": 29
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 37, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 37,
+    "column": 36
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 37, "column": 38 },
+  { "type": "Number", "value": "1", "content": 1, "line": 37, "column": 40 },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 37,
+    "column": 41
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 37,
+    "column": 42
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 38,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 39,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 39,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 39,
+    "column": 11
+  },
+  { "type": "Gt", "value": ">", "content": ">", "line": 39, "column": 13 },
+  { "type": "Number", "value": "0", "content": 0, "line": 39, "column": 15 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 39,
+    "column": 16
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 39,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 40,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 40, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 40,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 40,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 40,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 40,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 40,
+    "column": 29
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 40, "column": 31 },
+  { "type": "Number", "value": "1", "content": 1, "line": 40, "column": 33 },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 40,
+    "column": 34
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 40,
+    "column": 35
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 41,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 42,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 42,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 42,
+    "column": 11
+  },
+  { "type": "Lt", "value": "<", "content": "<", "line": 42, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 42,
+    "column": 19
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 42, "column": 20 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 42,
+    "column": 26
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 42, "column": 28 },
+  { "type": "Number", "value": "1", "content": 1, "line": 42, "column": 30 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 42,
+    "column": 31
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 42,
+    "column": 33
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 43,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 43, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 43,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 43,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 43,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 43,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 43,
+    "column": 29
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 43, "column": 31 },
+  { "type": "Number", "value": "1", "content": 1, "line": 43, "column": 33 },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 43,
+    "column": 34
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 43,
+    "column": 35
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 44,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 45,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 45,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 45,
+    "column": 11
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 45, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 45,
+    "column": 18
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 45, "column": 20 },
+  { "type": "Number", "value": "1", "content": 1, "line": 45, "column": 22 },
+  { "type": "Lt", "value": "<", "content": "<", "line": 45, "column": 24 },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 45,
+    "column": 30
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 45, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 45,
+    "column": 37
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 45, "column": 39 },
+  { "type": "Number", "value": "1", "content": 1, "line": 45, "column": 41 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 45,
+    "column": 42
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 45,
+    "column": 44
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 46,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 46, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 46,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 46,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 46,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 46,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 46,
+    "column": 29
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 46, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 46,
+    "column": 36
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 46, "column": 38 },
+  { "type": "Number", "value": "1", "content": 1, "line": 46, "column": 40 },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 46,
+    "column": 41
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 46,
+    "column": 42
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 47,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 48,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 48,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 48,
+    "column": 11
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 48, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 48,
+    "column": 18
+  },
+  { "type": "Lt", "value": "<", "content": "<", "line": 48, "column": 20 },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 48,
+    "column": 26
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 48, "column": 27 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 48,
+    "column": 33
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 48, "column": 35 },
+  { "type": "Number", "value": "1", "content": 1, "line": 48, "column": 37 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 48,
+    "column": 38
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 48,
+    "column": 40
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 49,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 49, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 49,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 49,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 49,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 49,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 49,
+    "column": 29
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 49, "column": 31 },
+  { "type": "Number", "value": "1", "content": 1, "line": 49, "column": 33 },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 49,
+    "column": 34
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 49,
+    "column": 35
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 50,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 51,
+    "column": 4
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 51,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 51,
+    "column": 11
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 51, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 51,
+    "column": 18
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 51, "column": 20 },
+  { "type": "Number", "value": "1", "content": 1, "line": 51, "column": 22 },
+  { "type": "Lt", "value": "<", "content": "<", "line": 51, "column": 24 },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 51,
+    "column": 30
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 51, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 51,
+    "column": 37
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 51, "column": 39 },
+  { "type": "Number", "value": "1", "content": 1, "line": 51, "column": 41 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 51,
+    "column": 42
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 51,
+    "column": 44
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 52,
+    "column": 13
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 52, "column": 14 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 52,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 52,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 52,
+    "column": 23
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 52,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "index",
+    "content": "index",
+    "line": 52,
+    "column": 29
+  },
+  { "type": "Plus", "value": "+", "content": "+", "line": 52, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "rows",
+    "content": "rows",
+    "line": 52,
+    "column": 36
+  },
+  { "type": "Minus", "value": "-", "content": "-", "line": 52, "column": 38 },
+  { "type": "Number", "value": "1", "content": 1, "line": 52, "column": 40 },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 52,
+    "column": 41
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 52,
+    "column": 42
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 53,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 55,
+    "column": 9
+  },
+  {
+    "type": "Identifier",
+    "value": "alive",
+    "content": "alive",
+    "line": 55,
+    "column": 15
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 55,
+    "column": 18
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 55,
+    "column": 20
+  },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 55,
+    "column": 21
+  },
+  {
+    "type": "Keyword",
+    "value": "loop",
+    "content": "loop",
+    "line": 56,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "i",
+    "content": "i",
+    "line": 56,
+    "column": 8
+  },
+  {
+    "type": "Keyword",
+    "value": "through",
+    "content": "through",
+    "line": 56,
+    "column": 16
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 56,
+    "column": 18
+  },
+  { "type": "Number", "value": "0", "content": 0, "line": 56, "column": 19 },
+  { "type": "Comma", "value": ",", "content": ",", "line": 56, "column": 20 },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 56,
+    "column": 30
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 56, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 56,
+    "column": 37
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 56,
+    "column": 38
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 56,
+    "column": 40
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 57,
+    "column": 6
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 57,
+    "column": 8
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 57,
+    "column": 17
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 57,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "i",
+    "content": "i",
+    "line": 57,
+    "column": 19
+  },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 57,
+    "column": 20
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 57, "column": 21 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 57,
+    "column": 25
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 57,
+    "column": 26
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 57,
+    "column": 28
+  },
+  {
+    "type": "Identifier",
+    "value": "alive",
+    "content": "alive",
+    "line": 58,
+    "column": 11
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 58, "column": 12 },
+  {
+    "type": "Identifier",
+    "value": "add",
+    "content": "add",
+    "line": 58,
+    "column": 15
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 58,
+    "column": 16
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 58,
+    "column": 25
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 58,
+    "column": 26
+  },
+  {
+    "type": "Identifier",
+    "value": "i",
+    "content": "i",
+    "line": 58,
+    "column": 27
+  },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 58,
+    "column": 28
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 58,
+    "column": 29
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 59,
+    "column": 5
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 60,
+    "column": 3
+  },
+  {
+    "type": "Keyword",
+    "value": "finished",
+    "content": "finished",
+    "line": 62,
+    "column": 10
+  },
+  {
+    "type": "Identifier",
+    "value": "alive",
+    "content": "alive",
+    "line": 62,
+    "column": 16
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 63,
+    "column": 1
+  },
+  {
+    "type": "Keyword",
+    "value": "sketch",
+    "content": "sketch",
+    "line": 65,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "painting",
+    "content": "painting",
+    "line": 65,
+    "column": 15
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 65,
+    "column": 17
+  },
+  {
+    "type": "Keyword",
+    "value": "loop",
+    "content": "loop",
+    "line": 66,
+    "column": 6
+  },
+  {
+    "type": "Identifier",
+    "value": "i",
+    "content": "i",
+    "line": 66,
+    "column": 8
+  },
+  {
+    "type": "Keyword",
+    "value": "through",
+    "content": "through",
+    "line": 66,
+    "column": 16
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 66,
+    "column": 18
+  },
+  { "type": "Number", "value": "0", "content": 0, "line": 66, "column": 19 },
+  { "type": "Comma", "value": ",", "content": ",", "line": 66, "column": 20 },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 66,
+    "column": 26
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 66, "column": 27 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 66,
+    "column": 33
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 66,
+    "column": 34
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 66,
+    "column": 36
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 67,
+    "column": 11
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 67,
+    "column": 16
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 67,
+    "column": 19
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 67,
+    "column": 25
+  },
+  {
+    "type": "LeftBracket",
+    "value": "[",
+    "content": "[",
+    "line": 67,
+    "column": 26
+  },
+  {
+    "type": "Identifier",
+    "value": "i",
+    "content": "i",
+    "line": 67,
+    "column": 27
+  },
+  {
+    "type": "RightBracket",
+    "value": "]",
+    "content": "]",
+    "line": 67,
+    "column": 28
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 68,
+    "column": 11
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 68,
+    "column": 21
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 68,
+    "column": 24
+  },
+  {
+    "type": "Identifier",
+    "value": "getNeighbors",
+    "content": "getNeighbors",
+    "line": 68,
+    "column": 37
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 68,
+    "column": 38
+  },
+  {
+    "type": "Identifier",
+    "value": "cells",
+    "content": "cells",
+    "line": 68,
+    "column": 43
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 68, "column": 44 },
+  {
+    "type": "Identifier",
+    "value": "i",
+    "content": "i",
+    "line": 68,
+    "column": 46
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 68,
+    "column": 47
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 69,
+    "column": 6
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 69,
+    "column": 8
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 69,
+    "column": 12
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 69, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 69,
+    "column": 17
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 69,
+    "column": 18
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 69,
+    "column": 20
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 70,
+    "column": 8
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 70,
+    "column": 10
+  },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 70,
+    "column": 19
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 70, "column": 20 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 70,
+    "column": 26
+  },
+  { "type": "Lt", "value": "<", "content": "<", "line": 70, "column": 28 },
+  { "type": "Number", "value": "2", "content": 2, "line": 70, "column": 30 },
+  { "type": "Or", "value": "||", "content": "||", "line": 70, "column": 33 },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 70,
+    "column": 43
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 70, "column": 44 },
+  {
+    "type": "Identifier",
+    "value": "length",
+    "content": "length",
+    "line": 70,
+    "column": 50
+  },
+  { "type": "Gt", "value": ">", "content": ">", "line": 70, "column": 52 },
+  { "type": "Number", "value": "3", "content": 3, "line": 70, "column": 54 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 70,
+    "column": 55
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 70,
+    "column": 57
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 73,
+    "column": 15
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 73,
+    "column": 20
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 73, "column": 21 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 73,
+    "column": 25
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 73,
+    "column": 28
+  },
+  { "type": "Boolean", "value": "false", "content": false },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 74,
+    "column": 7
+  },
+  {
+    "type": "Keyword",
+    "value": "elif",
+    "content": "elif",
+    "line": 74,
+    "column": 12
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 74,
+    "column": 14
+  },
+  { "type": "Not", "value": "!", "content": "!", "line": 74, "column": 15 },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 74,
+    "column": 16
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 74,
+    "column": 20
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 74, "column": 21 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 74,
+    "column": 25
+  },
+  { "value": "&&", "content": "&&", "line": 74, "column": 28 },
+  {
+    "type": "Identifier",
+    "value": "neighbors",
+    "content": "neighbors",
+    "line": 74,
+    "column": 38
+  },
+  { "type": "Equiv", "value": "==", "content": "==", "line": 74, "column": 41 },
+  { "type": "Number", "value": "3", "content": 3, "line": 74, "column": 43 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 74,
+    "column": 44
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 74,
+    "column": 45
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 74,
+    "column": 47
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 76,
+    "column": 15
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 76,
+    "column": 20
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 76, "column": 21 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 76,
+    "column": 25
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 76,
+    "column": 28
+  },
+  { "type": "Boolean", "value": "true", "content": true },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 77,
+    "column": 7
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 78,
+    "column": 5
+  },
+  {
+    "type": "Keyword",
+    "value": "if",
+    "content": "if",
+    "line": 80,
+    "column": 6
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 80,
+    "column": 8
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 80,
+    "column": 12
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 80, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "live",
+    "content": "live",
+    "line": 80,
+    "column": 17
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 80,
+    "column": 18
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 80,
+    "column": 20
+  },
+  {
+    "type": "Keyword",
+    "value": "prepare",
+    "content": "prepare",
+    "line": 82,
+    "column": 13
+  },
+  {
+    "type": "Identifier",
+    "value": "color",
+    "content": "color",
+    "line": 82,
+    "column": 19
+  },
+  {
+    "type": "Keyword",
+    "value": "as",
+    "content": "as",
+    "line": 82,
+    "column": 22
+  },
+  {
+    "type": "Keyword",
+    "value": "prep",
+    "content": "prep",
+    "line": 82,
+    "column": 27
+  },
+  {
+    "type": "Identifier",
+    "value": "Color",
+    "content": "Color",
+    "line": 82,
+    "column": 33
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 82,
+    "column": 34
+  },
+  {
+    "type": "Identifier",
+    "value": "r",
+    "content": "r",
+    "line": 82,
+    "column": 35
+  },
+  { "type": "Colon", "value": ":", "content": ":", "line": 82, "column": 36 },
+  { "type": "Number", "value": "0", "content": 0, "line": 82, "column": 38 },
+  { "type": "Comma", "value": ",", "content": ",", "line": 82, "column": 39 },
+  {
+    "type": "Identifier",
+    "value": "g",
+    "content": "g",
+    "line": 82,
+    "column": 41
+  },
+  { "type": "Colon", "value": ":", "content": ":", "line": 82, "column": 42 },
+  {
+    "type": "Number",
+    "value": "255",
+    "content": 255,
+    "line": 82,
+    "column": 46
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 82, "column": 47 },
+  {
+    "type": "Identifier",
+    "value": "b",
+    "content": "b",
+    "line": 82,
+    "column": 49
+  },
+  { "type": "Colon", "value": ":", "content": ":", "line": 82, "column": 50 },
+  { "type": "Number", "value": "0", "content": 0, "line": 82, "column": 52 },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 82,
+    "column": 53
+  },
+  {
+    "type": "Identifier",
+    "value": "Canvas",
+    "content": "Canvas",
+    "line": 83,
+    "column": 12
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 83, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "fill",
+    "content": "fill",
+    "line": 83,
+    "column": 17
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 83,
+    "column": 18
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 83,
+    "column": 22
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 83, "column": 23 },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 83,
+    "column": 24
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 83, "column": 25 },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 83,
+    "column": 30
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 83, "column": 31 },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 83,
+    "column": 32
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 83,
+    "column": 33
+  },
+  {
+    "type": "Identifier",
+    "value": "ink",
+    "content": "ink",
+    "line": 84,
+    "column": 9
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 84,
+    "column": 10
+  },
+  {
+    "type": "Identifier",
+    "value": "Canvas",
+    "content": "Canvas",
+    "line": 84,
+    "column": 16
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 84, "column": 17 },
+  {
+    "type": "Identifier",
+    "value": "get",
+    "content": "get",
+    "line": 84,
+    "column": 20
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 84,
+    "column": 21
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 84,
+    "column": 25
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 84, "column": 26 },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 84,
+    "column": 27
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 84, "column": 28 },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 84,
+    "column": 33
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 84, "column": 34 },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 84,
+    "column": 35
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 84,
+    "column": 36
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 84,
+    "column": 37
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 85,
+    "column": 5
+  },
+  {
+    "type": "Keyword",
+    "value": "else",
+    "content": "else",
+    "line": 85,
+    "column": 10
+  },
+  {
+    "type": "LeftBrace",
+    "value": "{",
+    "content": "{",
+    "line": 85,
+    "column": 12
+  },
+  {
+    "type": "Identifier",
+    "value": "Canvas",
+    "content": "Canvas",
+    "line": 87,
+    "column": 12
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 87, "column": 13 },
+  {
+    "type": "Identifier",
+    "value": "erase",
+    "content": "erase",
+    "line": 87,
+    "column": 18
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 87,
+    "column": 19
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 87,
+    "column": 23
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 87, "column": 24 },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 87,
+    "column": 25
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 87, "column": 26 },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 87,
+    "column": 31
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 87, "column": 32 },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 87,
+    "column": 33
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 87,
+    "column": 34
+  },
+  {
+    "type": "Identifier",
+    "value": "ink",
+    "content": "ink",
+    "line": 88,
+    "column": 9
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 88,
+    "column": 10
+  },
+  {
+    "type": "Identifier",
+    "value": "Canvas",
+    "content": "Canvas",
+    "line": 88,
+    "column": 16
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 88, "column": 17 },
+  {
+    "type": "Identifier",
+    "value": "get",
+    "content": "get",
+    "line": 88,
+    "column": 20
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 88,
+    "column": 21
+  },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 88,
+    "column": 25
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 88, "column": 26 },
+  {
+    "type": "Identifier",
+    "value": "x",
+    "content": "x",
+    "line": 88,
+    "column": 27
+  },
+  { "type": "Comma", "value": ",", "content": ",", "line": 88, "column": 28 },
+  {
+    "type": "Identifier",
+    "value": "cell",
+    "content": "cell",
+    "line": 88,
+    "column": 33
+  },
+  { "type": "Period", "value": ".", "content": ".", "line": 88, "column": 34 },
+  {
+    "type": "Identifier",
+    "value": "y",
+    "content": "y",
+    "line": 88,
+    "column": 35
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 88,
+    "column": 36
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 88,
+    "column": 37
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 89,
+    "column": 5
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 90,
+    "column": 3
+  },
+  {
+    "type": "RightBrace",
+    "value": "}",
+    "content": "}",
+    "line": 91,
+    "column": 1
+  },
+  {
+    "type": "Identifier",
+    "value": "painting",
+    "content": "painting",
+    "line": 93,
+    "column": 8
+  },
+  {
+    "type": "LeftParen",
+    "value": "(",
+    "content": "(",
+    "line": 93,
+    "column": 9
+  },
+  {
+    "type": "RightParen",
+    "value": ")",
+    "content": ")",
+    "line": 93,
+    "column": 10
+  },
+  {
+    "type": "EOF",
+    "value": "\u0000",
+    "content": "\u0000",
+    "line": 93,
+    "column": 10
+  }
+]
+```
+</details>
+
+Isn't that cool? We've done that in a little more than 200 lines of code. That's pretty cool, I think. The next step is to start combining tokens into a grammar that represents our programming language, which is what writing a parser will do for us.
 
 *The complete code here is at [lexer.js](https://github.com/hackclub/langjam/blob/main/easel/lexer.js).*

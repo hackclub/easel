@@ -3,6 +3,10 @@ title: Orpheus finds an easel in the mail
 order: 1
 ---
 
+<aside> 
+  This page is more in beta than the other pages... especially plot wise. Working on it!
+</aside>
+
 It's a normal Saturday for Orpheus the dino. She wakes up, lies in bed for a while, and looks out the window.
 
 It's raining outside! She likes rainy days. You can hear the rain splattering every time a car comes by, and the soft pitter patter on the windows. It's the best sound. Add pancakes for breakfast and lunch but especially dinner and it's got to be the best day ever.
@@ -11,7 +15,7 @@ It's raining outside! She likes rainy days. You can hear the rain splattering ev
   Yes, Orpheus gets fan mail. If you want to send her some after reading this you can send them to 15 Falls Road, Shelburne VT 05482.
 </aside>
 
-Just then, the post office truck passes by and stops. Normally the mailman just stops by to drop off fan mail in the mailbox, but today he has a bigger, bulkier package. Orpheus hops up and walks to the 
+Just then, the post office truck passes by and stops. Normally the mailman just stops by to drop off fan mail in the mailbox, but today he has a bigger, bulkier package. Orpheus hops up and walks to her front door. It's a package! Orpheus gets very excited about packages. Mysterious packages, to be precise.
 
 ## Easel, the programming language
 
@@ -19,13 +23,13 @@ Orpheus gingerly opens the package and pulls out the contents one by one. She re
 
 *Here's the [easel in question](https://www.adafruit.com/product/5362?gad_source=1&gclid=Cj0KCQjwiYOxBhC5ARIsAIvdH526LPYOruOasZj9FkW5TYN6OlXZMV3q0ER-CwS5_S9a3JUZIJ-4d2UaAkGhEALw_wcB).*
 
-Orpheus has wanted 
+Orpheus has wanted to paint a easel for the longest time.
 
-Orpheus reads the letter.
+There's also a letter that. Orpheus reads the letter.
 
 ---
 
-I hope this letter finds you well.
+I hope this letter finds you well. [TODO]
 
 Signed,
 
@@ -33,13 +37,10 @@ your mysterious benefactor
 
 ---
 
-Ooh.
+Ooh. I guess it's time for Orpheus to write a programming language so she can start painting the easel. Here's Easel:
 
 <aside>
-  Go ahead. Type it out! It's good for your health. Well, to be specific, it's
-  good for Orpheus' health. She only has three claws (fingers?) on either hand.
-  Her hand-o-pedon (yes, I learned today that it's a thing) says it's good for
-  her health. I trust docotors. [shrugs]
+  Is that... [Conway's Game of Life](https://playgameoflife.com/)? Yup, and we're going to get it to run on an easel.
 </aside>
 
 ```easel
@@ -68,6 +69,62 @@ prepare cells as seed()
 
 sketch getNeighbors needs (cells, index) {
   ~ Get neighbors around seed
+  prepare neighbors as []
+
+  ~ Populate neighbors
+  if (index - rows - 1 > 0) {
+    neighbors.add(cells[index - rows - 1])
+  }
+  if (index - rows - 0) {
+    neighbors.add(cells[index - rows])
+  }
+  if (index - rows + 1 > 0) {
+    neighbors.add(cells[index - rows + 1])
+  }
+  if (index > 0) {
+    neighbors.add(cells[index - 1])
+  }
+  if (index < cells.length - 1) {
+    neighbors.add(cells[index + 1])
+  }
+  if (index + rows - 1 < cells.length - 1) {
+    neighbors.add(cells[index + rows - 1])
+  }
+  if (index + rows < cells.length - 1) {
+    neighbors.add(cells[index + rows])
+  }
+  if (index + rows + 1 < cells.length - 1) {
+    neighbors.ass(cells[index + rows + 1])
+  }
+
+  prepare alive as []
+  loop i through (0, neighbors.length) {
+    if (neighbors[i].live) {
+      alive.add(neighbors[i])
+    }
+  }
+  finished alive
+}
+
+sketch painting {
+  ~ This loop runs every iteration and must be in every program
+  loop i through (0, cells.length) {
+    prepare cell as cells[i]
+    prepare neighbors as getNeighbors(cell, i)
+    if (cell.live) {
+      if (neighbors.length < 2 || neighbors.length > 3) {
+        ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
+        ~ Any live cell with more than three live neighbors dies, as if by underpopulation
+        prepare cell.live as false
+      } elif (!(cell.live && neighbors == 3)) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    }
+
+    ink(Canva.get(cell.x, cell.y))
+    if 
+  }
 }
 ```
 
@@ -75,7 +132,7 @@ I bet you can already start to see the different features Easel has.
 
 ### Variables
 
-Variables are created with the `prepare` keyword and `as` keywords, like `prepare [name] as [value]`. We can have strings, numbers, or booleans.
+Variables are created with the `prepare` keyword and `as` keywords, like `prepare [name] as [value]`. We can have strings, numbers, booleans, or arrays.
 
 ### Comments
 
@@ -85,15 +142,43 @@ Variables are created with the `prepare` keyword and `as` keywords, like `prepar
 
 Comments are dictated by the tilde symbol. Me and Orpheus have decided that it looks pretty similar to her eyebrows when she's surprised by something.
 
-## Functions
+### Structs
 
-We call functions sketches, so 
+Structs are basically maps/objects/dicts/whatever you want to call them with a predefined list of keys. Defining a struct looks something like `brush Cell has { x, y, live }`. Creating a struct looks something like `prep Cell(x: 1, y: 1, live: false)`. Get it? You're prepping a brush. Hehe.
+
+### Functions
+
+We call functions sketches so we define them with the sketch keyword. If a function takes in parameters, you'll need to use the `needs` keyword before defining those.
+
+### Loops and if-else stataments
+
+These are pretty obvious.
+
+```plaintext
+sketch includes needs (array, value) {
+  loop i through (0, array.length) {
+    if (array[i] == value) {
+      finished true
+    }
+  }
+
+  finished false
+}
+
+prepare test as ["hello", "world", "fox"]
+
+if (!(false && includes(test, "foxes"))) {
+  ink("NOT (false AND includes foxes in test) evaluates to true")
+}
+```
+
+Easel has support for the usual operators: AND `&&`, OR `||`, and NOT `!`.
 
 ## Setup
 
 Let's start doing this! Orpheus wants to make sure we've got the basics now. It's like building Lego, really. The first step is to open dat terminal and start a new project:
 
-```
+```plaintext
 mkdir easel
 cd easel
 npm init -y
@@ -113,6 +198,13 @@ Open up the `package.json` that's been created, and add this extra line:
 ```
 
 This will let us use the modern `import` syntax. Next, let's start writing some code! Here's some boilerplate code to go inside `easel.js`:
+
+<aside>
+  Go ahead. Type it out! It's good for your health. Well, to be specific, it's
+  good for Orpheus' health. She only has three claws (fingers?) on either hand.
+  Her hand-o-pedon (yes, I learned today that it's a thing) says it's good for
+  her health. I trust docotors. [shrugs]
+</aside>
 
 ```js
 import fs from 'fs'

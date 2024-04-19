@@ -124,6 +124,7 @@ export class Parser {
 
           return new Ast.Instance(id, members)
         }
+        break
       case TOKENS.String:
       case TOKENS.Number:
       case TOKENS.Boolean:

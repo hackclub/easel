@@ -27,8 +27,7 @@ export const TOKENS = {
   Minus: 'Minus',
   Asterisk: 'Asterisk',
   Slash: 'Slash',
-  EOF: 'EOF',
-  Newline: 'Newline'
+  EOF: 'EOF'
 }
 
 export const KEYWORDS = {
@@ -226,9 +225,8 @@ export class Lexer {
           while (
             isNumber(this.peek()) ||
             (this.peek() === '.' && !number.includes('.'))
-          ) {
+          )
             number.push(this.advance())
-          }
           number = number.join('')
           return this.tokens.push(
             new Token(
