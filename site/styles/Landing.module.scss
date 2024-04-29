@@ -1,7 +1,37 @@
-.header {
+@import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Bebas+Neue&display=swap');
+
+.main {
   text-align: center;
-  font-size: 2.5rem;
-  font-family: 'Newsreader', sans-serif;
   color: var(--hint);
   padding: 4rem;
+
+  h1 {
+    font-size: 5rem;
+    color: var(--theme);
+    max-width: 50vw;
+    margin: auto;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    font-style: italic;
+    margin-bottom: 0.25em;
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+
+  a {
+    background-color: var(--theme);
+    color: white;
+    padding: 10px 18px;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: all 0.1s;
+
+    &:hover {
+      transform: scale(101%);
+    }
+  }
 }

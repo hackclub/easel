@@ -14,10 +14,28 @@ import path from 'path'
 import Head from 'next/head'
 import Meta from '@hackclub/meta'
 import Node from '@/components/interactive/Node'
+import Editor, { Code } from '@/components/Editor'
+import rehypeSlug from 'rehype-slug'
+import Highlight from 'react-highlight'
+import { rehype } from 'rehype'
 
 const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
 
-const components = { Canvas, Lexer, Mermaid, LexerParserTransform, Node }
+const components = {
+  Canvas,
+  Lexer,
+  Mermaid,
+  LexerParserTransform,
+  Node,
+  pre: ({ children }) => {
+    return (
+      <>
+        <Highlight>{children}</Highlight>
+        <Editor />
+      </>
+    )
+  }
+}
 
 export default function Index({
   parts,
@@ -50,9 +68,9 @@ export default function Index({
             id="logo"
             src="https://assets.hackclub.com/flag-orpheus-top.svg"
           />
-          <h1>
-            orpheus' hacky guide to writing a programming language (beta draft!)
-          </h1>
+          <Link href="/">
+            <h1>orpheus' hacky guide to writing a programming language</h1>
+          </Link>
         </div>
         <div>
           <h2>chapters</h2>
@@ -78,9 +96,9 @@ export default function Index({
         </p>
       </section>
       <div className="prose">
-        {/* <div className="toc">
+        <div className="toc">
           <MDXRemote {...toc} />
-        </div> */}
+        </div>
         <h1>{title}</h1>
         <MDXRemote {...page} components={components} />
         <div className="pagination">
@@ -139,18 +157,33 @@ export async function getServerSideProps({
 
   if (!page) return { notFound: true }
 
+  const trim = (str, chars) => str.split(chars).filter(Boolean).join(chars)
+
   const generateToc = async (content: string) => {
     const headings = [
       '### Table of contents',
       ...content.split('\n').filter(x => /^[#]{1,6} /.test(x))
     ].join('\n')
+    const slugger = rehype()
+      .data('settings', { fragment: true })
+      .use(rehypeSlug)
     const toc = String(await remark().use(remarkToc).process(headings))
-    let result = toc
-      .split('\n')
-      .filter(x => x.startsWith('#'))
-      .join('\n')
-    if (result === '### Table of contents') result += '\nNo headings.'
-    return result
+    let result: string[] = toc.split('\n').filter(x => x.startsWith('#'))
+    if (result.length === 1) result.push('\nNo headings.')
+    else
+      result = await Promise.all(
+        result.map(async (heading, idx) => {
+          if (idx === 0) return heading
+          const processed = String(
+            await slugger.process(`<h1>${trim(heading, '#').trim()}</h1>`)
+          )
+          return `[${trim(heading, '#').trim()}](#${trim(
+            processed.match(/"\S+"/)[0],
+            '"'
+          )})\n`
+        })
+      )
+    return result.join('\n')
   }
 
   return {
@@ -161,7 +194,7 @@ export async function getServerSideProps({
       page: await serialize(page, {
         parseFrontmatter: true,
         mdxOptions: {
-          rehypePlugins: [rehypeHighlight]
+          rehypePlugins: [rehypeSlug]
         }
       }),
       toc: await serialize(await generateToc(page)),

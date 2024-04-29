@@ -51,6 +51,7 @@ $lg: 991.98px;
   --theme: #ec3750;
   --yellow: #fefaa7;
   --border: #e8e8e8;
+  --background: #f8f8f8;
   --hint: #404040;
 }
 
@@ -69,6 +70,7 @@ html {
   margin: 0;
   overflow-x: clip;
   padding: 0;
+  scroll-behavior: smooth;
 }
 
 header {
@@ -111,6 +113,15 @@ header {
 
   > div {
     flex: 1;
+
+    > a {
+      text-decoration: none;
+      transition: all 0.1s;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
 
     &:nth-child(2) {
       display: flex;
@@ -275,6 +286,10 @@ section {
       padding-bottom: 1em;
     }
 
+    p {
+      padding-right: 1em;
+    }
+
     a {
       background-color: transparent;
       text-decoration: underline dotted;
@@ -370,6 +385,19 @@ section {
     border: none;
     background-color: var(--border);
     height: 1px;
+    margin-left: 0;
+
+    @media screen and (max-width: $md) {
+      max-width: 85vw;
+    }
+
+    @media screen and (max-width: $lg) {
+      max-width: 80vw;
+    }
+
+    @media screen and (min-width: $lg) {
+      max-width: 80vw;
+    }
   }
 
   pre {
@@ -402,6 +430,8 @@ section {
   h2,
   h3 {
     font-family: 'Newsreader';
+    font-style: italic;
+    color: var(--hint);
     line-height: 1.4;
   }
 
@@ -472,5 +502,14 @@ section {
         margin: 0.75em auto;
       }
     }
+  }
+
+  .cm-editor {
+    background-color: transparent;
+    font-size: 0.995rem;
+  }
+
+  .cm-focused {
+    outline: none !important;
   }
 }

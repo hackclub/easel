@@ -3,8 +3,9 @@ title: Orpheus finds an easel in the mail
 order: 1
 ---
 
-<aside> 
-  This page is more in beta than the other pages... especially plot wise. Working on it!
+<aside>
+  This page is more in beta than the other pages... especially plot wise.
+  Working on it!
 </aside>
 
 It's a normal Saturday for Orpheus the dino. She wakes up, lies in bed for a while, and looks out the window.
@@ -12,7 +13,8 @@ It's a normal Saturday for Orpheus the dino. She wakes up, lies in bed for a whi
 It's raining outside! She likes rainy days. You can hear the rain splattering every time a car comes by, and the soft pitter patter on the windows. It's the best sound. Add pancakes for breakfast and lunch but especially dinner and it's got to be the best day ever.
 
 <aside>
-  Yes, Orpheus gets fan mail. If you want to send her some after reading this you can send them to 15 Falls Road, Shelburne VT 05482.
+  Yes, Orpheus gets fan mail. If you want to send her some after reading this
+  you can send them to 15 Falls Road, Shelburne VT 05482.
 </aside>
 
 Just then, the post office truck passes by and stops. Normally the mailman just stops by to drop off fan mail in the mailbox, but today he has a bigger, bulkier package. Orpheus hops up and walks to her front door. It's a package! Orpheus gets very excited about packages. Mysterious packages, to be precise.
@@ -21,7 +23,9 @@ Just then, the post office truck passes by and stops. Normally the mailman just 
 
 Orpheus gingerly opens the package and pulls out the contents one by one. She recognizes the first item instantly. It's an easel!
 
-*Here's the [easel in question](https://www.adafruit.com/product/5362?gad_source=1&gclid=Cj0KCQjwiYOxBhC5ARIsAIvdH526LPYOruOasZj9FkW5TYN6OlXZMV3q0ER-CwS5_S9a3JUZIJ-4d2UaAkGhEALw_wcB).*
+_Here's the [easel in question](https://www.adafruit.com/product/5362?gad_source=1&gclid=Cj0KCQjwiYOxBhC5ARIsAIvdH526LPYOruOasZj9FkW5TYN6OlXZMV3q0ER-CwS5_S9a3JUZIJ-4d2UaAkGhEALw_wcB)._
+
+<Canvas />
 
 Orpheus has wanted to paint a easel for the longest time.
 
@@ -40,7 +44,8 @@ your mysterious benefactor
 Ooh. I guess it's time for Orpheus to write a programming language so she can start painting the easel. Here's Easel:
 
 <aside>
-  Is that... [Conway's Game of Life](https://playgameoflife.com/)? Yup, and we're going to get it to run on an easel.
+  Is that... [Conway's Game of Life](https://playgameoflife.com/)? Yup, and
+  we're going to get it to run on an easel.
 </aside>
 
 ```easel
@@ -49,7 +54,7 @@ prepare cols as 20
 
 brush Cell has { x, y, live }
 
-~ Exercise: try setting a custom pattern instead of randomness! 
+~ Exercise: try setting a custom pattern instead of randomness!
 sketch seed {
   prepare cells as []
   loop x through (0, rows) {
@@ -123,7 +128,7 @@ sketch painting {
     }
 
     ink(Canva.get(cell.x, cell.y))
-    if 
+    if
   }
 }
 ```
@@ -137,7 +142,8 @@ Variables are created with the `prepare` keyword and `as` keywords, like `prepar
 ### Comments
 
 <aside>
-  Grammar mistake! It's not "Me and Orpheus", it's "Orpheus and I"! Call the grammar police!
+  Grammar mistake! It's not "Me and Orpheus", it's "Orpheus and I"! Call the
+  grammar police!
 </aside>
 
 Comments are dictated by the tilde symbol. Me and Orpheus have decided that it looks pretty similar to her eyebrows when she's surprised by something.
@@ -185,7 +191,8 @@ npm init -y
 ```
 
 <aside>
-  Orpheus wants this to be useful for anyone who knows a bit of JavaScript. Here, all we're doing is creating a imprt
+  Orpheus wants this to be useful for anyone who knows a bit of JavaScript.
+  Here, all we're doing is creating a imprt
 </aside>
 
 Open up the `package.json` that's been created, and add this extra line:

@@ -1,0 +1,58 @@
+@import '../styles/breakpoints.scss';
+
+.editor {
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  display: flex;
+  margin-bottom: 1em;
+  font-size: 0.995rem;
+
+  > div {
+    flex: 50%;
+    max-width: 50%;
+    position: relative;
+  }
+
+  @media screen and (min-width: $lg) {
+    max-width: 80vw;
+  }
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+
+  .tab {
+    cursor: pointer;
+    padding: 7px 12px;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    user-select: none;
+  }
+}
+
+.editable {
+  border-right: 1px solid var(--border);
+}
+
+.output {
+  border-top: 1px solid var(--border);
+}
+
+.easel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    > div {
+      display: flex;
+      gap: 2px;
+    }
+  }
+}
