@@ -1,12 +1,14 @@
 .node {
   border: 2px solid var(--theme);
-  width: fit-content;
+  // width: fit-content;
+  margin: 1em 0;
 
   > div {
     padding-inline: 1rem;
 
     p {
       margin: 0 !important;
+      text-align: center;
     }
   }
 

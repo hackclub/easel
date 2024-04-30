@@ -1,6 +1,6 @@
 import fs from 'fs'
 import readline from 'node:readline'
-import { Lexer, TOKENS } from './lexer.js'
+import { Lexer } from './lexer.js'
 import { Parser } from './parser.js'
 import { Interpreter } from './interpreter.js'
 import stdlib, { EaselError } from './stdlib.js'
@@ -34,10 +34,9 @@ const writeFile = (location, data) =>
     try {
       lexer.scanTokens()
     } catch (err) {
-      if (err instanceof EaselError) {
-        console.log(err)
-        process.exit(1)
-      }
+      console.log(err, lexer.tokens)
+      if (err instanceof EaselError) console.log(err)
+      process.exit(1)
     } finally {
       if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
     }
@@ -46,10 +45,7 @@ const writeFile = (location, data) =>
     try {
       parser.parse()
     } catch (err) {
-      if (err instanceof EaselError) {
-        console.log(err)
-        process.exit(2)
-      }
+      if (err instanceof EaselError) console.log(err)
     } finally {
       if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
     }
@@ -88,7 +84,7 @@ const writeFile = (location, data) =>
         if (err instanceof EaselError) {
           hadError = true
           console.log(err.toString())
-        }
+        } else throw err
       }
 
       if (!hadError) {
@@ -97,12 +93,14 @@ const writeFile = (location, data) =>
           parser.parse()
         } catch (err) {
           if (err instanceof EaselError) console.log(err.toString())
+          else throw err
         }
 
         try {
           scope = interpreter.run(parser.ast, scope)
         } catch (err) {
           if (err instanceof EaselError) console.log(err.toString())
+          else throw err
         }
       }
 

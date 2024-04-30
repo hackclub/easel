@@ -88,12 +88,12 @@ export class Interpreter {
     switch (node.constructor) {
       case Ast.Var:
         scope[node.name] = this.evaluate(node.value, scope)
-        break
+        return scope
       case Ast.Set:
         if (!this.inScope(scope, node.caller))
           this.error(`${node.caller} is not defined in current scope`)
         scope[node.caller][node.property] = this.evaluate(node.value, scope)
-        break
+        return scope
       case Ast.Struct:
         scope[node.name] = members => {
           // Make sure therer are no invalid keys
@@ -105,7 +105,7 @@ export class Interpreter {
           }
           return instance
         }
-        break
+        return scope
       case Ast.Func:
         const func = args => {
           let localScope = { ...scope }
@@ -120,11 +120,14 @@ export class Interpreter {
         }
 
         scope[node.name] = func
-        break
+        return scope
       case Ast.Return:
         throw new ReturnException(this.evaluate(node.value, scope))
       case Ast.For:
-        let localScope = { ...scope, [node.id]: this.evaluate(node.range[0]) }
+        let localScope = {
+          ...scope,
+          [node.id]: this.evaluate(node.range[0], scope)
+        }
         while (localScope[node.id] < this.evaluate(node.range[1], scope)) {
           this.run(node.body, localScope)
           localScope[node.id]++
@@ -140,12 +143,13 @@ export class Interpreter {
             this.execute(conditional, scope)
         break
       default:
-        return this.evaluate(node, scope)
+        this.evaluate(node, scope)
     }
+    return scope
   }
 
   run(ast, scope) {
-    for (const node of ast) this.execute(node, scope)
+    for (const node of ast) scope = this.execute(node, scope)
     return scope
   }
 }

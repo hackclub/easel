@@ -16,8 +16,12 @@ import Meta from '@hackclub/meta'
 import Node from '@/components/interactive/Node'
 import Editor, { Code } from '@/components/Editor'
 import rehypeSlug from 'rehype-slug'
-import Highlight from 'react-highlight'
 import { rehype } from 'rehype'
+import { Demo } from '@/components/Interpreter'
+import styles from '@/styles/Part.module.scss'
+import Confetti from 'react-canvas-confetti'
+
+const trim = (str, chars) => str.split(chars).filter(Boolean).join(chars)
 
 const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
 
@@ -27,11 +31,31 @@ const components = {
   Mermaid,
   LexerParserTransform,
   Node,
-  pre: ({ children }) => {
+  Editor: props => {
+    console.log(props)
     return (
       <>
-        <Highlight>{children}</Highlight>
-        <Editor />
+        {props.children}
+        <Editor {...props} />
+      </>
+    )
+  },
+  pre: props => {
+    return (
+      <div className="pre-wrapper">
+        <pre>{props.children}</pre>
+      </div>
+    )
+  },
+  Demo,
+  Celebrate: () => {
+    return (
+      <>
+        <div className={styles.celebrate}>
+          <img src="https://github.com/hackclub/dinosaurs/raw/main/party_orpheus.png" />
+          <button>Celebrate with Orpheus</button>
+        </div>
+        <Confetti className={styles.confetti} width={200} height={200} />
       </>
     )
   }
@@ -81,7 +105,7 @@ export default function Index({
           ))}
         </div>
       </header>
-      <section className="prose">
+      <section className="prose" style={{ marginBottom: '2em' }}>
         <p>
           High schooler?{' '}
           <a href="https://hackclub.com" target="_blank">
@@ -127,11 +151,18 @@ export default function Index({
   )
 }
 
-export async function getServerSideProps({
-  params
-}: {
-  params: { slug: string }
-}) {
+export async function getStaticPaths() {
+  const readdir = (dir: string) =>
+    fs.readdirSync(dir, { withFileTypes: true }).map(dirent => dirent.name)
+
+  const parts = readdir(path.resolve(process.cwd(), 'content'))
+  return {
+    paths: parts.map(slug => ({ params: { slug: trim(slug, '.mdx') } })),
+    fallback: false
+  }
+}
+
+export async function getStaticProps({ params }: { params: { slug: string } }) {
   const { slug } = params
   let page, title
 
@@ -156,8 +187,6 @@ export async function getServerSideProps({
   }
 
   if (!page) return { notFound: true }
-
-  const trim = (str, chars) => str.split(chars).filter(Boolean).join(chars)
 
   const generateToc = async (content: string) => {
     const headings = [
@@ -194,7 +223,7 @@ export async function getServerSideProps({
       page: await serialize(page, {
         parseFrontmatter: true,
         mdxOptions: {
-          rehypePlugins: [rehypeSlug]
+          rehypePlugins: [rehypeSlug, rehypeHighlight]
         }
       }),
       toc: await serialize(await generateToc(page)),

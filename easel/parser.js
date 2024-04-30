@@ -17,8 +17,8 @@ const opOrder = {
   '/': 2
 }
 
-const isOp = type => {
-  return [
+const isOp = type =>
+  [
     TOKENS.Or,
     TOKENS.And,
     TOKENS.Equiv,
@@ -32,7 +32,6 @@ const isOp = type => {
     TOKENS.Asterisk,
     TOKENS.Slash
   ].includes(type)
-}
 
 export class Parser {
   constructor(tokens) {
@@ -103,11 +102,12 @@ export class Parser {
   }
 
   simple() {
-    let token = this.eat(this.peekType())
+    const token = this.eat(this.peekType())
     switch (token.type) {
-      case TOKENS.Identifier:
+      case TOKENS.Identifier: {
         return new Ast.Var(token.value)
-      case TOKENS.Keyword:
+      }
+      case TOKENS.Keyword: {
         if (token.value === 'prep') {
           // Instance is essentially a struct copy
           const id = this.eat(TOKENS.Identifier).value
@@ -125,19 +125,23 @@ export class Parser {
           return new Ast.Instance(id, members)
         }
         break
+      }
       case TOKENS.String:
       case TOKENS.Number:
-      case TOKENS.Boolean:
+      case TOKENS.Boolean: {
         return new Ast.Literal(token.content)
-      case TOKENS.LeftBracket:
+      }
+      case TOKENS.LeftBracket: {
         let items = []
         if (this.peekType() !== TOKENS.RightBracket) items = this.exprList()
         this.eat(TOKENS.RightBracket)
         return new Ast.Array(items)
-      case TOKENS.LeftParen:
+      }
+      case TOKENS.LeftParen: {
         const expr = this.expr()
         this.eat(TOKENS.RightParen)
         return expr
+      }
     }
     this.error(token, 'Expected expression but got ' + token.type)
   }
@@ -178,10 +182,10 @@ export class Parser {
 
   expr() {
     // expr has two sides
-    let left = this.unary()
+    const left = this.unary()
     if (isOp(this.peekType())) {
       const op = this.eat(this.peekType()).value
-      let right = this.expr()
+      const right = this.expr()
       if (right instanceof Ast.Binary && opOrder[op] > opOrder[right.operator])
         // Quick reordering based on precedence
         return new Ast.Binary(
@@ -308,25 +312,34 @@ export class Parser {
 
     const next = this.peek()
     switch (next.type) {
-      case TOKENS.Keyword:
+      case TOKENS.Keyword: {
         switch (next.value) {
-          case 'prepare':
+          case 'prepare': {
             return assignStmt()
-          case 'brush':
+          }
+          case 'brush': {
             return structStmt()
-          case 'sketch':
+          }
+          case 'sketch': {
             return funcStmt()
-          case 'finished':
+          }
+          case 'finished': {
             return returnStmt()
-          case 'loop':
+          }
+          case 'loop': {
             return forStmt()
-          case 'while':
+          }
+          case 'while': {
             return whileStmt()
-          case 'if':
+          }
+          case 'if': {
             return conditionalStmt('if')
+          }
         }
-      default:
+      }
+      default: {
         return this.expr()
+      }
     }
   }
 

@@ -255,6 +255,7 @@ section {
     position: relative;
     border-top: 1px solid var(--border);
     padding: 1em;
+    float: left;
 
     code {
       font-size: 0.9rem !important;
@@ -274,7 +275,7 @@ section {
       padding-right: 0;
       margin-right: 1em;
       text-align: right;
-      float: left;
+      position: relative;
     }
   }
 
@@ -407,6 +408,13 @@ section {
     font-size: 1.1rem;
     user-select: none;
     padding: 0;
+    max-height: 50vh;
+    overflow-y: auto;
+    display: block;
+
+    &:default {
+      margin-inline: 0 !important;
+    }
 
     code {
       background-color: transparent !important;
@@ -459,7 +467,8 @@ section {
       ol,
       li,
       video,
-      details {
+      details,
+      .pre-wrapper {
         max-width: 85vw;
         margin: 0.75em auto;
       }
@@ -478,7 +487,8 @@ section {
       ol,
       li,
       video,
-      details {
+      details,
+      .pre-wrapper {
         max-width: 80vw;
         margin: 0.75em auto;
       }
@@ -497,9 +507,21 @@ section {
       ol,
       li,
       video,
-      details {
+      details,
+      .pre-wrapper {
         max-width: 60vw;
         margin: 0.75em auto;
+      }
+
+      h2,
+      h3 {
+        margin-bottom: 0 !important;
+        margin-top: 1em !important;
+      }
+
+      .pre-wrapper {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
       }
     }
   }

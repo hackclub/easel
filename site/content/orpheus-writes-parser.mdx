@@ -5,7 +5,7 @@ order: 3
 
 Ok. We have a bunch of nice tokens now.
 
-Our lexer produces a bunch of tokens, but we still can't do much with them quite yet. The next step to solving this problem is to write a *parser*, which will turn our currently rather one-dimensional list of tokens into what's known as an *abstract syntax tree*.
+Our lexer produces a bunch of tokens, but we still can't do much with them quite yet. The next step to solving this problem is to write a _parser_, which will turn our currently rather one-dimensional list of tokens into what's known as an _abstract syntax tree_.
 
 ## Abstract syntax trees
 
@@ -13,15 +13,18 @@ Orpheus drew a diagram for us last chapter on how lexers turn a blob of text tha
 
 Parsers take these tokens and in turn output a tree of sorts that describes how tokens apply to one another. Here's an example of such an transformation:
 
-<LexerParserTransform/>
+<LexerParserTransform />
 
-We took five tokens and smooshed them into one *node*. The five tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
+We took five tokens and smooshed them into one _node_. The five tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
 
-We're going to write that parser now. It's actually, surprisingly, similar to how we wrote our lexer, except that we're working with a tree now, which means we'll need some form of recursion. 
+We're going to write that parser now. It's actually, surprisingly, similar to how we wrote our lexer, except that we're working with a tree now, which means we'll need some form of recursion.
 
 Let's start with the usual! Orpheus opens a file called `parser.js` and throw this in there:
 
 ```js
+import { EaselError } from './stdlib.js'
+import { TOKENS } from './lexer.js'
+
 export class Parser {
   constructor(tokens) {
     this.tokens = tokens
@@ -30,7 +33,9 @@ export class Parser {
   }
 
   error(token, msg) {
-    throw new Error(`Syntax error on ${token.line}:${token.column}: ${msg}`)
+    throw new EaselError(
+      `Syntax error on ${token.line}:${token.column}: ${msg}`
+    )
   }
 }
 ```
@@ -42,7 +47,7 @@ export class Parser {
   // ...
 
   parse() {
-    while (this.peekType() !== TOKENS.EOF) continue; // TODO
+    while (this.peekType() !== TOKENS.EOF) continue // TODO
     return this.ast
   }
 }
@@ -78,11 +83,14 @@ With our lexer, we looped through every character and checked if it could be a t
 
 First up: what do these have in similar?
 
-<img src="/cartoons/types.png" style={{ width: "40%" }}/>
+<img src="/cartoons/types.png" style={{ width: '40%' }} />
 
-<aside>Like Froot Loop chunks sitting in Orpheus' stomach. Protests Orpheus: they're the best cereal to exist.</aside>
+<aside>
+  Like Froot Loop chunks sitting in Orpheus' stomach. Protests Orpheus: they're
+  the best cereal to exist.
+</aside>
 
-Orpheus has an answer! *They're all super basic.* They're what we'll call **literals** - we can't really break them down further, or they'd just be unintelligible chunks that we can't use, and they also happen to be the most basic values we can reference.
+Orpheus has an answer! _They're all super basic._ They're what we'll call **literals** - we can't really break them down further, or they'd just be unintelligible chunks that we can't use, and they also happen to be the most basic values we can reference.
 
 To give an exact definition we'll reference later when writing our parser, literals in Easel can be: strings, numbers, or booleans.
 
@@ -90,32 +98,32 @@ Ok, what's the next obvious step from here? I'm thinking like arrays, or data ty
 
 I bet you already have ideas forming in your head on how to parse these. Arrays? LeftBracket &rarr; parse stuff in between &rarr; RightBracket.
 
-But let's not get too far ahead of ourselves yet. What is this stuff "in between"? 
+But let's not get too far ahead of ourselves yet. What is this stuff "in between"?
 
-<aside>
-  Or 0th item.
-</aside>
+<aside>Or 0th item.</aside>
 
 Well, I imagine we might have an array that looks like `[2 + 3, 5, 7]`. That first item in the array is not a literal anymore. It's a binary expression!
 
-<img src="/cartoons/binop.png" style={{ width: "25%" }}/>
+<img src="/cartoons/binop.png" style={{ width: '25%' }} />
 
-So things are kind of coming together now. Literals can form expressions. We don't just have to form binary expressions - we can also form *unary* ones. Bet those are more rare, but surely you've seen them before: the NOT operator `!true`, for example.
+So things are kind of coming together now. Literals can form expressions. We don't just have to form binary expressions - we can also form _unary_ ones. Bet those are more rare, but surely you've seen them before: the NOT operator `!true`, for example.
 
-Ok. So we know literals can form expressions. What can expressions form? It turns out almost everything else we can think of, especially for a language like Easel. This is because everything else is a *statement* - a set of expressions. Let's see:
+Ok. So we know literals can form expressions. What can expressions form? It turns out almost everything else we can think of, especially for a language like Easel. This is because everything else is a _statement_ - a set of expressions. Let's see:
 
 <aside>
-  For-loops and while loops and Fruit Loops are all the same thing really. For-loops are basically while loops in Easel, where the condition is that the number is between two numbers.
+  For-loops and while loops and Fruit Loops are all the same thing really.
+  For-loops are basically while loops in Easel, where the condition is that the
+  number is between two numbers.
 </aside>
 
-* Variables. Specifically, assignment! `prepare phoneVolume as 50` is assigning a literal (see what I did there?) to a variable.
-* Structs. Specifically, defining what a struct looks like. `brush Phone has { phoneVolume }` is a statement.
-* Functions are blocks of expressions with attached metadata of sorts, like what arguments we might need to pass in!
-* Return statements
-* For loops and while loops are blocks of expressions also with attached metadata too, like what condition we should check for every iteration.
-* Last but not least in Easel - if-else statements are blocks of expressions with, you guessed it, attached metadata like what conditions we shoud check for.
+- Variables. Specifically, assignment! `prepare phoneVolume as 50` is assigning a literal (see what I did there?) to a variable.
+- Structs. Specifically, defining what a struct looks like. `brush Phone has { phoneVolume }` is a statement.
+- Functions are blocks of expressions with attached metadata of sorts, like what arguments we might need to pass in!
+- Return statements
+- For loops and while loops are blocks of expressions also with attached metadata too, like what condition we should check for every iteration.
+- Last but not least in Easel - if-else statements are blocks of expressions with, you guessed it, attached metadata like what conditions we shoud check for.
 
-Our job now is to write a parser that can understand this hierarchy. The parser will start by looking for statements, which are made of expressions, which are made of literals. In other words: basic recursive descent! 
+Our job now is to write a parser that can understand this hierarchy. The parser will start by looking for statements, which are made of expressions, which are made of literals. In other words: basic recursive descent!
 
 ## Back to writing code
 
@@ -124,7 +132,7 @@ Ok! Sturp talking! Let's get to smacking the keyboard instead. By then, it shoul
 ```js
 class Parser {
   // ...
-  
+
   eat(type) {
     if (this.peekType() === type) return this.tokens[this.current++]
     this.error(
@@ -132,43 +140,35 @@ class Parser {
       `Expected ${type} but got ${this.peekType().toString()}`
     )
   }
-  
+
   // ...
 }
 ```
 
 <aside>
-  At this point we're going to stop putting the class definition around each method or Orpheus is going to have to start writing on napkins soon.
+  At this point we're going to stop putting the class definition around each
+  method or Orpheus is going to have to start writing on napkins soon.
 </aside>
-
-Welp, looks like we need an error method too:
-
-```js
-error(token, msg) {
-  throw new Error(`${token.line}:${token.column}: ${msg}`)
-}
-```
 
 Now let's begin our descent... into the <strike>underworld</strike> writing of a parser! Let's start with this basic structure:
 
 ```js
 class Parser {
-  simple() {
-
-  }
+  simple() {}
 
   expr() {
-    let left = this.simple()
+    const left = this.simple()
     // Let's deal with the right side later
     return left
   }
 
   stmt() {
-    case next = this.peek() 
+    let next = this.peek()
     switch (next.type) {
       // Can you guess what's coming here later?
-      default:
+      default: {
         return this.expr()
+      }
     }
   }
 }
@@ -178,23 +178,25 @@ Ok, understandable enough! Although this isn't going to do anything right now. L
 
 ```js
 simple() {
-  let token = this.eat(this.peekType())
+  const token = this.eat(this.peekType())
   switch (token.type) {
     case TOKENS.String:
     case TOKENS.Number:
-    case TOKENS.Boolean:
+    case TOKENS.Boolean: {
       return new Ast.Literal(token.content)
+    }
   }
   this.error(token, "Expected expression but got " + token)
 }
 ```
 
-Notice how we throw an error if we don't get anything. Since this is the last method we reach when we're looking at a token, there must be a *syntax error* if we can't get a proper node.
+Notice how we throw an error if we don't get anything. Since this is the last method we reach when we're looking at a token, there must be a _syntax error_ if we can't get a proper node.
 
 Something we didn't consider ahead of time was how we would define how these nodes look like. We'll do this really easily. Let's create a new file called `ast.js`, and put our first kind of node in there:
 
 <aside>
-  We technically don't need the `type` property, but we'll include it because it's useful debug info.
+  We technically don't need the `type` property, but we'll include it because
+  it's useful debug info.
 </aside>
 
 ```js
@@ -206,6 +208,7 @@ export class Literal {
 }
 
 export default {
+  // ...,
   Literal
 }
 ```
@@ -213,7 +216,7 @@ export default {
 Make sure to import this in `parser.js`!
 
 ```js
-import Ast from "./ast.js";
+import Ast from './ast.js'
 ```
 
 Perfect. Back to `simple()` now - we're going to add arrays now:
@@ -223,11 +226,12 @@ simple() {
   let token = this.eat(this.peekType())
   switch (token.type) {
     // ...
-    case TOKENS.LeftBracket:
+    case TOKENS.LeftBracket: {
       let items = []
       if (this.peekType() !== TOKENS.RightBracket) items = this.exprList()
       this.eat(TOKENS.RightBracket)
       return new Ast.Array(items)
+    }
   }
   this.error(token, "Expected expression but got " + token)
 }
@@ -244,13 +248,15 @@ export class Array {
 }
 
 return {
-  Array,
+  Array
   // ...
 }
 ```
 
 <aside>
-  You've got to thank Orpheus for this, she was smart and decided it would be useful to have a separate method because we'd use it again in the future. And she was right.
+  You've got to thank Orpheus for this, she was smart and decided it would be
+  useful to have a separate method because we'd use it again in the future. And
+  she was right.
 </aside>
 
 Our predictions were correct. We gobble up the left bracket, create a new array, and if we haven't already reached the right bracket (i.e. empty array), we grab the list of expressions in between.
@@ -276,8 +282,9 @@ simple() {
   // ...
   switch (token.type) {
     // ...
-    case TOKENS.Identifier:
-        return new Ast.Var(token.value)
+    case TOKENS.Identifier: {
+      return new Ast.Var(token.value)
+    }
   }
 }
 ```
@@ -296,8 +303,8 @@ export class Var {
 }
 
 export default {
-  Var,
-  // ...
+  // ...,
+  Var
 }
 ```
 
@@ -306,7 +313,7 @@ Cool. That takes care of `simple()` for now. Let's move up the hierarchy and twe
 ```js
 expr() {
   // expr has two sides
-  let left = this.call()
+  const left = this.call()
   if (isOp(this.peekType())) {
     const op = this.eat(this.peekType()).value
     let right = this.expr()
@@ -319,8 +326,8 @@ expr() {
 Looks like we need an extra `isOp` function. I'll put this at the top of `parser.js`:
 
 ```js
-const isOp = type => {
-  return [
+const isOp = type =>
+  [
     TOKENS.Or,
     TOKENS.And,
     TOKENS.Equiv,
@@ -334,7 +341,6 @@ const isOp = type => {
     TOKENS.Asterisk,
     TOKENS.Slash
   ].includes(type)
-}
 ```
 
 Our binary expression node is pretty simple:
@@ -342,7 +348,7 @@ Our binary expression node is pretty simple:
 ```js
 export class Binary {
   constructor(left, operator, right) {
-    this.type = "Binary"
+    this.type = 'Binary'
     this.left = left
     this.operator = operator
     this.right = right
@@ -350,13 +356,21 @@ export class Binary {
 }
 
 export default {
-  // ...
+  // ...,
   Binary
 }
 ```
 
-Ok, I think we've got enough here where we can test the parser out and see what happens. We should, of course, start using our parser in `easel.js`:
+Ok, I think we've got enough here where we can test the parser out and see what happens. Let's remove that `continue` we had earlier in `parse()`:
 
+```js
+parse() {
+  while (this.peekType() !== TOKENS.EOF) this.ast.push(this.stmt())
+  return this.ast
+}
+```
+
+We should, of course, start using our parser in `easel.js`:
 
 ```js
 import { Parser } from './parser.js'
@@ -370,8 +384,8 @@ if (location) {
   try {
     lexer.scanTokens()
   } catch (err) {
-    // Only log errors thrown by our lexer
-    if (err instanceof EaselError) console.log(err)
+    console.log(err)
+    process.exit(1)
   } finally {
     if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
   }
@@ -380,50 +394,51 @@ if (location) {
   try {
     parser.parse()
   } catch (err) {
-    // Only log errors thrown by our parser
-    if (err instanceof EaselError) console.log
+    console.log(err)
   } finally {
     if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
   }
-} 
+}
 // ...
 ```
 
-Cool! Let's test this out with a test program:
+Cool! Let's test this out with a test program, `parser-test.easel`:
 
-```js
+```
 [4 + 21]
 2006 / 4012 + 2
 ```
 
-It's not really a complete program because we haven't taken care of statements yet, but I digress. You'll get something like this `ast.json`:
+Try it out with `node easel.js parser-test.easel --dbg`! It's not really a complete program because we haven't taken care of statements yet, but I digress. You'll get something like this `ast.json`:
 
 <aside>
-  Yours probably looks like a mumble-jumble in one line. I use [Prettier](https://prettier.io/docs/en/install), but fun fact - you can also try `JSON.stringify(parser.ast, null, 2)`.
+  Yours probably looks like a mumble-jumble in one line. I use
+  [Prettier](https://prettier.io/docs/en/install), but fun fact - you can also
+  try `JSON.stringify(parser.ast, null, 2)`.
 </aside>
 
 ```js
-[
+;[
   {
-    "type": "Literal",
-    "value": [
+    type: 'Literal',
+    value: [
       {
-        "type": "Binary",
-        "left": { "type": "Literal", "value": 4 },
-        "operator": "+",
-        "right": { "type": "Literal", "value": 21 }
+        type: 'Binary',
+        left: { type: 'Literal', value: 4 },
+        operator: '+',
+        right: { type: 'Literal', value: 21 }
       }
     ]
   },
   {
-    "type": "Binary",
-    "left": { "type": "Literal", "value": 2006 },
-    "operator": "/",
-    "right": {
-      "type": "Binary",
-      "left": { "type": "Literal", "value": 4012 },
-      "operator": "+",
-      "right": { "type": "Literal", "value": 2 }
+    type: 'Binary',
+    left: { type: 'Literal', value: 2006 },
+    operator: '/',
+    right: {
+      type: 'Binary',
+      left: { type: 'Literal', value: 4012 },
+      operator: '+',
+      right: { type: 'Literal', value: 2 }
     }
   }
 ]
@@ -431,13 +446,11 @@ It's not really a complete program because we haven't taken care of statements y
 
 This looks right, but there's just one minor problem... if we run that second node, this is what we get:
 
-<img src="/cartoons/pemdas.png" style={{ width: "50%" }} />
+<img src="/cartoons/pemdas.png" style={{ width: '50%' }} />
 
 ### Dealing with order of operations
 
-<aside>
-  Orpheus needs an acronym.
-</aside>
+<aside>Orpheus needs an acronym.</aside>
 
 Oopsies. We forgot about PEMDAS. We should fix that. Never fear! Orpheus has put on her wizard hat and come up with a rather ingenious way to tackle this.
 
@@ -447,18 +460,18 @@ First things first, at the top of `parser.js`!
 
 ```js
 const opOrder = {
-  '+': 0,
-  '-': 0,
-  '*': 1,
-  '/': 1,
-  '||': 1,
-  '&&': 1,
-  '==': 1,
-  '!=': 1,
-  '>': 1,
-  '>=': 1,
-  '<': 1,
-  '<=': 1
+  '<': 0,
+  '<=': 0,
+  '>': 0,
+  '>=': 0,
+  '!=': 0,
+  '==': 0,
+  '&&': 0,
+  '||': 0,
+  '+': 1,
+  '-': 1,
+  '*': 2,
+  '/': 2
 }
 ```
 
@@ -495,10 +508,11 @@ And that fixes all our problems! Well, not all of our problems, of course. Right
 If you run this currently, it'll throw a syntax error, because we haven't dealt with parentheses in this scenario! In this scenario, the parentheses represent an expression inside an expression that we should evaluate first. To take care of this precendence, we can place this in `simple()` to take care of this:
 
 ```js
-case TOKENS.LeftParen:
+case TOKENS.LeftParen: {
   const expr = this.expr()
   this.eat(TOKENS.RightParen)
   return expr
+}
 ```
 
 An expression inside an expression, essentially. This works because now `expr()` will call `simple()` and evaluate `(15 + 15)` on its own, before peeking at `/`. Now if we run our parser on this, we'll get the proper looking AST and not a syntax error:
@@ -506,18 +520,21 @@ An expression inside an expression, essentially. This works because now `expr()`
 ## Statements
 
 <aside>
-  If you feel like you need to take a break, take one! I think Orpheus is slightly mad at me so she's left to go eat Indian food and talk about Berlin with her friends.
+  If you feel like you need to take a break, take one! I think Orpheus is
+  slightly mad at me so she's left to go eat Indian food and talk about Berlin
+  with her friends.
 </aside>
 
 Ok, awesome cool. What's next? Statements! Let's take care of that now. Remember this earlier?
 
 ```js
 stmt() {
-  case next = this.peek() 
+  const next = this.peek()
   switch (next.type) {
     // Can you guess what's coming here later?
-    default:
+    default: {
       return this.expr()
+    }
   }
 }
 ```
@@ -555,12 +572,14 @@ stmt() {
 
   const next = this.peek()
   switch (next.type) {
-    case TOKENS.Keyword:
+    case TOKENS.Keyword: {
       switch (next.value) {
-        case 'sketch':
+        case 'sketch': {
           return funcStmt()
+        }
         //...
       }
+    }
     // ...
   }
 }
@@ -606,6 +625,24 @@ identifierList() {
 
 Instead of returning a list of expressions by calling `expr()`, `identifierList()` just returns a list of identifiers by gobbling them up.
 
+Of course, we also need `Ast.Func` in `ast.js`:
+
+```js
+export class Func {
+  constructor(name, params, body) {
+    this.type = 'Func'
+    this.name = name
+    this.params = params
+    this.body = body
+  }
+}
+
+export {
+  Func
+  // ...
+}
+```
+
 With functions come return statements. Let's work on those next. They're really simple, just eat the return keyword and return an expression:
 
 ```js
@@ -619,12 +656,13 @@ stmt() {
 
   const next = this.peek()
   switch (next.type) {
-    case TOKENS.Keyword:
+    case TOKENS.Keyword: {
       switch (next.value) {
         case 'finished':
           return returnStmt()
         // ...
       }
+    }
     // ...
   }
 }
@@ -641,13 +679,16 @@ export class Return {
 }
 
 export default {
-  Return,
-  // ...
+  // ...,
+  Return
 }
 ```
 
 <aside>
-  This is pretty repetitive, ain't it? There are [parser generators](https://web.mit.edu/6.005/www/fa15/classes/18-parser-generators/) and such to deal with this out there (especially once things get more complicated), but buckle up, because we're writing this from scratch!
+  This is pretty repetitive, ain't it? There are [parser
+  generators](https://web.mit.edu/6.005/www/fa15/classes/18-parser-generators/)
+  and such to deal with this out there (especially once things get more
+  complicated), but buckle up, because we're writing this from scratch!
 </aside>
 
 ### Loops
@@ -677,14 +718,16 @@ const forStmt = () => {
   return new Ast.For(id, range, body)
 }
 
-const next = this.peek() 
+const next = this.peek()
 switch (next.type) {
-  case TOKENS.Keyword:
+  case TOKENS.Keyword: {
     switch (next.value) {
-      case 'loop':
+      case 'loop': {
         return forStmt()
+      }
       // ...
     }
+  }
   // ...
 }
 ```
@@ -699,6 +742,11 @@ export class For {
     this.range = range
     this.body = body
   }
+}
+
+export default {
+  // ...,
+  For
 }
 ```
 
@@ -719,6 +767,19 @@ const whileStmt = () => {
 
   return new Ast.While(condition, body)
 }
+
+const next = this.peek()
+switch (next.type) {
+  case TOKENS.Keyword: {
+    switch (next.value) {
+      case 'while': {
+        return whileStmt()
+      }
+      // ...
+    }
+  }
+  // ...
+}
 ```
 
 In `ast.js`:
@@ -730,6 +791,11 @@ export class While {
     this.condition = condition
     this.body = body
   }
+}
+
+export default {
+  // ...,
+  While
 }
 ```
 
@@ -762,12 +828,14 @@ const conditionalStmt = keyword => {
 
 const next = this.peek()
 switch (next.type) {
-  case TOKENS.Keyword:
+  case TOKENS.Keyword: {
     switch (next.value) {
-      case 'if':
+      case 'if': {
         return conditionalStmt('if')
+      }
       // ...
     }
+  }
   // ...
 }
 ```
@@ -785,8 +853,8 @@ export class Conditional {
 }
 
 export default {
-  Conditional,
-  // ...
+  // ...,
+  Conditional
 }
 ```
 
@@ -810,6 +878,19 @@ const assignStmt = () => {
   const value = this.expr()
   return new Ast.Var(name, value)
 }
+
+const next = this.peek()
+switch (next.type) {
+  case TOKENS.Keyword: {
+    switch (next.value) {
+      case 'prepare': {
+        return assignStmt()
+      }
+      // ...
+    }
+  }
+  // ...
+}
 ```
 
 `Ast.Var` exists, but `Ast.Set` doesn't, so let's add that in `ast.js`:
@@ -825,8 +906,8 @@ export class Set {
 }
 
 export default {
-  Set,
-  // ...
+  // ...,
+  Set
 }
 ```
 
@@ -845,14 +926,15 @@ const structStmt = () => {
   return new Ast.Struct(name, members)
 }
 
-const next = this.peek()∂
+const next = this.peek()
 switch (next.type) {
-  case TOKENS.Keyword:
+  case TOKENS.Keyword: {
     switch (next.value) {
       case 'brush':
         return structStmt()
       // ...
     }
+  }
   // ...
 }
 ```
@@ -869,8 +951,8 @@ export class Struct {
 }
 
 export default {
-  Struct,
-  // ...
+  // ...,
+  Struct
 }
 ```
 
@@ -880,7 +962,7 @@ We haven't accounted for actual struct copies with values yet, so let's take car
 simple() {
   let token = this.eat(this.peekType())
   switch (token.type) {
-    case TOKENS.Keyword:
+    case TOKENS.Keyword: {
       if (token.value === 'prep') {
         // Instance is essentially a struct copy
         const id = this.eat(TOKENS.Identifier).value
@@ -899,8 +981,9 @@ simple() {
       }
       break
     // ...
+    }
   }
-  // ...
+  this.error(token, 'Expected expression but got ' + token)
 }
 ```
 
@@ -916,8 +999,8 @@ export class Instance {
 }
 
 export default {
-  Instance,
-  // ...
+  // ...,
+  Instance
 }
 ```
 
@@ -957,7 +1040,7 @@ call() {
 }
 
 expr() {
-  let left = this.call()
+  const left = this.call()
   // ...
 }
 ```
@@ -983,9 +1066,9 @@ export class Get {
 }
 
 export default {
+  // ...,
   Call,
-  Get,
-  // ...
+  Get
 }
 ```
 
@@ -1019,55 +1102,21 @@ export class Unary {
 }
 
 export default {
-  Unary,
-  // ...
+  // ...,
+  Unary
 }
 ```
 
-Instead of calling `call()` in `expr()` now, we'll replace it with `unary()`, which will cascade down to `call()`: 
+Instead of calling `call()` in `expr()` now, we'll replace it with `unary()`, which will cascade down to `call()`:
 
 ```js
 expr() {
-  let left = this.unary()
+  const left = this.unary()
   // ...
 }
 ```
 
-Let's test out everything we have so far. Let's add our parser to `easel.js`:
-
-```js
-// ...
-const program = await readFile(location)
-
-const lexer = new Lexer(program)
-try {
-  lexer.scanTokens()
-} catch (err) {
-  if (err instanceof EaselError) {
-    console.log(err)
-    process.exit(1)
-  }
-} finally {
-  if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
-}
-
-const parser = new Parser(lexer.tokens)
-try {
-  parser.parse()
-} catch (err) {
-  if (err instanceof EaselError) {
-    console.log(err)
-    process.exit(2)
-  }
-} finally {
-  if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
-}
-```
-
-Try running `node easel.js test.easel --dbg`, and you'll get a new debug file containing the AST in `ast.json`. Mine looks something like this:
-
-<details>
-  <summary>`ast.json`</summary>
+Let's test out everything we have so far. Try running `node easel.js test.easel --dbg`, and you'll get a new debug file containing the AST in `ast.json`. Mine looks something like this:
 
 ```json
 [
@@ -1898,10 +1947,9 @@ Try running `node easel.js test.easel --dbg`, and you'll get a new debug file co
   }
 ]
 ```
-</details>
 
 Awesome! We've got a parser working. Clap yourself on the back - that wasn't so hard, was it?
 
 That was definitely longer than writing a lexer, for sure, but rev up - we're going to see our programming language in action in the next part!
 
-*The complete code here is at [parser.js](https://github.com/hackclub/langjam/blob/main/easel/parser.js).*
+_The complete code here is at [parser.js](https://github.com/hackclub/langjam/blob/main/easel/parser.js)._

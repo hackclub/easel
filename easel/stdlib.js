@@ -9,7 +9,7 @@ export class EaselError extends Error {
   }
 }
 
-class Canvas {
+export class Canvas {
   constructor(rows = 64, cols = 64) {
     this.default = { r: 0, g: 0, b: 0 }
     this.rows = rows

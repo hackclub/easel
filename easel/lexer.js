@@ -55,6 +55,10 @@ export class Token {
     this.line = line
     this.column = column
   }
+
+  toString() {
+    return this.value
+  }
 }
 
 export class Lexer {
@@ -93,11 +97,11 @@ export class Lexer {
     const isChar = char =>
       (char >= 'A' && char <= 'Z') ||
       (char >= 'a' && char <= 'z') ||
-      char == '_'
+      char === '_'
     const isAlphanumeric = char => isNumber(char) || isChar(char)
 
     switch (char) {
-      case '>':
+      case '>': {
         if (this.match('='))
           return this.tokens.push(
             new Token(TOKENS.Gte, '>=', '>=', this.line, this.column)
@@ -105,7 +109,8 @@ export class Lexer {
         return this.tokens.push(
           new Token(TOKENS.Gt, '>', '>', this.line, this.column)
         )
-      case '<':
+      }
+      case '<': {
         if (this.match('='))
           return this.tokens.push(
             new Token(TOKENS.Lte, '<=', '<=', this.line, this.column)
@@ -113,49 +118,56 @@ export class Lexer {
         return this.tokens.push(
           new Token(TOKENS.Lt, '<', '<', this.line, this.column)
         )
-      case '=':
+      }
+      case '=': {
         if (this.match('='))
           return this.tokens.push(
             new Token(TOKENS.Equiv, '==', '==', this.line, this.column)
           )
-        return this.tokens.push(
-          new Token(TOKENS.Equal, '=', '=', this.line, this.column)
-        )
-      case '(':
+      }
+      case '(': {
         return this.tokens.push(
           new Token(TOKENS.LeftParen, '(', '(', this.line, this.column)
         )
-      case ')':
+      }
+      case ')': {
         return this.tokens.push(
           new Token(TOKENS.RightParen, ')', ')', this.line, this.column)
         )
-      case '{':
+      }
+      case '{': {
         return this.tokens.push(
           new Token(TOKENS.LeftBrace, '{', '{', this.line, this.column)
         )
-      case '}':
+      }
+      case '}': {
         return this.tokens.push(
           new Token(TOKENS.RightBrace, '}', '}', this.line, this.column)
         )
-      case '[':
+      }
+      case '[': {
         return this.tokens.push(
           new Token(TOKENS.LeftBracket, '[', '[', this.line, this.column)
         )
-      case ']':
+      }
+      case ']': {
         return this.tokens.push(
           new Token(TOKENS.RightBracket, ']', ']', this.line, this.column)
         )
-      case '|':
+      }
+      case '|': {
         if (this.match('|'))
           return this.tokens.push(
             new Token(TOKENS.Or, '||', '||', this.line, this.column)
           )
-      case '&':
+      }
+      case '&': {
         if (this.match('&'))
           return this.tokens.push(
             new Token(TOKENS.And, '&&', '&&', this.line, this.column)
           )
-      case '!':
+      }
+      case '!': {
         if (this.match('='))
           return this.tokens.push(
             new Token(TOKENS.NotEquiv, '!=', '!=', this.line, this.column)
@@ -163,54 +175,65 @@ export class Lexer {
         return this.tokens.push(
           new Token(TOKENS.Not, '!', '!', this.line, this.column)
         )
-      case '.':
+      }
+      case '.': {
         return this.tokens.push(
           new Token(TOKENS.Period, '.', '.', this.line, this.column)
         )
-      case ',':
+      }
+      case ',': {
         return this.tokens.push(
           new Token(TOKENS.Comma, ',', ',', this.line, this.column)
         )
-      case ':':
+      }
+      case ':': {
         return this.tokens.push(
           new Token(TOKENS.Colon, ':', ':', this.line, this.column)
         )
-      case '+':
+      }
+      case '+': {
         return this.tokens.push(
           new Token(TOKENS.Plus, '+', '+', this.line, this.column)
         )
-      case '-':
+      }
+      case '-': {
         return this.tokens.push(
           new Token(TOKENS.Minus, '-', '-', this.line, this.column)
         )
-      case '*':
+      }
+      case '*': {
         return this.tokens.push(
           new Token(TOKENS.Asterisk, '*', '*', this.line, this.column)
         )
-      case '/':
+      }
+      case '/': {
         return this.tokens.push(
           new Token(TOKENS.Slash, '/', '/', this.line, this.column)
         )
-      case '~':
+      }
+      case '~': {
         // Comments
-        while (this.peek() !== '\n' && this.peek() !== '\0') this.advance()
+        while (this.peek() !== '\n' && this.peek() !== null) this.advance()
         return
+      }
       case ' ':
-      case '\r':
+      case '\r': {
         // Ignore whitespace
         return
-      case '\n':
+      }
+      case '\n': {
         // Also ignore, but update line
         this.line++
         this.column = 0
         return
+      }
       case "'":
-      case '"':
+      case '"': {
         // String
         let string = []
         while (this.peek() !== char) {
           string.push(this.advance())
-          if (this.peek() == '\0')
+          if (this.peek() === null)
             // String wasn't closed
             this.error('Unexpected end of file; expected a closing quote')
         }
@@ -219,7 +242,8 @@ export class Lexer {
         return this.tokens.push(
           new Token(TOKENS.String, string, string, this.line, this.column)
         )
-      default:
+      }
+      default: {
         if (isNumber(char)) {
           let number = [char]
           while (
@@ -266,6 +290,7 @@ export class Lexer {
             )
           )
         } else this.error('Unexpected symbol ' + char)
+      }
     }
   }
 

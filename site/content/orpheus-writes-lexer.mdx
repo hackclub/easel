@@ -5,7 +5,7 @@ order: 2
 
 The first thing Orpheus does the next morning is she fires up the computer again, and opens a new file to start writing some code.
 
-*Wait*, she thinks. *I'm forgetting something*. She swings by the kitchen to pick up some tea. You can't forget the tea. Ambiance is rather important.
+_Wait_, she thinks. _I'm forgetting something_. She swings by the kitchen to pick up some tea. You can't forget the tea. Ambiance is rather important.
 
 ![](/cartoons/tea.png)
 
@@ -14,18 +14,20 @@ So it turns out that the first step to writing a language, is to write a _lexer_
 Orpheus thinks this is kind of like speaking English, or Dinoese. You can divide a sentence into tokens, after all.
 
 <aside>
-  I talked to Orpheus about this for quite a while and apparently Dinoese is quite easy. It just involves a lot of *rawr*s of different intensities.
+  I talked to Orpheus about this for quite a while and apparently Dinoese is
+  quite easy. It just involves a lot of *rawr*s of different intensities.
 </aside>
 
 ![](/cartoons/english-tokens.png)
 
 See? Tokens. Orpheus collects a lot of tokens, actually. Anyways, the point is that you can divide a sentence into multiple chunks that describe the structure of the sentence. It's even easier to do that for a programming language because the syntax is, well, so much easier to describe. No extra edge cases like there are in the English language.
 
-Orpheus picks up the letter and looks at the first program again. How does one go about dividing this language into tokens? Well, it's quite helpful to draw out the important chunks. Luckily, Orpheus already has notes for this something, if she can still find them among her pile of other assorted papers. She's got a really bad habit of always having a bunch of papers on her desk. 
+Orpheus picks up the letter and looks at the first program again. How does one go about dividing this language into tokens? Well, it's quite helpful to draw out the important chunks. Luckily, Orpheus already has notes for this something, if she can still find them among her pile of other assorted papers. She's got a really bad habit of always having a bunch of papers on her desk.
 
 <aside>
   I just took a look at the papers on Orpheus' desk. Apparently she's running a
-  marathon soon? Wish her luck. No, no, not luck running the marathon, she can absolutely do that... it's the other participants I'm slightly worried for.
+  marathon soon? Wish her luck. No, no, not luck running the marathon, she can
+  absolutely do that... it's the other participants I'm slightly worried for.
 </aside>
 
 Found it!
@@ -52,8 +54,8 @@ export const TOKENS = {
   Or: 'Or',
   Not: 'Not',
   And: 'And',
-  Equal: 'Equal',
   Equiv: 'Equiv',
+  NotEquiv: 'NotEquiv',
   Gt: 'Gt',
   Gte: 'Gte',
   Lt: 'Lt',
@@ -63,8 +65,6 @@ export const TOKENS = {
   Asterisk: 'Asterisk',
   Slash: 'Slash',
   EOF: 'EOF',
-  Newline: 'Newline'
-}
 
 export class Token {
   constructor(type, value, content, line, column) {
@@ -74,12 +74,17 @@ export class Token {
     this.line = line
     this.column = column
   }
+
+  toString() {
+    return this.value
+  }
 }
 ```
 
 <aside>
-  Some programming languages let you use [enums](https://www.reddit.com/r/learnprogramming/comments/yk8d84/whats_the_point_of_enums/). JavaScript doesn't come with
-  enums so we're doing this somewhat redundantly.
+  Some programming languages let you use
+  [enums](https://www.reddit.com/r/learnprogramming/comments/yk8d84/whats_the_point_of_enums/).
+  JavaScript doesn't come with enums so we're doing this somewhat redundantly.
 </aside>
 
 Coolio. Now that we have tokens, how do we go about creating a lexer? That's a bit of a harder thing to do. We know this:
@@ -101,6 +106,8 @@ Sounds pretty simple, innit? Woah there. Where'd you get a British accent out of
 Anyways. This means we need some extra useful functions to read the characters and determine when we can combine a bunch of them together. Let's start by just creating a class for our lexer:
 
 ```js
+import { EaselError } from './stdlib.js'
+
 export class Lexer {
   constructor(program) {
     this.program = program
@@ -108,6 +115,10 @@ export class Lexer {
     this.current = 0
     this.line = 1
     this.column = 0
+  }
+
+  error(msg) {
+    throw new EaselError(`Error on ${this.line}:${this.column}: ${msg}`)
   }
 }
 ```
@@ -119,15 +130,16 @@ class Lexer {
   // ...
 
   scanTokens() {
-    while (this.peek() != '\0') this.scanToken()
-    this.tokens.push(new Token(TOKENS.EOF, '\0', '\0'))
+    while (this.peek() !== '\0') this.scanToken()
+    this.tokens.push(new Token(TOKENS.EOF, null, null, this.line, this.column))
     return this.tokens
   }
 }
 ```
 
 <aside>
-  \0 typically represents the null character. The ends of strings in memory are marked with an extra bit, and that happens to be the null character.
+  \0 typically represents the null character. The ends of strings in memory are
+  marked with an extra bit, and that happens to be the null character.
 </aside>
 
 All `scanToken` does is go over every character and run a method called `scanToken`, while we haven't reached the end of the program (see the sidebar for more info!). Now, before we get to `scanToken`, we've got to take a look at `peek`. This is the first of our useful utility functions for peeking ahead and checking what the next character is:
@@ -167,58 +179,71 @@ class Lexer {
     const char = this.advance()
 
     switch (char) {
-      case '(':
+      case '(': {
         return this.tokens.push(
           new Token(TOKENS.LeftParen, '(', '(', this.line, this.column)
         )
-      case ')':
+      }
+      case ')': {
         return this.tokens.push(
           new Token(TOKENS.RightParen, ')', ')', this.line, this.column)
         )
-      case '{':
+      }
+      case '{': {
         return this.tokens.push(
           new Token(TOKENS.LeftBrace, '{', '{', this.line, this.column)
         )
-      case '}':
+      }
+      case '}': {
         return this.tokens.push(
           new Token(TOKENS.RightBrace, '}', '}', this.line, this.column)
         )
-      case '[':
+      }
+      case '[': {
         return this.tokens.push(
           new Token(TOKENS.LeftBracket, '[', '[', this.line, this.column)
         )
-      case ']':
+      }
+      case ']': {
         return this.tokens.push(
           new Token(TOKENS.RightBracket, ']', ']', this.line, this.column)
         )
-      case '.':
+      }
+      case '.': {
         return this.tokens.push(
           new Token(TOKENS.Period, '.', '.', this.line, this.column)
         )
-      case ',':
+      }
+      case ',': {
         return this.tokens.push(
           new Token(TOKENS.Comma, ',', ',', this.line, this.column)
         )
-      case ':':
+      }
+      case ':': {
         return this.tokens.push(
           new Token(TOKENS.Colon, ':', ':', this.line, this.column)
         )
-      case '+':
+      }
+      case '+': {
         return this.tokens.push(
           new Token(TOKENS.Plus, '+', '+', this.line, this.column)
         )
-      case '-':
+      }
+      case '-': {
         return this.tokens.push(
           new Token(TOKENS.Minus, '-', '-', this.line, this.column)
         )
-      case '*':
+      }
+      case '*': {
         return this.tokens.push(
           new Token(TOKENS.Asterisk, '*', '*', this.line, this.column)
         )
-      case '/':
+      }
+      case '/': {
         return this.tokens.push(
           new Token(TOKENS.Slash, '/', '/', this.line, this.column)
         )
+      }
     }
   }
 
@@ -228,9 +253,7 @@ class Lexer {
 }
 ```
 
-<aside>
-  Repetitive but fun!
-</aside>
+<aside>Repetitive but fun!</aside>
 
 Perfect. Let's take a look at our tokens. LeftParen, check. RightParen, check. LeftBrace, check. RightBrace, check. LeftBracket, check. RightBracket, check. Period, check. Comma, check. Colon, check. Keyword, Identifier - we'll get to those later.
 
@@ -238,12 +261,12 @@ Strings! Let's add a case to take care of strings now. The idea is that we'll ke
 
 ```js
 case "'":
-case '"':
+case '"': {
   // String
   let string = []
   while (this.peek() !== char) {
     string.push(this.advance())
-    if (this.peek() == '\0')
+    if (this.peek() === '\0')
       // String wasn't closed
       this.error('Unexpected end of file; expected a closing quote')
   }
@@ -252,6 +275,7 @@ case '"':
   return this.tokens.push(
     new Token(TOKENS.String, string, string, this.line, this.column)
   )
+}
 ```
 
 We remember to deal with both quotes, and if we reach the end of the file without finding a closing quote, that's a problem and we make sure to let the user know. Pretty solid, eh?
@@ -268,17 +292,18 @@ match(char) {
 That packs a double suckerpunch like so:
 
 ```js
-case '|':
+case '|': {
   if (this.match('|'))
     return this.tokens.push(
       new Token(TOKENS.Or, '||', '||', this.line, this.column)
     )
+}
 ```
 
 Pretty ingenious. We can take care of a bunch of other tokens using this strat too:
 
 ```js
-case '>':
+case '>': {
   if (this.match('='))
     return this.tokens.push(
       new Token(TOKENS.Gte, '>=', '>=', this.line, this.column)
@@ -286,7 +311,8 @@ case '>':
   return this.tokens.push(
     new Token(TOKENS.Gt, '>', '>', this.line, this.column)
   )
-case '<':
+}
+case '<': {
   if (this.match('='))
     return this.tokens.push(
       new Token(TOKENS.Lte, '<=', '<=', this.line, this.column)
@@ -294,20 +320,20 @@ case '<':
   return this.tokens.push(
     new Token(TOKENS.Lt, '<', '<', this.line, this.column)
   )
-case '=':
+}
+case '=': {
   if (this.match('='))
     return this.tokens.push(
       new Token(TOKENS.Equiv, '==', '==', this.line, this.column)
     )
-  return this.tokens.push(
-    new Token(TOKENS.Equal, '=', '=', this.line, this.column)
-  )
-case '&':
+}
+case '&': {
   if (this.match('&'))
     return this.tokens.push(
       new Token(TOKENS.And, '&&', '&&', this.line, this.column)
     )
-case '!':
+}
+case '!': {
   if (this.match('='))
     return this.tokens.push(
       new Token(TOKENS.NotEquiv, '!=', '!=', this.line, this.column)
@@ -315,6 +341,7 @@ case '!':
   return this.tokens.push(
     new Token(TOKENS.Not, '!', '!', this.line, this.column)
   )
+}
 ```
 
 That takes care of most of our possible tokens.
@@ -332,9 +359,9 @@ Ok. Let's fill this in one by one with all the cases. How about numbers first? T
 default:
   if (isNumber(char)) {
     let number = [char]
-    while (isNumber(this.peek()) || (this.peek() === "." && !number.includes("."))) 
+    while (isNumber(this.peek()) || (this.peek() === "." && !number.includes(".")))
       number.push(this.advance())
-    numnber = number.join("")
+    number = number.join("")
     return this.tokens.push(
       new Token(
         TOKENS.Number,
@@ -386,7 +413,7 @@ if (isNumber(char)) {
   let identifier = [char]
   while (isAlphanumeric(this.peek())) identifier.push(this.advance())
   identifier = identifier.join('')
-  if (Object.keys(KEYWORDS).includes(identifier)) 
+  if (Object.keys(KEYWORDS).includes(identifier))
     return this.tokens.push(
       new Token(
         TOKENS.Keyword,
@@ -401,13 +428,7 @@ if (isNumber(char)) {
       new Token(TOKENS.Boolean, identifier, identifier === 'true')
     )
   return this.tokens.push(
-    new Token(
-      TOKENS.Identifier,
-      identifier,
-      identifier,
-      this.line,
-      this.column
-    )
+    new Token(TOKENS.Identifier, identifier, identifier, this.line, this.column)
   )
 } else this.error('Unexpected symbol ' + char)
 ```
@@ -416,9 +437,7 @@ Notice how it's not an else statement but an else-if statement that checks if th
 
 ```js
 const isChar = char =>
-  (char >= 'A' && char <= 'Z') ||
-  (char >= 'a' && char <= 'z') ||
-  char == '_'
+  (char >= 'A' && char <= 'Z') || (char >= 'a' && char <= 'z') || char === '_'
 ```
 
 Inside the else-if statement though, we use a different function, `isAlphanumeric`, since our identifiers can have numbers in them (just not the first character!):
@@ -430,28 +449,36 @@ const isAlphanumeric = char => isNumber(char) || isChar(char)
 Awesome. This is all that we really need for our lexer, but there's just two cases we need to deal with: comments and whitespace. Since Easel doesn't rely on whitespace, it makes sense to just ignore any characters that are whitespace-related. Let's deal with these two cases:
 
 ```js
-case '~':
+case '~': {
   // Comments
   while (this.peek() !== '\n' && this.peek() !== '\0') this.advance()
   return
+}
 case ' ':
-case '\r':
+case '\r': {
   // Ignore whitespace
   return
-case '\n':
+}
+case '\n': {
   // Also ignore, but update line
   this.line++
   this.column = 0
   return
+}
 ```
 
 <aside>
-  We've crimped it because it is rather long. It's like that one time Orpheus tried to print a program out but it accidentally came out on the sticker printer.
+  We've crimped it because it is rather long. It's like that one time Orpheus
+  tried to print a program out but it accidentally came out on the sticker
+  printer.
 </aside>
 
 Ok! Let's test out our lexer now! In `easel.js`:
 
 ```js
+import { EaselError } from './stdlib.js'
+import { Lexer } from './lexer.js'
+
 // ...
 
 const program = await readFile(location)
@@ -460,19 +487,14 @@ const lexer = new Lexer(program)
 try {
   lexer.scanTokens()
 } catch (err) {
-  if (err instanceof EaselError) {
-    console.log(err)
-    process.exit(1)
-  }
+  console.log(err)
+  process.exit(1)
 } finally {
   if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
 }
 ```
 
 Run `node easel.js test.easel --dbg` and you'll get this:
-
-<details>
-  <summary>`tokens.json`</summary>
 
 ```json
 [
@@ -3302,8 +3324,7 @@ Run `node easel.js test.easel --dbg` and you'll get this:
   }
 ]
 ```
-</details>
 
 Isn't that cool? We've done that in a little more than 200 lines of code. That's pretty cool, I think. The next step is to start combining tokens into a grammar that represents our programming language, which is what writing a parser will do for us.
 
-*The complete code here is at [lexer.js](https://github.com/hackclub/langjam/blob/main/easel/lexer.js).*
+_The complete code here is at [lexer.js](https://github.com/hackclub/langjam/blob/main/easel/lexer.js)._

@@ -151,7 +151,8 @@ const writeFile = (location, data) =>
     'lexer.js': '',
     'parser.js': '',
     'stdlib.js': '',
-    'program.easel': ''
+    'program.easel': '',
+    'test.easel': ''
   })
 
   useEffect(() => {
@@ -199,7 +200,7 @@ const writeFile = (location, data) =>
             Output
           </div>
           <div className={styles.tab}>Easel</div>
-          <div className={styles.tab} style={{ justifySelf: 'flex-end' }}>
+          <div className={styles.tab} style={{ alignSelf: 'flex-end' }}>
             Run
           </div>
         </div>

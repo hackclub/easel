@@ -3,7 +3,7 @@ title: Orpheus writes an interpreter
 order: 4
 ---
 
-Orpheus has her smock and beret on today. She's ready to do some painting. She sits down at the computer. The smock is slightly awkward. The beret's about to fall off. 
+Orpheus has her smock and beret on today. She's ready to do some painting. She sits down at the computer. The smock is slightly awkward. The beret's about to fall off.
 
 But today's an exciting day! Because today, we'll get the interpreter up and running, and we'll be able to run programs for real now. And Orpheus will finally be able to get this easel to work.
 
@@ -13,25 +13,30 @@ The interpreter's going to be a little different from the lexer and parser, but 
 
 Orpheus opens up her computer. It's time to start writing the interpreter in `interpreter.js`:
 
+<Editor initialTab="interpreter.js">
 ```js
+import Ast from './ast.js'
+import { EaselError } from './stdlib.js'
+
 export class Interpreter {
   error(msg) {
     throw new EaselError(`Runtime error: ${msg}`)
   }
 
-  run(ast, scope) {
-  }
+run(ast, scope) {}
 }
 ```
+</Editor>
 
-Just a little boilerplate here. Our main entry point is going to `run()`, which takes in the abstract syntax tree our lovely parser has created and something new: *scope*.
+Just a little boilerplate here. Our main entry point is going to `run()`, which takes in the abstract syntax tree our lovely parser has created and something new: _scope_.
 
 ## So how does this scope thing work?
 
-Scope is what's going to make magic. I mean, turn our programming language into a power to be reckoned with. Like an actual programming language - in fact, one of the biggest criteria for a language to be Turing-complete is that it should be able to keep track of state. That's what scope is for - it'll keep track of what variables exist, what functions exist, what structs exist, and any other info we'll have. It's also we'll inject our *standard library* into, as we'll see later.
+Scope is what's going to make magic. I mean, turn our programming language into a power to be reckoned with. Like an actual programming language - in fact, one of the biggest criteria for a language to be Turing-complete is that it should be able to keep track of state. That's what scope is for - it'll keep track of what variables exist, what functions exist, what structs exist, and any other info we'll have. It's also we'll inject our _standard library_ into, as we'll see later.
 
 We're going to use a simple key-value store to store our scope, especially since JavaScript is so lenient. While we're at it, let's add a quick util function to check if a value exists in our scope that'll come in handy later:
 
+<Editor initialTab="interpreter.js">
 ```js
 export class Interpreter {
   // ...
@@ -41,6 +46,7 @@ export class Interpreter {
   }
 }
 ```
+</Editor>
 
 ## Let's get this working
 
@@ -79,20 +85,21 @@ Every while loop node will have a condition and a body. So when we encounter a w
 
 When we were writing our lexer, we differentiated between different token types. When we were writing our parser, we differentiated between different nodes. Now, we'll differentiate between values that need to be stored in memory and values that are just literals or references to values in memory. This turns into two main methods:
 
-<aside>
-  Reminder that this all goes inside `Interpreter`.
-</aside>
+<aside>Reminder that this all goes inside `Interpreter`.</aside>
 
+<Editor initialTab="interpreter.js">
 ```js
 evaluate(value, scope) {}
 
 execute(node, scope) {}
 ```
+</Editor>
 
-`execute()` will call `evaluate()` for *evaluating* basic expressions, but `execute()` will be doing the. It's similar to the recursive descent we applied while writing our parser, except now we've condensed it down to three methods - `run()` for blocks of statements, `execute()` for those statements, and `evaluate()` for expressions.
+`execute()` will call `evaluate()` for _evaluating_ basic expressions, but `execute()` will be doing the. It's similar to the recursive descent we applied while writing our parser, except now we've condensed it down to three methods - `run()` for blocks of statements, `execute()` for those statements, and `evaluate()` for expressions.
 
 C'mon, let's fill out `execute()`!
 
+<Editor initialTab="interpreter.js">
 ```js
 execute(node, scope) {
   switch(node.constructor) {
@@ -105,10 +112,12 @@ execute(node, scope) {
     case Ast.For:
     case Ast.Conditional:
     default:
-      return this.evaluate(node, scope)
+      this.evaluate(node, scope)
   }
+  return scope
 }
 ```
+</Editor>
 
 `node.constructor` returns the class that the node is a child of, effectively letting us check what class it belongs to.
 
@@ -117,22 +126,28 @@ Do you notice something? Compare this to `Parser.stmt()`, and you'll notice that
 Let's fill these out one by one. `Ast.Var`:
 
 <aside>
-  By the way, these diagrams are meant to help you understand what properties the node in question has, i.e. this node has name and value &rarr; `node.name` and `node.value`.
+  By the way, these diagrams are meant to help you understand what properties
+  the node in question has, i.e. this node has name and value &rarr; `node.name`
+  and `node.value`. You can find the source in `ast.js`.
 </aside>
 
 <Node title="Ast.Var">
   type = "Var"
 
-  name is Identifier
+name is *Identifier*
 
-  value is Expression
+value is *Expression*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.Var:
+case Ast.Var: {
   scope[node.name] = this.evaluate(node.value, scope)
-  break
+  return scope
+}
 ```
+</Editor>
 
 This is pretty self-explanatory, but it looks like...
 
@@ -140,18 +155,20 @@ This is pretty self-explanatory, but it looks like...
 
 Here's our first usage of `evaluate()`! So let's take a quick detour to fill it out. It looks super similar, except we won't really be tweaking what's in `scope` here:
 
+<Editor initialTab="interpreter.js">
 ```js
 evaluate(value, scope) {
   switch (value.constructor) {
-    case Ast.Var:
+    case Ast.Var: {
         if (!this.inScope(scope, value.name))
           this.error(`${value.name} is not defined in current scope`)
         return scope[value.name]
+    }
     case Ast.Unary: {
       const operations = { '!': apply => !apply }
         return operations[value.operator](this.evaluate(value.apply, scope))
     }
-    case Ast.Binary:
+    case Ast.Binary: {
       const operations = {
         '<': (left, right) => left < right,
         '<=': (left, right) => left <= right,
@@ -170,15 +187,20 @@ evaluate(value, scope) {
         this.evaluate(value.left, scope),
         this.evaluate(value.right, scope)
       )
-    case Ast.Literal:
+    }
+    case Ast.Literal: {
       return value.value
-    case Ast.Array:
+    }
+    case Ast.Array: {
       return value.value.map(expr => this.evaluate(expr, scope))
-    default:
+    }
+    default: {
       this.error("Expected expression but got statement")
+    }
   }
 }
 ```
+</Editor>
 
 I started out with the most obvious ones here. If we get a reference to a variable, we'll search `scope` and return a value if it's there. If it's a unary or a binary operator, we apply the operator to the appropriate expression(s). Literals and arrays are also pretty simple.
 
@@ -191,17 +213,19 @@ Ok, let's move back up the rabbit hole now and keep working our way through `exe
 `Ast.Struct`:
 
 <Node title="Ast.Struct">
-  type = "Struct"
-  
-  name is Identifier
+type = "Struct"
 
-  members is Identifier[]
+name is *Identifier*
+
+members is *Identifier[]*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.Struct:
+case Ast.Struct: {
   scope[node.name] = members => {
-    // Make sure therer are no invalid keys
+    // Make sure there are no invalid keys
     let instance = {}
     for (let key of Object.keys(members)) {
       if (!node.members.includes(key))
@@ -210,15 +234,18 @@ case Ast.Struct:
     }
     return instance
   }
-  break
+  return scope
+}
 ```
+</Editor>
 
 This is run when we create a struct definition, like `brush Cell has { x, y, live }`. Notice how it's a function. When we create a struct using `prep Cell(x: x, y: y, live: live)`, it's like a function, except we're passing
 
 Where does the code for creating a struct go then? Since it evaluates to an expression (`{ x: 1, y: 1, live: false }`), we'll tackle an extra case in `evaluate()`:
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.Instance:
+case Ast.Instance: {
   if (!this.inScope(scope, value.name))
     this.error(`${value.name} is not defined in current scope`)
 
@@ -227,7 +254,9 @@ case Ast.Instance:
   for (let [member, memberValue] of Object.entries(value.members))
     members[member] = this.evaluate(memberValue, scope)
   return constructor(members)
+}
 ```
+</Editor>
 
 That's where the constructor comes into play! And notice that when we create a struct, we pass in a list of expressions rather than a list of identifiers.
 
@@ -236,15 +265,16 @@ That's where the constructor comes into play! And notice that when we create a s
 <Node title="Ast.Func">
   type = "Func"
 
-  name is Identifier
+name is *Identifier*
 
-  params is Identifier[]
+params is *Identifier[]*
 
-  body is Statement[]
+body is *Statement[]*
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.Func:
+case Ast.Func: {
   const func = args => {
     let localScope = { ...scope }
     for (let [i, param] of node.params.entries())
@@ -258,32 +288,39 @@ case Ast.Func:
   }
 
   scope[node.name] = func
-  break
+  return scope
+}
 ```
+</Editor>
 
 What we're doing here is pretty ingenious. (Or really, this whole thing has been quite ingenious. Seriously, pat yourself on the back for coming this far along!). We have a wrapper function - it'll take a list of arguments. We create a copy of the scope - here's where local scope comes into play! - and update the local scope with the arguments, and then use `run`. The reason why we use `run` instead of, say `execute`, is that a function is a block of statements, which is what `run` accounts for.
 
-The extra special thing here is that we've wrapped our call to `run` with a try-catch block, but we specifically check if we get a ReturnException, and it turns out: 
+The extra special thing here is that we've wrapped our call to `run` with a try-catch block, but we specifically check if we get a ReturnException, and it turns out:
 
 `Ast.Return`:
 
 <Node title="Ast.Return">
   type = "Return"
 
-  value is Expression
+value is *Expression*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
 case Ast.Return:
   throw new ReturnException(this.evaluate(node.value, scope))
 ```
+</Editor>
 
 <aside>
-  Just as a reminder, return statements can be anywhere in a function, which is why exceptions work so well.
+  Just as a reminder, return statements can be anywhere in a function, which is
+  why exceptions work so well.
 </aside>
 
-`ReturnException` doesn't exist yet, so let's make it happen. And hopefully now the pieces are clicking into place - throwing an exception is a really useful way of exiting running a block of code, it turns out. 
+`ReturnException` doesn't exist yet, so let's make it happen. And hopefully now the pieces are clicking into place - throwing an exception is a really useful way of exiting running a block of code, it turns out.
 
+<Editor initialTab="interpreter.js">
 ```js
 export class ReturnException extends Error {
   constructor(value) {
@@ -292,11 +329,13 @@ export class ReturnException extends Error {
   }
 }
 ```
+</Editor>
 
 (Towards the top of `interpreter.js`.)
 
 Now that we have functions that can return shtuff, we need to be able to actually call functions. This is a job for `evaluate`, since ultimately we'll use a function we find in our scope to return a value.
 
+<Editor initialTab="interpreter.js">
 ```js
 case Ast.Call: {
   const caller = this.evaluate(value.caller, scope)
@@ -306,6 +345,7 @@ case Ast.Call: {
   return caller(args)
 }
 ```
+</Editor>
 
 Pretty simple, right?
 
@@ -314,16 +354,20 @@ Pretty simple, right?
 <Node title="Ast.While">
   type = "While"
 
-  condition is Expression
+condition is *Expression*
 
-  body is Statement[]
+body is *Statement[]*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.While:
+case Ast.While: {
   while (this.execute(node.condition, scope)) this.run(node.body, scope)
   break
+}
 ```
+</Editor>
 
 We've finally reached our first example! This one you probably understand now :)
 
@@ -332,22 +376,26 @@ We've finally reached our first example! This one you probably understand now :)
 <Node title="Ast.For">
   type = "For"
 
-  id is Identifier
+id is *Identifier*
 
-  range is Expression[]
+range is *Expression[]*
 
-  body is Statement[]
+body is *Statement[]*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.For:
+case Ast.For: {
   let localScope = { ...scope, [node.id]: this.evaluate(node.range[0]) }
   while (localScope[node.id] < this.evaluate(node.range[1], scope)) {
     this.run(node.body, localScope)
     localScope[node.id]++
   }
   break
+}
 ```
+</Editor>
 
 For loops are really just variations on while loops. Here, we set up a local scope and inject the variable we'll use to keep track of what iteration we're on.
 
@@ -356,21 +404,25 @@ For loops are really just variations on while loops. Here, we set up a local sco
 <Node title="Ast.Conditional">
   type = "Conditional"
 
-  condition is Expression
+condition is *Expression*
 
-  body is Statement[]
+body is *Statement[]*
 
-  otherwise is Ast.Conditional[]
+otherwise is *Ast.Conditional[]*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.Conditional:
+case Ast.Conditional: {
   if (this.evaluate(node.condition, scope)) this.run(node.body, scope)
   else
     for (const conditional of node.otherwise)
       this.execute(conditional, scope)
   break
+}
 ```
+</Editor>
 
 This is pretty expected. We evaluate the condition, and if it's true, we run the if-statement's body. Otherwise, we loop through the other conditions left and do the same exact thing by recursively calling `execute()`. The useful thing is that if there is an else statement in there, we've set its condition to always be true so it'll always run if the other conditions don't match up.
 
@@ -379,33 +431,39 @@ This is pretty expected. We evaluate the condition, and if it's true, we run the
 <Node title="Ast.Set">
   type = "Set"
 
-  name is Identifier
+name is *Identifier*
 
-  property is Identifer
+property is *Identifer*
 
-  value is Expression
+value is *Expression*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
-case Ast.Set:
+case Ast.Set: {
   if (!this.inScope(scope, node.caller))
     this.error(`${node.caller} is not defined in current scope`)
   scope[node.caller][node.property] = this.evaluate(node.value, scope)
-  break
+  return scope
+}
 ```
+</Editor>
 
 Of course, with a setter, one has to have a getter. That sounds like a duty for `evaluate`, of course, since we're getting a value:
 
 <Node title="Ast.Get">
   name = "Get"
 
-  caller is Identifier
+caller is *Identifier*
 
-  property is Identifier
+property is *Identifier*
 
-  isExpr is boolean
+isExpr is *boolean*
+
 </Node>
 
+<Editor initialTab="interpreter.js">
 ```js
 case Ast.Get:
   const caller = this.evaluate(value.caller, scope)
@@ -417,14 +475,15 @@ case Ast.Get:
   if (get instanceof Function) return get.bind(caller)
   return get
 ```
+</Editor>
 
 We're finally going to make use of that extra `isExpr` property we've attached to our getter nodes!
 
-But also, notice the last part of this - we have a special case for properties that actually happen to be functions - we make sure to *bind* the function to the caller. What does this mean exactly? Well, let me give you a quick example in JavaScript. Run `node` in a terminal somewhere:
+But also, notice the last part of this - we have a special case for properties that actually happen to be functions - we make sure to _bind_ the function to the caller. What does this mean exactly? Well, let me give you a quick example in JavaScript. Run `node` in a terminal somewhere:
 
 ```js
 let test = [1, 2, 3]
-let push = test.push  // References the push method on test
+let push = test.push // References the push method on test
 push(4)
 
 // > Uncaught TypeError: Cannot convert undefined or null to object at push (<anonymous>)
@@ -432,7 +491,16 @@ push(4)
 
 This doesn't work because the `push` method is no longer "attached" to the original array, the caller. We don't want to run into this kind of problem, so we've just made sure to bind methods with their caller.
 
-And that wraps up our interpreter! We've tackled every type of node our AST could possibly generate, so we're done. There's just one last step, and this one's actually a lot of fun!
+And that wraps up our interpreter! We've tackled every type of node our AST could possibly generate, so we're done. Let's finish `run()` and we'll be done:
+
+<Editor initialTab="interpreter.js">
+```js
+run(ast, scope) {
+  for (const node of ast) scope = this.execute(node, scope)
+  return scope
+}
+```
+</Editor>
 
 ## The standard library
 
@@ -442,23 +510,65 @@ This is great and dandy, but there's one thing we can't really do, and that is: 
   By a lot of fun, I mean there's a ton of options you can add here!
 </aside>
 
+<Editor initialTab="stdlib.js">
 ```js
 export default {
   ink: args => console.log(...args),
-  random: range => {
-    const [min, max] = range
+  random: ([min, max]) => {
+    if (min >= 0 && max <= 1) return Math.random()
     return Math.random() * (max - min + 1) + min
   },
   round: number => Math.round(number)
 }
 ```
+</Editor>
 
-<aside>
-  Ayy. It's the answer to the meaning of life!
-</aside>
+<aside>Ayy. It's the answer to the meaning of life!</aside>
 
-Let's try it out now:
+Let's try it out now. First, including the interpreter in `easel.js`:
 
+<Editor initialTab="easel.js">
+```js
+import { Interpreter } from './interpreter.js'
+import stdlib, { EaselError } from './stdlib.js'
+
+// ...
+
+if (location) {
+  const program = await readFile(location)
+
+  const lexer = new Lexer(program)
+  try {
+    lexer.scanTokens()
+  } catch (err) {
+    console.log(err)
+    process.exit(1)
+  } finally {
+    if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
+  }
+
+  const parser = new Parser(lexer.tokens)
+  try {
+    parser.parse()
+  } catch (err) {
+    console.log(err)
+  } finally {
+    if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
+  }
+
+  const interpreter = new Interpreter()
+  try {
+    interpreter.run(parser.ast, stdlib)
+  } catch (err) {
+    console.log(err)
+  }
+}
+```
+</Editor>
+
+Place this in `test.easel` and run `node easel.js test.easel --dbg`!
+
+<Editor initialTab="test.easel">
 ```plaintext
 ink("Hello, world!")
 ink(round(random(0, 100)))
@@ -468,17 +578,22 @@ ink(round(random(0, 100)))
 Hello, world!
 42
 ```
+</Editor>
 
 Oh smokes. Our programming language is working! 🎉 🎉 🎉
+
+<Celebrate/>
 
 Can we run that program that was at the beginning of this journey? Let's add a few more features to our standard library first and try again:
 
 <aside>
-  Orpheus is going to use `Canvas` and `Color` to simulate changes on a digital easel, and then map it to a real easel.
+  Orpheus is going to use `Canvas` and `Color` to simulate changes on a digital
+  easel, and then map it to a real easel.
 </aside>
 
+<Editor initialTab="stdlib.js">
 ```js
-class Canvas {
+export class Canvas {
   constructor(rows = 64, cols = 64) {
     this.default = { r: 0, g: 0, b: 0 }
     this.rows = rows
@@ -522,47 +637,23 @@ export default {
       instance[key] = members[key]
     }
     return instance
-  },
+  }
   // ...
 }
 ```
+</Editor>
 
 One last thing: arrays in Easel have a special method called `add` that'll, well, add an item to itself. Let's add a prototype method to take care of that at the top of `interpreter.js`:
 
+<Editor initialTab="interpreter.js">
 ```js
 Array.prototype.add = function (args) {
   this.push(...args)
 }
 ```
+</Editor>
 
-Ok! Let's add our interpreter to `easel.js` now:
-
-```js
-// ...
-const parser = new Parser(lexer.tokens)
-try {
-  parser.parse()
-} catch (err) {
-  if (err instanceof EaselError) {
-    console.log(err)
-    process.exit(2)
-  }
-} finally {
-  if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
-}
-
-const interpreter = new Interpreter()
-try {
-  interpreter.run(parser.ast, stdlib)
-} catch (err) {
-  if (err instanceof EaselError) console.log(err.toString())
-}
-```
-
-Go ahead and run `node easel.js test.easel`.
-
-<details open>
-  <summary>`test.easel`</summary>
+Go ahead and run `node easel.js test.easel --dbg`.
 
 ```plaintext
 prepare rows as 50
@@ -672,30 +763,33 @@ painting()
 ~ ...
 
 ```
-</details>
 
 Congrats. You, you just wrote a programming language. That was pretty magical, wasn't it?
 
-<img src="/cartoons/wizard.png" style={{ width: "40%" }} />
+<img src="/cartoons/wizard.png" style={{ width: '40%' }} />
 
 ## What about... interactivity?
 
 What happened to interactivity? What if we don't want to run a program from a file? Let's add a REPL (read, evaluate, print, loop) now.
 
 <video controls>
-  <source src="https://cloud-1cma98jhs-hack-club-bot.vercel.app/0screen_recording_2024-04-17_at_12_07_43_pm_adobeexpress.mp4"/>
+  <source src="https://cloud-1cma98jhs-hack-club-bot.vercel.app/0screen_recording_2024-04-17_at_12_07_43_pm_adobeexpress.mp4" />
 </video>
 
+
+
 <aside>
-  Orpheus: This reminds me... we should get an easel in the terminal working. Or that could be a challenge for you.
+  Orpheus: This reminds me... we should get an easel in the terminal working. Or
+  that could be a challenge for you.
 </aside>
 
-It's actually quite easy to do, and we have left a placeholder for it, if you remember in part one! 
+It's actually quite easy to do, and we have left a placeholder for it, if you remember in part one!
 
 ![](/cartoons/repl-time.png)
 
 Let's head on over and fill that sad and empty else-statement now. The obvious first step: let's set up the interpreter and the scope.
 
+<Editor initialTab="easel.js">
 ```js
 //  ...
 if (location) {
@@ -709,17 +803,21 @@ if (location) {
   }
 }
 ```
+</Editor>
 
 I've added an extra `exit()` function so we can exit from the REPL.
 
 Let's read a line from the terminal now. We'll need `node:readline`:
 
+<Editor initialTab="easel.js">
 ```js
-import readline from "node:readline"
+import readline from 'node:readline'
 ```
+</Editor>
 
 And back in the else statement:
 
+<Editor initialTab="easel.js">
 ```js
 const input = readline.createInterface({
   input: process.stdin,
@@ -733,14 +831,16 @@ process.on('SIGINT', () => {
 
 const repl = line => {
   console.log(line)
-  input.question("> ", repl)
+  input.question('> ', repl)
 }
 
-input.question("> ", repl)
+input.question('> ', repl)
 ```
+</Editor>
 
 There's the infinite loop we need. Now, instead of reading a file, we're going to read the line:
 
+<Editor initialTab="easel.js">
 ```js
 const repl = line => {
   let hadError = false
@@ -752,7 +852,7 @@ const repl = line => {
     if (err instanceof EaselError) {
       hadError = true
       console.log(err.toString())
-    }
+    } else throw err
   }
 
   if (!hadError) {
@@ -761,16 +861,19 @@ const repl = line => {
       parser.parse()
     } catch (err) {
       if (err instanceof EaselError) console.log(err.toString())
+      else throw err
     }
 
     try {
       scope = interpreter.run(parser.ast, scope)
     } catch (err) {
       if (err instanceof EaselError) console.log(err.toString())
+      else throw err
     }
   }
 }
 ```
+</Editor>
 
 The only different here, frankly, is that we introduce `hadError`. The logic is that if our lexer runs into an error, we don't want to keep going. For the parser it's a little bit different - when we run into an error, we can technically keep going because we're always guaranteed to have a valid AST (or an empty one).
 
@@ -778,4 +881,4 @@ And that's really all! Now you can fire up a terminal, run `node easel.js`, and 
 
 What about multiple lines? Well, the logic behind multiple lines is that we'll check if the end of our first line is representative of a list of sorts. Basically, then: left brackets, left braces, and left parentheses. Then we'll keep reading and keeping track of the given operator until we reach the matching closing one. [TODO]
 
-*The complete code here is at [intepreter.js](https://github.com/hackclub/langjam/blob/main/easel/interpreter.js).*
+_The complete code here is at [interpreter.js](https://github.com/hackclub/langjam/blob/main/easel/interpreter.js)._

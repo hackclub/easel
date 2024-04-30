@@ -2,6 +2,7 @@
 
 .editor {
   border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   border-right: 1px solid var(--border);
   display: flex;
   margin-bottom: 1em;
@@ -26,7 +27,6 @@
   .tab {
     cursor: pointer;
     padding: 7px 12px;
-    border-top: 1px solid var(--border);
     border-right: 1px solid var(--border);
     user-select: none;
   }
@@ -34,10 +34,6 @@
 
 .editable {
   border-right: 1px solid var(--border);
-}
-
-.output {
-  border-top: 1px solid var(--border);
 }
 
 .easel {
