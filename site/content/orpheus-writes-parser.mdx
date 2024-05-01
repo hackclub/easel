@@ -13,14 +13,26 @@ Orpheus drew a diagram for us last chapter on how lexers turn a blob of text tha
 
 Parsers take these tokens and in turn output a tree of sorts that describes how tokens apply to one another. Here's an example of such an transformation:
 
-<LexerParserTransform />
+<Mermaid chart={`
+flowchart LR
+    subgraph nodes
+    node["\`<pre>{ type: Var, name: 'rows', value: { type: Literal, value: 50 } }</pre>\`"]
+    end
+    subgraph tokens
+    token1["\`<pre>{ type: Keyword, value: 'prepare', content: 'prepare', line: 1, column: 8 }</pre>\`"] --> node
+    token2["\`<pre>{ type: Identifier, value: 'rows', content: 'rows', line: 1, column: 13 }</pre>\`"] --> node
+    token3["\`<pre>{ type: Keyword, value: 'as', content: 'as', line: 1, column: 16 }</pre>\`"] --> node
+    token4["\`<pre>{ type: Number, value: 50, content: 50, line: 1, column: 19 }</pre>\`"] --> node
+    end
+`}/>
 
-We took five tokens and smooshed them into one _node_. The five tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
+We took four tokens and smooshed them into one _node_. The four tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
 
 We're going to write that parser now. It's actually, surprisingly, similar to how we wrote our lexer, except that we're working with a tree now, which means we'll need some form of recursion.
 
 Let's start with the usual! Orpheus opens a file called `parser.js` and throw this in there:
 
+<Editor initialTab="parser.js">
 ```js
 import { EaselError } from './stdlib.js'
 import { TOKENS } from './lexer.js'
@@ -39,9 +51,11 @@ export class Parser {
   }
 }
 ```
+</Editor>
 
 Based on the diagram, the most intuitive next step is to loop through every token that we get. Let's do that in our `parse()` method:
 
+<Editor initialTab="parser.js">
 ```js
 export class Parser {
   // ...
@@ -52,9 +66,11 @@ export class Parser {
   }
 }
 ```
+</Editor>
 
 This is pretty similar to our `scanTokens()` method in our lexer, but last time, we dealt with each character at a time. Tokens have more information then that - we also get a token's type - so we have two helper `peek()` methods this time instead of one:
 
+<Editor initialTab="parser.js">
 ```js
 export class Parser {
   // ...
@@ -74,6 +90,7 @@ export class Parser {
   }
 }
 ```
+</Editor>
 
 Cool! Now, what exactly do with these tokens?
 
@@ -129,6 +146,7 @@ Our job now is to write a parser that can understand this hierarchy. The parser 
 
 Ok! Sturp talking! Let's get to smacking the keyboard instead. By then, it should be pretty obvious that we'll need another utility method we're desparately missing: the good ole' `eat` method for eating tokens up:
 
+<Editor initialTab="parser.js">
 ```js
 class Parser {
   // ...
@@ -144,6 +162,7 @@ class Parser {
   // ...
 }
 ```
+</Editor>
 
 <aside>
   At this point we're going to stop putting the class definition around each
@@ -152,6 +171,7 @@ class Parser {
 
 Now let's begin our descent... into the <strike>underworld</strike> writing of a parser! Let's start with this basic structure:
 
+<Editor initialTab="parser.js">
 ```js
 class Parser {
   simple() {}
@@ -173,9 +193,11 @@ class Parser {
   }
 }
 ```
+</Editor>
 
 Ok, understandable enough! Although this isn't going to do anything right now. Let's fix that by updating `simple()`:
 
+<Editor initialTab="parser.js">
 ```js
 simple() {
   const token = this.eat(this.peekType())
@@ -189,6 +211,7 @@ simple() {
   this.error(token, "Expected expression but got " + token)
 }
 ```
+</Editor>
 
 Notice how we throw an error if we don't get anything. Since this is the last method we reach when we're looking at a token, there must be a _syntax error_ if we can't get a proper node.
 
@@ -199,6 +222,7 @@ Something we didn't consider ahead of time was how we would define how these nod
   it's useful debug info.
 </aside>
 
+<Editor initialTab="ast.js">
 ```js
 export class Literal {
   constructor(value) {
@@ -212,15 +236,19 @@ export default {
   Literal
 }
 ```
+</Editor>
 
 Make sure to import this in `parser.js`!
 
+<Editor initialTab="parser.js">
 ```js
 import Ast from './ast.js'
 ```
+</Editor>
 
 Perfect. Back to `simple()` now - we're going to add arrays now:
 
+<Editor initialTab="parser.js">
 ```js
 simple() {
   let token = this.eat(this.peekType())
@@ -236,9 +264,11 @@ simple() {
   this.error(token, "Expected expression but got " + token)
 }
 ```
+</Editor>
 
 That means we'll need to add a new kind of node:
 
+<Editor initialTab="ast.js">
 ```js
 export class Array {
   constructor(value) {
@@ -252,6 +282,7 @@ return {
   // ...
 }
 ```
+</Editor>
 
 <aside>
   You've got to thank Orpheus for this, she was smart and decided it would be
@@ -263,6 +294,7 @@ Our predictions were correct. We gobble up the left bracket, create a new array,
 
 Now, we make use of an extra helper called `exprList()` to do this.
 
+<Editor initialTab="parser.js">
 ```js
 exprList() {
   let exprs = []
@@ -274,9 +306,11 @@ exprList() {
   return exprs
 }
 ```
+</Editor>
 
 One last thing we'll add for now to `simple()` is:
 
+<Editor initialTab="parser.js">
 ```js
 simple() {
   // ...
@@ -288,11 +322,13 @@ simple() {
   }
 }
 ```
+</Editor>
 
 This might confuse you a bit - didn't we say variables were statements? Yes, but this is not that - this is referring to when we reference a variable, not direct assignment.
 
 This does make use of a new kind of node though, so let's add that to `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Var {
   constructor(name, value) {
@@ -307,9 +343,11 @@ export default {
   Var
 }
 ```
+</Editor>
 
 Cool. That takes care of `simple()` for now. Let's move up the hierarchy and tweak `expr()`! Right now, we've only grabbed the left side of what should be a binary operation. Let's grab the operator and the right side after that:
 
+<Editor initialTab="parser.js">
 ```js
 expr() {
   // expr has two sides
@@ -322,9 +360,11 @@ expr() {
   return left
 }
 ```
+</Editor>
 
 Looks like we need an extra `isOp` function. I'll put this at the top of `parser.js`:
 
+<Editor initialTab="parser.js">
 ```js
 const isOp = type =>
   [
@@ -342,9 +382,11 @@ const isOp = type =>
     TOKENS.Slash
   ].includes(type)
 ```
+</Editor>
 
 Our binary expression node is pretty simple:
 
+<Editor initialTab="ast.js">
 ```js
 export class Binary {
   constructor(left, operator, right) {
@@ -360,18 +402,22 @@ export default {
   Binary
 }
 ```
+</Editor>
 
 Ok, I think we've got enough here where we can test the parser out and see what happens. Let's remove that `continue` we had earlier in `parse()`:
 
+<Editor initialTab="parser.js">
 ```js
 parse() {
   while (this.peekType() !== TOKENS.EOF) this.ast.push(this.stmt())
   return this.ast
 }
 ```
+</Editor>
 
 We should, of course, start using our parser in `easel.js`:
 
+<Editor initialTab="easel.js">
 ```js
 import { Parser } from './parser.js'
 
@@ -401,6 +447,7 @@ if (location) {
 }
 // ...
 ```
+</Editor>
 
 Cool! Let's test this out with a test program, `parser-test.easel`:
 
@@ -458,6 +505,11 @@ First things first, all operators should have a precedence hierarchy. If I see a
 
 First things first, at the top of `parser.js`!
 
+<aside>
+Arithmetic operators are evaluated first, then comparison operators, as described [here](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/operator-precedence).
+</aside>
+
+<Editor initialTab="parser.js">
 ```js
 const opOrder = {
   '<': 0,
@@ -474,9 +526,11 @@ const opOrder = {
   '/': 2
 }
 ```
+</Editor>
 
 Next, I am going to add a little if-statement that checks if `right` is also a binary expression node, and compare the operators if so:
 
+<Editor initialTab="parser.js">
 ```js
 expr() {
   // expr has two sides
@@ -496,6 +550,7 @@ expr() {
   return left
 }
 ```
+</Editor>
 
 Ok. Back to me. I'll take the mic back. Thanks. [grabs mic]
 
@@ -507,6 +562,7 @@ And that fixes all our problems! Well, not all of our problems, of course. Right
 
 If you run this currently, it'll throw a syntax error, because we haven't dealt with parentheses in this scenario! In this scenario, the parentheses represent an expression inside an expression that we should evaluate first. To take care of this precendence, we can place this in `simple()` to take care of this:
 
+<Editor initialTab="parser.js">
 ```js
 case TOKENS.LeftParen: {
   const expr = this.expr()
@@ -514,6 +570,7 @@ case TOKENS.LeftParen: {
   return expr
 }
 ```
+</Editor>
 
 An expression inside an expression, essentially. This works because now `expr()` will call `simple()` and evaluate `(15 + 15)` on its own, before peeking at `/`. Now if we run our parser on this, we'll get the proper looking AST and not a syntax error:
 
@@ -547,6 +604,7 @@ Perhaps the best example to run through first is parsing functions, so let's tak
 
 We'll have a nested function inside `stmt()`:
 
+<Editor initialTab="parser.js">
 ```js
 stmt() {
   const funcStmt = () => {
@@ -584,9 +642,11 @@ stmt() {
   }
 }
 ```
+</Editor>
 
 We need two extra utilities that wrap `peek()` and `eat()`: `peekKeyword()` and `eatKeyword()`. `eatKeyword()` will throw an error if the next token isn't a keyword or if it doesn't match up to the keyword provided:
 
+<Editor initialTab="parser.js">
 ```js
 peekKeyword(keyword) {
   if (this.peekType() !== TOKENS.Keyword || this.peek().value !== keyword)
@@ -608,9 +668,11 @@ eatKeyword(keyword) {
   return this.eat(TOKENS.Keyword)
 }
 ```
+</Editor>
 
 We also need an extra helper method, similar to `exprList()`, called `identifierList()`:
 
+<Editor initialTab="parser.js">
 ```js
 identifierList() {
   let identifiers = []
@@ -622,11 +684,13 @@ identifierList() {
   return identifiers
 }
 ```
+</Editor>
 
 Instead of returning a list of expressions by calling `expr()`, `identifierList()` just returns a list of identifiers by gobbling them up.
 
 Of course, we also need `Ast.Func` in `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Func {
   constructor(name, params, body) {
@@ -642,9 +706,11 @@ export {
   // ...
 }
 ```
+</Editor>
 
 With functions come return statements. Let's work on those next. They're really simple, just eat the return keyword and return an expression:
 
+<Editor initialTab="parser.js">
 ```js
 stmt() {
   const returnStmt = () => {
@@ -667,9 +733,11 @@ stmt() {
   }
 }
 ```
+</Editor>
 
 Of course, `Ast.Return`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Return {
   constructor(value) {
@@ -683,6 +751,7 @@ export default {
   Return
 }
 ```
+</Editor>
 
 <aside>
   This is pretty repetitive, ain't it? There are [parser
@@ -695,6 +764,7 @@ export default {
 
 Let's deal with the loops next. For loops will gobble up the `loop` keyword, grab the identifier we'll be using to keep track of the current iteration, the range, and of course, the body:
 
+<Editor initialTab="ast.js">
 ```js
 const forStmt = () => {
   this.eatKeyword('loop')
@@ -731,9 +801,11 @@ switch (next.type) {
   // ...
 }
 ```
+</Editor>
 
 In `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class For {
   constructor(id, range, body) {
@@ -749,9 +821,11 @@ export default {
   For
 }
 ```
+</Editor>
 
 Lovely. While loops are simpler, all we have to do is grab the condition and the body afterwards:
 
+<Editor initialTab="parser.js">
 ```js
 const whileStmt = () => {
   this.eatKeyword('while')
@@ -781,9 +855,11 @@ switch (next.type) {
   // ...
 }
 ```
+</Editor>
 
 In `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class While {
   constructor(condition, body) {
@@ -798,11 +874,13 @@ export default {
   While
 }
 ```
+</Editor>
 
 ### Conditionals
 
 Conditionals are also pretty intuitive. We'll do this recursively - we'll start by eating up the `if` keyword, parsing the condition, and the body. If `elif` or `else` pops up afterwards, we'll also deal with those by calling `conditionalStmt` again:
 
+<Editor initialTab="parser.js">
 ```js
 const conditionalStmt = keyword => {
   this.eatKeyword(keyword)
@@ -839,9 +917,11 @@ switch (next.type) {
   // ...
 }
 ```
+</Editor>
 
 In `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Conditional {
   constructor(condition, body, otherwise) {
@@ -857,11 +937,13 @@ export default {
   Conditional
 }
 ```
+</Editor>
 
 ### Assignment
 
 We should be able to assign values to a variable, but we should also be able to assign values to a property, like `prepare cell.live as false`. We can do this in the same function by simply checking that first identifier and checking if a Period token comes afterward:
 
+<Editor initialTab="parser.js">
 ```js
 const assignStmt = () => {
   this.eatKeyword('prepare')
@@ -892,9 +974,11 @@ switch (next.type) {
   // ...
 }
 ```
+</Editor>
 
 `Ast.Var` exists, but `Ast.Set` doesn't, so let's add that in `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Set {
   constructor(caller, property, value) {
@@ -910,11 +994,13 @@ export default {
   Set
 }
 ```
+</Editor>
 
 ### Structs
 
 Last but not least, structs! We need to have a statement for defining structs. Defining a struct looks like `brush Cell has { x, y, live }`, so we'll gobble up the `brush` keyword, get the name of the struct, gobble up the `has` keyword, the braces, and then get the members of the struct (a list of identifiers):
 
+<Editor initialTab="parser.js">
 ```js
 const structStmt = () => {
   this.eatKeyword('brush')
@@ -938,9 +1024,11 @@ switch (next.type) {
   // ...
 }
 ```
+</Editor>
 
 In `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Struct {
   constructor(name, members) {
@@ -955,9 +1043,11 @@ export default {
   Struct
 }
 ```
+</Editor>
 
 We haven't accounted for actual struct copies with values yet, so let's take care of that!
 
+<Editor initialTab="parser.js">
 ```js
 simple() {
   let token = this.eat(this.peekType())
@@ -986,9 +1076,11 @@ simple() {
   this.error(token, 'Expected expression but got ' + token)
 }
 ```
+</Editor>
 
 Let's add `Instance` to `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Instance {
   constructor(name, members) {
@@ -1003,6 +1095,7 @@ export default {
   Instance
 }
 ```
+</Editor>
 
 ## What about calls?
 
@@ -1014,6 +1107,7 @@ I think Orpheus knows a little more than we've been let onto. Is that what was u
 
 It's our mysterious benefactor, just reminding us about... calls? Calls! That's right! We're missing a extra step between binary expressions and simple literals, and that happens to be function calls and getters. I like to think of this like a chain, like `orpheus.picksUp(phone).numbers[0]`. It's an intermediate step between `expr()` and `simple()` because it can be one half of an expression but evaluates down to a simple value.
 
+<Editor initialTab="parser.js">
 ```js
 call() {
   let expr = this.simple()
@@ -1044,9 +1138,11 @@ expr() {
   // ...
 }
 ```
+</Editor>
 
 Once again, we have the cascading value. We call `simple()` first, and while we can keep chaining, we keep chaining and wrapping around that initial `simple()` with one of two kinds of nodes: `Ast.Call`, which represents a function call, or `Ast.Get`, which represents a property getter. Let's add them to `ast.js` now:
 
+<Editor initialTab="ast.js">
 ```js
 export class Call {
   constructor(caller, args) {
@@ -1071,6 +1167,7 @@ export default {
   Get
 }
 ```
+</Editor>
 
 ## Unary operators
 
@@ -1078,6 +1175,7 @@ There's just one last token we haven't accounted for. I'll give you a moment to 
 
 The NOT operator! That's right - our only unary operator. We haven't dealt with unary operators yet. Let's take care of that now. It makes the most sense to cascade from `expr()` (binary expressions) to unary expressions to `call()`, so let's first add a `unary()` method:
 
+<Editor initialTab="parser.js">
 ```js
 unary() {
   // unary has one side
@@ -1089,9 +1187,11 @@ unary() {
   return this.call()
 }
 ```
+</Editor>
 
 In `ast.js`:
 
+<Editor initialTab="ast.js">
 ```js
 export class Unary {
   constructor(operator, apply) {
@@ -1106,15 +1206,18 @@ export default {
   Unary
 }
 ```
+</Editor>
 
 Instead of calling `call()` in `expr()` now, we'll replace it with `unary()`, which will cascade down to `call()`:
 
+<Editor initialTab="parser.js">
 ```js
 expr() {
   const left = this.unary()
   // ...
 }
 ```
+</Editor>
 
 Let's test out everything we have so far. Try running `node easel.js test.easel --dbg`, and you'll get a new debug file containing the AST in `ast.json`. Mine looks something like this:
 

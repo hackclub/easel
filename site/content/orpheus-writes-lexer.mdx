@@ -36,6 +36,7 @@ Found it!
 
 There! That makes a lot more sense, hopefully. These are some of the different kinds of tokens we can represent. So how do we write code to represent this? Well, that's what Orpheus is going to do right now, in `lexer.js`:
 
+<Editor initialTab="lexer.js">
 ```js
 export const TOKENS = {
   LeftParen: 'LeftParen',
@@ -80,6 +81,7 @@ export class Token {
   }
 }
 ```
+</Editor>
 
 <aside>
   Some programming languages let you use
@@ -105,6 +107,7 @@ Sounds pretty simple, innit? Woah there. Where'd you get a British accent out of
 
 Anyways. This means we need some extra useful functions to read the characters and determine when we can combine a bunch of them together. Let's start by just creating a class for our lexer:
 
+<Editor initialTab="lexer.js">
 ```js
 import { EaselError } from './stdlib.js'
 
@@ -122,9 +125,11 @@ export class Lexer {
   }
 }
 ```
+</Editor>
 
 What we really need is to start reading each character in our program. Let's do that with `scanTokens`:
 
+<Editor initialTab="lexer.js">
 ```js
 class Lexer {
   // ...
@@ -136,6 +141,7 @@ class Lexer {
   }
 }
 ```
+</Editor>
 
 <aside>
   \0 typically represents the null character. The ends of strings in memory are
@@ -144,6 +150,7 @@ class Lexer {
 
 All `scanToken` does is go over every character and run a method called `scanToken`, while we haven't reached the end of the program (see the sidebar for more info!). Now, before we get to `scanToken`, we've got to take a look at `peek`. This is the first of our useful utility functions for peeking ahead and checking what the next character is:
 
+<Editor initialTab="lexer.js">
 ```js
 class Lexer {
   // ...
@@ -158,9 +165,11 @@ class Lexer {
   }
 }
 ```
+</Editor>
 
 Cool! Now we can see what the next character is. The most logical step, now that we can peek at the next character, is to actually move to the next character. Let's call this advancing. It'll look pretty similar to `peek()`, except we'll update what character we're on rather then just looking ahead:
 
+<Editor initialTab="lexer.js">
 ```js
 advance() {
   if (this.current >= this.program.length) return '\0'
@@ -168,9 +177,11 @@ advance() {
   return this.program[this.current++]
 }
 ```
+</Editor>
 
 Ok. Let's start writing this `scanToken` method:
 
+<Editor initialTab="lexer.js">
 ```js
 class Lexer {
   // ...
@@ -252,6 +263,7 @@ class Lexer {
   }
 }
 ```
+</Editor>
 
 <aside>Repetitive but fun!</aside>
 
@@ -259,6 +271,7 @@ Perfect. Let's take a look at our tokens. LeftParen, check. RightParen, check. L
 
 Strings! Let's add a case to take care of strings now. The idea is that we'll keep going until we reach a matching closing quote. That looks something like:
 
+<Editor initialTab="lexer.js">
 ```js
 case "'":
 case '"': {
@@ -277,20 +290,24 @@ case '"': {
   )
 }
 ```
+</Editor>
 
 We remember to deal with both quotes, and if we reach the end of the file without finding a closing quote, that's a problem and we make sure to let the user know. Pretty solid, eh?
 
 Cool. String, check. Number, Boolean - we'll get to those later. Or - let's work on Or! The operator has two pipe characters. That means we need to see the next-next character. A smarter way of doing this, actually, is to introduce a new helper method, called `match()`, that will try to move to the next character but only if it matches up with what we expect the next character to be:
 
+<Editor initialTab="lexer.js">
 ```js
 match(char) {
   if (this.peek() === char) return this.advance()
   return false
 }
 ```
+</Editor>
 
 That packs a double suckerpunch like so:
 
+<Editor initialTab="lexer.js">
 ```js
 case '|': {
   if (this.match('|'))
@@ -299,9 +316,11 @@ case '|': {
     )
 }
 ```
+</Editor>
 
 Pretty ingenious. We can take care of a bunch of other tokens using this strat too:
 
+<Editor initialTab="lexer.js">
 ```js
 case '>': {
   if (this.match('='))
@@ -343,6 +362,7 @@ case '!': {
   )
 }
 ```
+</Editor>
 
 That takes care of most of our possible tokens.
 
@@ -355,6 +375,7 @@ default:
 
 Ok. Let's fill this in one by one with all the cases. How about numbers first? The criteria is easy: numbers are made up of numeric digits. Because we don't distinguish between ints and floats, a number could also include a singular period. Thus, we can do something like this:
 
+<Editor initialTab="lexer.js">
 ```js
 default:
   if (isNumber(char)) {
@@ -373,17 +394,21 @@ default:
     )
   }
 ```
+</Editor>
 
 Our first number is our current character. Then, we keep eating the next character while it's a number or it's the first period we encounter. When we finally hit a character that doesn't meet either criteria, we have a Number token!
 
 This relies on a helper function we don't have yet, `isNumber`. Let's nest that function inside `scanToken()`:
 
+<Editor initialTab="lexer.js">
 ```js
 const isNumber = char => char >= '0' && char <= '9'
 ```
+</Editor>
 
 Ok, the next obvious next step is to read a string without spaces in. That's what identifiers and keywords are all about - the only extra thing we'll need to do for keywords is check if they belong to a list of reserved keywords. Let's set up that list first at the top of `lexer.js`:
 
+<Editor initialTab="lexer.js">
 ```js
 export const KEYWORDS = {
   prepare: 'prepare',
@@ -402,9 +427,11 @@ export const KEYWORDS = {
   else: 'else' // Conditionals
 }
 ```
+</Editor>
 
 Now that we've got that, we can deal with identifiers and keywords:
 
+<Editor initialTab="lexer.js">
 ```js
 if (isNumber(char)) {
   // ...
@@ -432,22 +459,28 @@ if (isNumber(char)) {
   )
 } else this.error('Unexpected symbol ' + char)
 ```
+</Editor>
 
 Notice how it's not an else statement but an else-if statement that checks if the current character meets the criteria of `isChar()`. We don't want to accept all characters for our identifiers and keywords - for example, variable names like `~testVar` shouldn't be allowed, and so we have a final else statement that will throw an error if we encounter an unexpected symbol. Let's see what we can accept in `isChar()`:
 
+<Editor initialTab="lexer.js">
 ```js
 const isChar = char =>
   (char >= 'A' && char <= 'Z') || (char >= 'a' && char <= 'z') || char === '_'
 ```
+</Editor>
 
 Inside the else-if statement though, we use a different function, `isAlphanumeric`, since our identifiers can have numbers in them (just not the first character!):
 
+<Editor initialTab="lexer.js">
 ```js
 const isAlphanumeric = char => isNumber(char) || isChar(char)
 ```
+</Editor>
 
 Awesome. This is all that we really need for our lexer, but there's just two cases we need to deal with: comments and whitespace. Since Easel doesn't rely on whitespace, it makes sense to just ignore any characters that are whitespace-related. Let's deal with these two cases:
 
+<Editor initialTab="lexer.js">
 ```js
 case '~': {
   // Comments
@@ -466,6 +499,7 @@ case '\n': {
   return
 }
 ```
+</Editor>
 
 <aside>
   We've crimped it because it is rather long. It's like that one time Orpheus
@@ -475,6 +509,7 @@ case '\n': {
 
 Ok! Let's test out our lexer now! In `easel.js`:
 
+<Editor initialTab="easel.js">
 ```js
 import { EaselError } from './stdlib.js'
 import { Lexer } from './lexer.js'
@@ -493,6 +528,7 @@ try {
   if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
 }
 ```
+</Editor>
 
 Run `node easel.js test.easel --dbg` and you'll get this:
 

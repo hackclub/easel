@@ -534,4 +534,14 @@ section {
   .cm-focused {
     outline: none !important;
   }
+
+  .mermaid {
+    pre {
+      font-family: 'IBM Plex Sans' !important;
+    }
+
+    p {
+      margin: 0 !important;
+    }
+  }
 }

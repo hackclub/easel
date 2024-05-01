@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 mermaid.initialize({
   startOnLoad: true,
   theme: 'default',
-  securityLevel: 'loose'
+  securityLevel: 'none'
 })
 
 type MermaidProps = {

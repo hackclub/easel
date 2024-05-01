@@ -48,6 +48,7 @@ Ooh. I guess it's time for Orpheus to write a programming language so she can st
   we're going to get it to run on an easel.
 </aside>
 
+<Editor initialTab="program.easel">
 ```easel
 prepare rows as 50
 prepare cols as 20
@@ -132,6 +133,7 @@ sketch painting {
   }
 }
 ```
+</Editor>
 
 I bet you can already start to see the different features Easel has.
 
@@ -213,6 +215,7 @@ This will let us use the modern `import` syntax. Next, let's start writing some 
   her health. I trust docotors. [shrugs]
 </aside>
 
+<Editor initialTab="easel.js">
 ```js
 import fs from 'fs'
 
@@ -244,9 +247,11 @@ const writeFile = (location, data) =>
   }
 })()
 ```
+</Editor>
 
 Let's also get some error handling in there. It'll be useful later on for checking if errors are being thrown by our programming language or by JavaScript. Create a new file named `stdlib.js` and throw this in there:
 
+<Editor initialTab="stdlib.js">
 ```js
 export class EaselError extends Error {
   constructor(msg) {
@@ -259,5 +264,6 @@ export class EaselError extends Error {
   }
 }
 ```
+</Editor>
 
 You can run `node easel.js test.easel` now and it's rather boring. We could probably spruce it up a bit by writing that programming language. Let's get a-moving!

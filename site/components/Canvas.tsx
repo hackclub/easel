@@ -1,167 +1,156 @@
 import { useEffect, useRef, useState } from 'react'
-import CodeMirror from '@uiw/react-codemirror'
 import styles from './Editor.module.scss'
+import CodeMirror from '@uiw/react-codemirror'
 import { quietlight } from '@uiw/codemirror-theme-quietlight'
-import { FaCirclePlay } from 'react-icons/fa6'
+import stdlib, { Canvas as ParentCanvas } from '../../easel/stdlib'
 import { Lexer } from '../../easel/lexer'
 import { Parser } from '../../easel/parser'
 import { Interpreter } from '../../easel/interpreter'
-import stdlib, { Canvas as ParentCanvas } from '../../easel/stdlib'
 
-class Cell {
-  x: number
-  y: number
-  size: number
-  color: string
+export function Easel({
+  code,
+  defaultColor = '#ddd',
+  gap = 2
+}: {
+  code: string
+  defaultColor?: string
+  gap?: number
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  constructor(x: number, y: number, size: number, color = '#ddd') {
-    this.x = x
-    this.y = y
-    this.size = size
-    this.color = color
+  const clear = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    cellSize: number
+  ) => {
+    // Restore grid
+    ctx.fillStyle = defaultColor
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        ctx.fillRect(
+          x * cellSize + gap * x,
+          y * cellSize + gap * y,
+          cellSize,
+          cellSize
+        )
+      }
+    }
   }
-
-  get element() {
-    let td = document.createElement('div')
-    td.style.width = `${this.size}px`
-    td.style.height = `${this.size}px`
-    td.style.backgroundColor = this.color
-    return td
-  }
-}
-
-export function Easel() {
-  const gridRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (gridRef.current) {
-      const grid = gridRef.current
-      const gridWidth = grid.parentElement?.offsetWidth || 500
-      grid.style.height = `${gridWidth}px`
+    if (canvasRef.current) {
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
 
-      const init = (width: number, height: number, gap = 2) => {
-        let cellSize = gridWidth / width - gap
-        for (let y = 0; y < height; y++) {
-          let tr = document.createElement('div')
-          tr.style.height = `${cellSize}px`
-          for (let x = 0; x < width; x++) {
-            let td = new Cell(x, y, cellSize)
-            tr.appendChild(td.element)
+      if (ctx && canvas.parentElement) {
+        canvas.width = canvas.parentElement.offsetWidth
+        canvas.height = canvas.width
+
+        const width = 64
+        const height = 64
+        const cellSize = ctx.canvas.width / width - gap
+
+        clear(ctx, width, height, cellSize)
+
+        class CustomCanvas extends ParentCanvas {
+          fill([x, y, color]: [
+            number,
+            number,
+            { r: number; g: number; b: number }
+          ]) {
+            let cell = this.grid[y * this.cols + x]
+            if (cell) {
+              cell.r = color.r
+              cell.g = color.g
+              cell.b = color.b
+
+              // Set actual cell color to that
+              if (ctx) {
+                ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
+                ctx.fillRect(
+                  x * cellSize + gap * x,
+                  y * cellSize + gap * y,
+                  cellSize,
+                  cellSize
+                )
+              }
+            }
           }
-          grid.appendChild(tr)
+
+          erase([x, y]: [number, number]) {
+            if (ctx) {
+              ctx.fillStyle = '#ddd'
+              ctx.fillRect(
+                x * cellSize + gap * x,
+                y * cellSize + gap * y,
+                cellSize,
+                cellSize
+              )
+            }
+          }
+        }
+
+        const lexer = new Lexer(code)
+        lexer.scanTokens()
+        const parser = new Parser(lexer.tokens)
+        parser.parse()
+        console.log(parser.ast)
+        const interpreter = new Interpreter()
+        let scope = interpreter.run(parser.ast, {
+          ...stdlib,
+          Canvas: new CustomCanvas()
+        })
+
+        const interval: any = setInterval(() => {
+          if (!interpreter.inScope(scope, 'painting'))
+            return clearInterval(interval)
+          ctx.fillStyle = 'white'
+          ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+          try {
+            const lexer = new Lexer('painting()')
+            lexer.scanTokens()
+            const parser = new Parser(lexer.tokens)
+            parser.parse()
+            scope = interpreter.run(parser.ast, scope)
+          } catch {
+            clearInterval(interval)
+          }
+        }, 100)
+
+        return () => {
+          ctx.fillStyle = 'white'
+          ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+          clearInterval(interval)
         }
       }
-
-      init(64, 64)
     }
+  }, [code])
 
-    return () => {
-      if (gridRef.current) gridRef.current.innerHTML = ''
-    }
-  }, [])
-
-  return (
-    <div className={styles.easel}>
-      <div ref={gridRef} />
-    </div>
-  )
+  return <canvas className={styles.easel} ref={canvasRef} />
 }
 
 export default function Canvas() {
-  const [code, setCode] = useState('')
-  const [height, setHeight] = useState('1px')
   const gridRef = useRef<HTMLDivElement | null>(null)
-
-  class CustomCanvas extends ParentCanvas {
-    fill([x, y, color]: [number, number, { r: number; g: number; b: number }]) {
-      let cell = this.grid[y * this.cols + x]
-      if (cell) {
-        cell.r = color.r
-        cell.g = color.g
-        cell.b = color.b
-
-        // Set actual cell color to that
-        if (gridRef.current) {
-          const row = gridRef.current.querySelectorAll(':scope > div')[y]
-          const col = row.querySelectorAll('div')[x]
-          col.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`
-        }
-      }
-    }
-
-    erase([x, y]: [number, number]) {
-      let cell = this.grid[y * this.cols + x]
-      if (gridRef.current && cell) {
-        const row = gridRef.current.querySelectorAll(':scope > div')[y]
-        const col = row.querySelectorAll('div')[x]
-        col.style.backgroundColor = `rgb(241, 241, 241)`
-      }
-    }
-  }
-
-  const run = () => {
-    try {
-      const lexer = new Lexer(code)
-      lexer.scanTokens()
-      const parser = new Parser(lexer.tokens)
-      parser.parse()
-      const interpreter = new Interpreter()
-      let scope = interpreter.run(parser.ast, {
-        ...stdlib,
-        Canvas: new CustomCanvas()
-      })
-      if (Object.keys(scope).includes('painting')) {
-        setInterval(() => {
-          const lexer = new Lexer('painting()')
-          lexer.scanTokens()
-          const parser = new Parser(lexer.tokens)
-          parser.parse()
-          interpreter.run(parser.ast, scope)
-        }, 100)
-      }
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  const [code, setCode] = useState('')
+  const [current, setCurrent] = useState('')
+  const [height, setHeight] = useState('1px')
 
   useEffect(() => {
     if (gridRef.current) {
       const grid = gridRef.current
-      const gridWidth = grid.parentElement?.offsetWidth || 500
-      grid.style.height = `${gridWidth}px`
-      setHeight(`${grid.parentElement?.parentElement?.offsetHeight}px`)
-
-      const init = (width: number, height: number, gap = 2) => {
-        let cellSize = gridWidth / width - gap
-        for (let y = 0; y < height; y++) {
-          let tr = document.createElement('div')
-          tr.style.height = `${cellSize}px`
-          for (let x = 0; x < width; x++) {
-            let td = new Cell(x, y, cellSize)
-            tr.appendChild(td.element)
-          }
-          grid.appendChild(tr)
-        }
-      }
-
-      init(64, 64)
-    }
-
-    return () => {
-      if (gridRef.current) gridRef.current.innerHTML = ''
+      setHeight(`${grid.parentElement?.offsetHeight}px`)
     }
   }, [])
 
   return (
     <div className={styles.editor} style={{ borderRight: 'none !important' }}>
-      <div
-        className={styles.editable}
-        style={{ borderTop: '1px solid var(--border)' }}>
+      <div className={styles.editable}>
         <CodeMirror
           height={height}
           theme={quietlight}
           onChange={value => {
-            setCode(value)
+            setCurrent(value)
           }}
         />
       </div>
@@ -169,15 +158,13 @@ export default function Canvas() {
         <div className={styles.tabs} style={{ justifyContent: 'flex-end' }}>
           <div
             className={styles.tab}
-            style={{ borderLeft: '1px solid var' }}
-            onClick={() => {
-              run()
-            }}>
+            style={{ borderLeft: '1px solid var(--border)' }}
+            onClick={() => setCode(current)}>
             Run
           </div>
         </div>
-        <div className={styles.easel}>
-          <div ref={gridRef} />
+        <div ref={gridRef}>
+          <Easel code={code} />
         </div>
       </div>
     </div>
