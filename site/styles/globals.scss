@@ -231,12 +231,20 @@ section {
   font-size: 1.2rem;
   position: relative;
 
+  @media screen and (max-width: $lg) {
+    font-size: 1.1rem;
+  }
+
   .markdown-node-label {
     text-align: left;
   }
 
   img {
     max-width: 100%;
+
+    @media screen and (max-width: $md) {
+      width: 90% !important;
+    }
   }
 
   a {
@@ -255,7 +263,6 @@ section {
     position: relative;
     border-top: 1px solid var(--border);
     padding: 1em;
-    float: left;
 
     code {
       font-size: 0.9rem !important;
@@ -267,6 +274,12 @@ section {
 
     @media screen and (max-width: $lg) {
       border-bottom: 1px solid var(--border);
+      margin-bottom: 1em;
+      // width: 100%;
+
+      p:nth-last-child(1) {
+        margin-bottom: 0;
+      }
     }
 
     @media screen and (min-width: $lg) {
@@ -276,6 +289,7 @@ section {
       margin-right: 1em;
       text-align: right;
       position: relative;
+      float: left;
     }
   }
 
@@ -288,7 +302,9 @@ section {
     }
 
     p {
-      padding-right: 1em;
+      @media screen and (min-width: $lg) {
+        padding-right: 1em;
+      }
     }
 
     a {
@@ -305,7 +321,7 @@ section {
       font-family: 'Newsreader';
 
       @media screen and (max-width: $lg) {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         margin-bottom: 0 !important;
       }
 
@@ -319,13 +335,14 @@ section {
     @media screen and (max-width: $md) {
       max-width: 85vw;
       margin: auto;
-      border-bottom: 1px solid var(--border);
+      text-align: right;
+      font-size: 0.995rem;
     }
 
     @media screen and (max-width: $lg) {
-      max-width: 80vw;
+      max-width: 85vw;
       margin: auto;
-      border-bottom: 1px solid var(--border);
+      text-align: right;
     }
 
     @media screen and (min-width: $lg) {
@@ -344,6 +361,8 @@ section {
     display: flex;
     justify-content: space-between;
     gap: 1em;
+    max-width: 90vw;
+    margin: auto;
 
     a {
       background-color: transparent;
@@ -469,7 +488,7 @@ section {
       video,
       details,
       .pre-wrapper {
-        max-width: 85vw;
+        max-width: 90vw;
         margin: 0.75em auto;
       }
     }
@@ -489,7 +508,7 @@ section {
       video,
       details,
       .pre-wrapper {
-        max-width: 80vw;
+        max-width: 85vw;
         margin: 0.75em auto;
       }
     }
@@ -529,6 +548,10 @@ section {
   .cm-editor {
     background-color: transparent;
     font-size: 0.995rem;
+
+    @media screen and (max-width: $lg) {
+      border-bottom: 1px solid var(--border);
+    }
   }
 
   .cm-focused {

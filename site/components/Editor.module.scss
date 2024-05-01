@@ -10,8 +10,16 @@
 
   > div {
     flex: 50%;
-    max-width: 50%;
     position: relative;
+
+    @media screen and (min-width: $md) {
+      max-width: 50%;
+    }
+  }
+
+  @media screen and (max-width: $md) {
+    flex-direction: column;
+    display: none;
   }
 
   @media screen and (min-width: $lg) {
@@ -53,7 +61,7 @@
   }
 }
 
-.output {
+.terminal {
   height: 200px;
   overflow: auto;
   padding: 1rem;

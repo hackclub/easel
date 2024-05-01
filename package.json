@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@visx/text": "^3.3.0"
+  }
+}

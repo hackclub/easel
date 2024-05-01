@@ -1,8 +1,9 @@
 import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import styles from './Editor.module.scss'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { quietlight } from '@uiw/codemirror-theme-quietlight'
+import { WebContainer } from '@webcontainer/api'
 
 export function Code({
   tab,

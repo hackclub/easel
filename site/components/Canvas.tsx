@@ -121,7 +121,12 @@ export function Easel({
           }
         }, 100)
 
-        // window.addEventListener("resize", () => resize)
+        window.addEventListener('resize', () => {
+          if (canvas.parentElement) {
+            canvas.width = canvas.parentElement.offsetWidth
+            canvas.height = canvas.width
+          }
+        })
 
         return () => {
           ctx.fillStyle = 'white'
@@ -147,6 +152,8 @@ export default function Canvas() {
       const grid = gridRef.current
       setHeight(`${grid.parentElement?.offsetHeight}px`)
     }
+
+    return () => setOutput([])
   }, [])
 
   return (
@@ -172,10 +179,6 @@ export default function Canvas() {
           </div>
           <div
             className={styles.tab}
-            style={{
-              borderLeft: '1px solid var(--border)',
-              borderRight: '0 !important'
-            }}
             onClick={() => {
               setCode(current)
               setOutput([])
@@ -193,7 +196,7 @@ export default function Canvas() {
               ])
             }}
           />
-          <div className={styles.output}>
+          <div className={styles.terminal}>
             {output.length ? (
               output.map((line, idx) => <code key={idx}>{line}</code>)
             ) : (

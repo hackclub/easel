@@ -20,6 +20,8 @@ import { rehype } from 'rehype'
 import { Demo } from '@/components/Interpreter'
 import styles from '@/styles/Part.module.scss'
 import Confetti from 'react-canvas-confetti'
+import { useEffect, useRef } from 'react'
+import { WebContainer } from '@webcontainer/api'
 
 const trim = (str, chars) => str.split(chars).filter(Boolean).join(chars)
 
@@ -75,6 +77,29 @@ export default function Index({
   const curr = parts.findIndex(part => part.title === title)
   const prev = parts[curr - 1]
   const next = parts[curr + 1]
+  // const webContainer = useRef<Promise<WebContainer>>(WebContainer.boot())
+
+  useEffect(() => {
+    // async function loadContainer() {
+    //   const container = await webContainer.current
+    //   await container.mount({
+    //     'index.js': {
+    //       file: {
+    //         contents: "console.log('Hello, world!')"
+    //       }
+    //     }
+    //   })
+    //   await container.spawn('node', ['index.js'])
+    // }
+    // loadContainer()
+    // return () => {
+    //   async function undockContainer() {
+    //     const container = await webContainer.current
+    //     container.teardown()
+    //   }
+    //   undockContainer()
+    // }
+  }, [])
 
   return (
     <>

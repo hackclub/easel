@@ -1,13 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Bebas+Neue&display=swap');
 
 .main {
+  background-color: var(--background);
+  margin-top: 1em;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   text-align: center;
   color: var(--hint);
   padding: 4rem;
 
   h1 {
-    font-size: 5rem;
+    font-family: 'IBM Plex Sans', sans-serif;
     color: var(--theme);
+    font-size: 5rem;
     max-width: 50vw;
     margin: auto;
     line-height: 1.1;
@@ -34,4 +39,8 @@
       transform: scale(101%);
     }
   }
+}
+
+.term {
+  font-size: 1.2rem;
 }
