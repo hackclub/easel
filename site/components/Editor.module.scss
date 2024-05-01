@@ -40,7 +40,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid var(--border);
 
   > div {
     display: flex;
@@ -51,5 +50,18 @@
       display: flex;
       gap: 2px;
     }
+  }
+}
+
+.output {
+  height: 200px;
+  overflow: auto;
+  padding: 1rem;
+
+  code {
+    font-size: 0.995rem !important;
+    display: block;
+    margin-bottom: 0.25em;
+    white-space: nowrap;
   }
 }

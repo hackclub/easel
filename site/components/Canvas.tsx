@@ -9,10 +9,12 @@ import { Interpreter } from '../../easel/interpreter'
 
 export function Easel({
   code,
+  ink,
   defaultColor = '#ddd',
   gap = 2
 }: {
   code: string
+  ink: (args: any[]) => void
   defaultColor?: string
   gap?: number
 }) {
@@ -99,7 +101,8 @@ export function Easel({
         const interpreter = new Interpreter()
         let scope = interpreter.run(parser.ast, {
           ...stdlib,
-          Canvas: new CustomCanvas()
+          Canvas: new CustomCanvas(),
+          ink
         })
 
         const interval: any = setInterval(() => {
@@ -118,6 +121,8 @@ export function Easel({
           }
         }, 100)
 
+        // window.addEventListener("resize", () => resize)
+
         return () => {
           ctx.fillStyle = 'white'
           ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -134,6 +139,7 @@ export default function Canvas() {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const [code, setCode] = useState('')
   const [current, setCurrent] = useState('')
+  const [output, setOutput] = useState<string[]>([])
   const [height, setHeight] = useState('1px')
 
   useEffect(() => {
@@ -144,7 +150,7 @@ export default function Canvas() {
   }, [])
 
   return (
-    <div className={styles.editor} style={{ borderRight: 'none !important' }}>
+    <div className={styles.editor}>
       <div className={styles.editable}>
         <CodeMirror
           height={height}
@@ -155,16 +161,47 @@ export default function Canvas() {
         />
       </div>
       <div>
-        <div className={styles.tabs} style={{ justifyContent: 'flex-end' }}>
+        <div className={styles.tabs}>
           <div
             className={styles.tab}
-            style={{ borderLeft: '1px solid var(--border)' }}
-            onClick={() => setCode(current)}>
+            onClick={() => {
+              setCode('')
+              setOutput([])
+            }}>
+            Clear
+          </div>
+          <div
+            className={styles.tab}
+            style={{
+              borderLeft: '1px solid var(--border)',
+              borderRight: '0 !important'
+            }}
+            onClick={() => {
+              setCode(current)
+              setOutput([])
+            }}>
             Run
           </div>
         </div>
         <div ref={gridRef}>
-          <Easel code={code} />
+          <Easel
+            code={code}
+            ink={(args: string[]): void => {
+              setOutput(old => [
+                ...old,
+                ...args.map(arg => JSON.stringify(arg))
+              ])
+            }}
+          />
+          <div className={styles.output}>
+            {output.length ? (
+              output.map((line, idx) => <code key={idx}>{line}</code>)
+            ) : (
+              <code>
+                <i>Output will show up here.</i>
+              </code>
+            )}
+          </div>
         </div>
       </div>
     </div>
