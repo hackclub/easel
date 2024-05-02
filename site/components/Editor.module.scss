@@ -25,11 +25,16 @@
   @media screen and (min-width: $lg) {
     max-width: 80vw;
   }
+
+  iframe {
+    width: 100%;
+    border: none;
+  }
 }
 
 .tabs {
   display: flex;
-  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   overflow-x: auto;
 
   .tab {
@@ -71,5 +76,14 @@
     display: block;
     margin-bottom: 0.25em;
     white-space: nowrap;
+  }
+}
+
+.output {
+  display: flex;
+  flex-direction: column;
+
+  .terminal {
+    flex: 1;
   }
 }

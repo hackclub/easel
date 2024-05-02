@@ -73,6 +73,10 @@ html {
   scroll-behavior: smooth;
 }
 
+#node-iframe {
+  display: none;
+}
+
 header {
   margin: auto;
   display: flex;

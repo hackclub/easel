@@ -14,18 +14,18 @@ import path from 'path'
 import Head from 'next/head'
 import Meta from '@hackclub/meta'
 import Node from '@/components/interactive/Node'
-import Editor, { Code } from '@/components/Editor'
 import rehypeSlug from 'rehype-slug'
 import { rehype } from 'rehype'
 import { Demo } from '@/components/Interpreter'
 import styles from '@/styles/Part.module.scss'
 import Confetti from 'react-canvas-confetti'
 import { useEffect, useRef } from 'react'
-import { WebContainer } from '@webcontainer/api'
 
 const trim = (str, chars) => str.split(chars).filter(Boolean).join(chars)
 
 const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
+const Editor = dynamic(() => import('@/components/Editor'), { ssr: false })
+const Runtime = dynamic(() => import('@/components/Runtime'), { ssr: false })
 
 const components = {
   Canvas,
@@ -34,7 +34,6 @@ const components = {
   LexerParserTransform,
   Node,
   Editor: props => {
-    console.log(props)
     return (
       <>
         {props.children}
@@ -77,32 +76,10 @@ export default function Index({
   const curr = parts.findIndex(part => part.title === title)
   const prev = parts[curr - 1]
   const next = parts[curr + 1]
-  // const webContainer = useRef<Promise<WebContainer>>(WebContainer.boot())
-
-  useEffect(() => {
-    // async function loadContainer() {
-    //   const container = await webContainer.current
-    //   await container.mount({
-    //     'index.js': {
-    //       file: {
-    //         contents: "console.log('Hello, world!')"
-    //       }
-    //     }
-    //   })
-    //   await container.spawn('node', ['index.js'])
-    // }
-    // loadContainer()
-    // return () => {
-    //   async function undockContainer() {
-    //     const container = await webContainer.current
-    //     container.teardown()
-    //   }
-    //   undockContainer()
-    // }
-  }, [])
 
   return (
     <>
+      <Runtime />
       <Meta
         as={Head}
         title={`${title}`}

@@ -81,7 +81,7 @@ sketch getNeighbors needs (cells, index) {
   if (index - rows - 1 > 0) {
     neighbors.add(cells[index - rows - 1])
   }
-  if (index - rows - 0) {
+  if (index - rows > 0) {
     neighbors.add(cells[index - rows])
   }
   if (index - rows + 1 > 0) {
@@ -100,7 +100,7 @@ sketch getNeighbors needs (cells, index) {
     neighbors.add(cells[index + rows])
   }
   if (index + rows + 1 < cells.length - 1) {
-    neighbors.ass(cells[index + rows + 1])
+    neighbors.add(cells[index + rows + 1])
   }
 
   prepare alive as []
@@ -128,8 +128,14 @@ sketch painting {
       }
     }
 
-    ink(Canva.get(cell.x, cell.y))
-    if
+    if (cell.live) {
+      ~ Now draw the cell if it's alive!
+      prepare color as prep Color(r: 255, g: 0, b: 0)
+      Canvas.fill(cell.x, cell.y, color)
+    } else {
+      ~ If it's dead, turn the cell off
+      Canvas.erase(cell.x, cell.y)
+    }
   }
 }
 ```

@@ -97,7 +97,6 @@ export function Easel({
         lexer.scanTokens()
         const parser = new Parser(lexer.tokens)
         parser.parse()
-        console.log(parser.ast)
         const interpreter = new Interpreter()
         let scope = interpreter.run(parser.ast, {
           ...stdlib,
