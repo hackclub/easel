@@ -1,0 +1,19 @@
+.form {
+  background-color: var(--background);
+  border-top: 1px solid var(--border);
+  margin-top: 1em;
+
+  h1 {
+    line-height: 1.2;
+  }
+
+  hr {
+    margin: 2em auto;
+  }
+}
+
+.criteria {
+  li {
+    line-height: 1.2 !important;
+  }
+}

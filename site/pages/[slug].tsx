@@ -19,7 +19,7 @@ import { rehype } from 'rehype'
 import { Demo } from '@/components/Interpreter'
 import styles from '@/styles/Part.module.scss'
 import Confetti from 'react-canvas-confetti'
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 const trim = (str, chars) => str.split(chars).filter(Boolean).join(chars)
 
@@ -33,14 +33,6 @@ const components = {
   Mermaid,
   LexerParserTransform,
   Node,
-  Editor: props => {
-    return (
-      <>
-        {props.children}
-        <Editor {...props} />
-      </>
-    )
-  },
   pre: props => {
     return (
       <div className="pre-wrapper">
@@ -73,9 +65,28 @@ export default function Index({
   page: MDXRemoteSerializeResult
   toc: MDXRemoteSerializeResult
 }) {
+  const [tabs, setTabs] = useState<{ [key: string]: string }>({
+    'ast.js': '',
+    'easel.js': '',
+    'interpreter.js': '',
+    'lexer.js': '',
+    'parser.js': '',
+    'stdlib.js': '',
+    'program.easel': '',
+    'test.easel': ''
+  })
   const curr = parts.findIndex(part => part.title === title)
   const prev = parts[curr - 1]
   const next = parts[curr + 1]
+
+  useEffect(() => {
+    // Pull from localStorage
+    let populated = Object.assign({}, tabs)
+    for (let key of Object.keys(populated)) {
+      populated[key] = localStorage.getItem(key) || ''
+    }
+    setTabs(populated)
+  }, [])
 
   return (
     <>
@@ -126,7 +137,21 @@ export default function Index({
           <MDXRemote {...toc} />
         </div>
         <h1>{title}</h1>
-        <MDXRemote {...page} components={components} />
+        <MDXRemote
+          {...page}
+          components={{
+            ...components,
+            Editor: props => {
+              console.log(props)
+              return (
+                <>
+                  {props.children}
+                  <Editor {...props} tabs={tabs} setTabs={setTabs} />
+                </>
+              )
+            }
+          }}
+        />
         <div className="pagination">
           {prev ? (
             <Link href={prev.slug}>
@@ -147,8 +172,45 @@ export default function Index({
             </Link>
           )}
         </div>
-        <footer></footer>
       </div>
+      <footer>
+        <div className="prose sm">
+          <h2>A project by Hack Club.</h2>
+          <p>
+            Hack Club is a registered 501(c)3 nonprofit organization that
+            supports a network of 20k+ technical high schoolers. We believe you
+            learn best by building so we're removing barriers to hardware access
+            so any teenager can explore. In the past few years, we fabricated
+            custom PCBs designed by 265 teenagers, hosted the world's longest
+            hackathon on land, and gave away $75k of hardware.
+          </p>
+          <div className="footer">
+            <div>
+              <h3>Hack Club</h3>
+              <p>Philosophy</p>
+              <p>Our Team & Board</p>
+              <p>Jobs</p>
+              <p>Branding</p>
+              <p>Press Inquiries</p>
+              <p>Donate</p>
+            </div>
+            <div>
+              <h3>Resou rces</h3>
+              <p>Clubs Pizza Grant</p>
+              <p>Community Events</p>
+              <p>Jams</p>
+              <p>Toolbox</p>
+              <p>Clubs Directory</p>
+              <p>Code of Conduct</p>
+            </div>
+            <div></div>
+          </div>
+          <p>
+            © {new Date().getFullYear()} Hack Club. 501(c)(3) nonprofit (EIN:
+            81-2908499)
+          </p>
+        </div>
+      </footer>
     </>
   )
 }

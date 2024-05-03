@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@codesandbox/nodebox": "^0.1.9",
-    "@visx/text": "^3.3.0"
-  }
-}

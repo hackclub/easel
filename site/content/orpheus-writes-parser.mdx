@@ -148,7 +148,7 @@ Ok! Sturp talking! Let's get to smacking the keyboard instead. By then, it shoul
 
 <Editor initialTab="parser.js">
 ```js
-class Parser {
+export class Parser {
   // ...
 
   eat(type) {
@@ -173,7 +173,7 @@ Now let's begin our descent... into the <strike>underworld</strike> writing of a
 
 <Editor initialTab="parser.js">
 ```js
-class Parser {
+export class Parser {
   simple() {}
 
   expr() {
@@ -183,7 +183,7 @@ class Parser {
   }
 
   stmt() {
-    let next = this.peek()
+    const next = this.peek()
     switch (next.type) {
       // Can you guess what's coming here later?
       default: {
@@ -232,7 +232,7 @@ export class Literal {
 }
 
 export default {
-  // ...,
+  // ...
   Literal
 }
 ```
@@ -278,7 +278,7 @@ export class Array {
 }
 
 return {
-  Array
+  Array,
   // ...
 }
 ```
@@ -351,7 +351,7 @@ Cool. That takes care of `simple()` for now. Let's move up the hierarchy and twe
 ```js
 expr() {
   // expr has two sides
-  const left = this.call()
+  const left = this.simple()
   if (isOp(this.peekType())) {
     const op = this.eat(this.peekType()).value
     let right = this.expr()
@@ -433,7 +433,7 @@ if (location) {
     console.log(err)
     process.exit(1)
   } finally {
-    if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
+    if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens, null, 2))
   }
 
   const parser = new Parser(lexer.tokens)
@@ -442,27 +442,23 @@ if (location) {
   } catch (err) {
     console.log(err)
   } finally {
-    if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
+    if (debug) await writeFile('ast.json', JSON.stringify(parser.ast, null, 2))
   }
 }
 // ...
 ```
 </Editor>
 
-Cool! Let's test this out with a test program, `parser-test.easel`:
+Cool! Let's test this out with a test program in `test.easel`:
 
-```
+<Editor initialTab="test.easel" easelFile="test.easel">
+```plaintext
 [4 + 21]
 2006 / 4012 + 2
 ```
+</Editor>
 
-Try it out with `node easel.js parser-test.easel --dbg`! It's not really a complete program because we haven't taken care of statements yet, but I digress. You'll get something like this `ast.json`:
-
-<aside>
-  Yours probably looks like a mumble-jumble in one line. I use
-  [Prettier](https://prettier.io/docs/en/install), but fun fact - you can also
-  try `JSON.stringify(parser.ast, null, 2)`.
-</aside>
+Try it out with `node easel.js test.easel --dbg`! It's not really a complete program because we haven't taken care of statements yet, but I digress. You'll get something like this `ast.json`:
 
 ```js
 ;[
@@ -534,7 +530,7 @@ Next, I am going to add a little if-statement that checks if `right` is also a b
 ```js
 expr() {
   // expr has two sides
-  let left = this.call()
+  let left = this.simple()
   if (isOp(this.peekType())) {
     const op = this.eat(this.peekType()).value
     let right = this.expr()

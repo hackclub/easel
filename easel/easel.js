@@ -38,7 +38,8 @@ const writeFile = (location, data) =>
       if (err instanceof EaselError) console.log(err)
       process.exit(1)
     } finally {
-      if (debug) await writeFile('tokens.json', JSON.stringify(lexer.tokens))
+      if (debug)
+        await writeFile('tokens.json', JSON.stringify(lexer.tokens, null, 2))
     }
 
     const parser = new Parser(lexer.tokens)
@@ -47,7 +48,8 @@ const writeFile = (location, data) =>
     } catch (err) {
       if (err instanceof EaselError) console.log(err)
     } finally {
-      if (debug) await writeFile('ast.json', JSON.stringify(parser.ast))
+      if (debug)
+        await writeFile('ast.json', JSON.stringify(parser.ast, null, 2))
     }
 
     const interpreter = new Interpreter()

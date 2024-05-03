@@ -1,9 +1,10 @@
-import { Nodebox } from '@codesandbox/nodebox'
+import { Nodebox, ShellProcess } from '@codesandbox/nodebox'
 import { useEffect, useRef } from 'react'
 
 declare global {
   interface Window {
     nodebox: Nodebox
+    shells: ShellProcess[]
   }
 }
 
@@ -44,7 +45,7 @@ const server = http.createServer((req, res) => {
   res.end("Hello world")
 })
 
-server.listen(3000, () => {
+server.listen(3000, async () => {
   require("./easel.js")(process.argv)
 })
 `,
@@ -59,6 +60,7 @@ server.listen(3000, () => {
   })
 
   window.nodebox = runtime
+  window.shells = []
 }
 
 export default function Runtime() {

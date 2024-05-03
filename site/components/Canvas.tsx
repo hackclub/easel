@@ -167,7 +167,7 @@ export default function Canvas() {
         />
       </div>
       <div>
-        <div className={styles.tabs}>
+        <div className={styles.tabs} style={{ borderTop: 'none !important' }}>
           <div
             className={styles.tab}
             onClick={() => {

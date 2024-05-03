@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lezer": "rollup -c"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.2",
@@ -14,6 +15,7 @@
     "@codesandbox/sandpack-react": "^2.13.8",
     "@hackclub/meta": "^1.1.33",
     "@lezer/highlight": "^1.2.0",
+    "@lezer/lr": "^1.4.0",
     "@uiw/codemirror-theme-quietlight": "^4.22.0",
     "@uiw/codemirror-theme-solarized": "^4.22.0",
     "@uiw/react-codemirror": "^4.22.0",
@@ -37,9 +39,11 @@
     "remark-toc": "^9.0.0"
   },
   "devDependencies": {
+    "@lezer/generator": "^1.7.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "rollup": "^4.17.2",
     "sass": "^1.75.0",
     "typescript": "^5"
   }

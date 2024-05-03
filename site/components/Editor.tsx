@@ -3,13 +3,25 @@ import { javascript } from '@codemirror/lang-javascript'
 import styles from './Editor.module.scss'
 import { useEffect, useState, useRef } from 'react'
 import { quietlight } from '@uiw/codemirror-theme-quietlight'
-import { Nodebox } from '@codesandbox/nodebox'
+import { Nodebox, type ShellProcess } from '@codesandbox/nodebox'
 import { loadRuntime } from './Runtime'
 
 declare global {
   interface Window {
     nodebox: Nodebox
+    shells: ShellProcess[]
   }
+}
+
+export function Output({ code }: { code: string }) {
+  return (
+    <CodeMirror
+      value={code}
+      minHeight="50vh"
+      height="50vh"
+      theme={quietlight}
+    />
+  )
 }
 
 export function Code({
@@ -25,101 +37,102 @@ export function Code({
     <CodeMirror
       value={value}
       minHeight="50vh"
+      maxHeight="50vh"
       height="50vh"
       theme={quietlight}
       extensions={tab.endsWith('.js') ? [javascript({ jsx: true })] : []}
       onChange={value => {
         localStorage.setItem(tab, value)
       }}
-      onFocus={() => setValue()}
     />
   )
 }
 
+function Loading() {
+  const codeRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    // Typing effect!
+    const interval = setInterval(() => {
+      if (codeRef.current) {
+        codeRef.current.innerHTML = codeRef.current.innerHTML + '-'
+      }
+    }, 10)
+
+    return () => {
+      clearInterval(interval)
+      if (codeRef.current) codeRef.current.innerHTML = ''
+    }
+  }, [])
+
+  return <code ref={codeRef}>Loading </code>
+}
+
 export default function Editor({
-  initialTab = 'easel.js'
+  initialTab = 'easel.js',
+  easelFile = 'program.easel',
+  tabs,
+  setTabs
 }: {
   initialTab?: string
+  easelFile?: string
+  tabs: { [key: string]: string }
+  setTabs: (old: any) => any
 }) {
+  const [loading, setLoading] = useState(false)
   const [output, setOutput] = useState<Array<{ type: string; value: string }>>(
     []
   )
   const [activeTab, setActiveTab] = useState(initialTab)
-  const [tabs, setTabs] = useState<{ [key: string]: string }>({
-    'ast.js': '',
-    'easel.js': '',
-    'interpreter.js': '',
-    'lexer.js': '',
-    'parser.js': '',
-    'stdlib.js': '',
-    'program.easel': '',
-    'test.easel': ''
-  })
-
-  const previewIframe = useRef<HTMLIFrameElement | null>(null)
-
-  useEffect(() => {
-    // Pull from localStorage
-    let populated = Object.assign({}, tabs)
-    for (let key of Object.keys(populated)) {
-      populated[key] = localStorage.getItem(key) || ''
-    }
-    setTabs(populated)
-  }, [])
 
   const run = async () => {
     const nodeIframe = document.getElementById('node-iframe')
     if (nodeIframe) {
       setOutput([])
+      setLoading(true)
       const runtime = window.nodebox
 
       // Update files
       for (let key of Object.keys(tabs)) {
         await runtime.fs.writeFile(key, tabs[key])
-        console.log(await runtime.fs.readFile(key, 'utf-8'))
       }
 
-      // Create shell process
+      for (let shell of window.shells) shell.kill()
+      window.shells = []
+
       const shell = runtime.shell.create()
+      const idx = window.shells.push(shell) - 1
 
-      // Run node
-      const nextProcess = await shell.runCommand('node', [
-        'index.js',
-        'program.easel',
-        '--dbg'
-      ])
-
-      // Upload to preview
-      const previewInfo = await runtime.preview.getByShellId(nextProcess.id)
-      shell.stdout.on('data', async (data: string) => {
-        setOutput(old => [
-          ...old,
-          ...data.split('\n').map(line => ({
-            type: 'stdout',
-            value: line
-          }))
-        ])
-      })
-      shell.stderr.on('data', (data: string) => {
-        setOutput(old => [
-          ...old,
-          ...data.split('\n').map(line => ({
-            type: 'stderr',
-            value: line
-          }))
-        ])
-      })
+      try {
+        await shell.runCommand('node', ['index.js', easelFile, '--dbg'])
+        shell.stdout.on('data', async (data: string) => {
+          setOutput(old => [
+            ...old,
+            ...data.split('\n').map(line => ({
+              type: 'stdout',
+              value: line
+            }))
+          ])
+        })
+        shell.stderr.on('data', (data: string) => {
+          setOutput(old => [
+            ...old,
+            ...data.split('\n').map(line => ({
+              type: 'stderr',
+              value: line
+            }))
+          ])
+        })
+        shell.on('exit', () => {
+          window.shells.splice(idx, 1)
+        })
+      } catch (err) {
+        console.log(err)
+      } finally {
+        setLoading(false)
+      }
     }
   }
-
-  useEffect(() => {
-    setTabs(old => {
-      return {
-        ...old,
-        [activeTab]: localStorage.getItem(activeTab) || ''
-      }
-    })
-  }, [activeTab])
 
   return (
     <div className={styles.editor}>
@@ -153,19 +166,15 @@ export default function Editor({
       </div>
       <div className={styles.output}>
         <div className={styles.terminal}>
-          {output.length ? (
+          {loading === true && <Loading />}
+          {output.length > 0 &&
             output.map((line, idx) => (
               <code
                 key={idx}
                 style={{ color: line.type === 'stdout' ? 'inherit' : 'red' }}>
                 {line.value}
               </code>
-            ))
-          ) : (
-            <code>
-              <i>Output will show up here.</i>
-            </code>
-          )}
+            ))}
         </div>
         <div className={styles.tabs}>
           <div

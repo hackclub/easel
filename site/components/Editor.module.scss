@@ -75,7 +75,7 @@
     font-size: 0.995rem !important;
     display: block;
     margin-bottom: 0.25em;
-    white-space: nowrap;
+    white-space: pre;
   }
 }
 
@@ -85,5 +85,6 @@
 
   .terminal {
     flex: 1;
+    max-height: 50vh;
   }
 }

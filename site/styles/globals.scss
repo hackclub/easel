@@ -161,6 +161,27 @@ header {
   }
 }
 
+footer {
+  border-top: 1px solid var(--border);
+  background-color: var(--background);
+  padding: 1rem 2rem;
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .prose {
+    * {
+      margin-inline: 0 !important;
+    }
+
+    p {
+      margin-bottom: 0 !important;
+    }
+  }
+}
+
 .sp-wrapper {
   max-width: calc(100vw - ((100vw - 60vw) / 2));
   width: calc(100vw - ((100vw - 60vw) / 2)) !important;
@@ -235,6 +256,10 @@ section {
   font-size: 1.2rem;
   position: relative;
 
+  &.sm {
+    font-size: 0.995rem;
+  }
+
   @media screen and (max-width: $lg) {
     font-size: 1.1rem;
   }
@@ -299,6 +324,7 @@ section {
 
   .toc {
     font-size: 1.1rem;
+    overflow: auto;
 
     @media screen and (max-width: $lg) {
       padding-top: 0.25em;
@@ -358,6 +384,7 @@ section {
       float: right;
       position: sticky;
       top: 0;
+      margin-bottom: 1em;
     }
   }
 
@@ -476,6 +503,27 @@ section {
     margin: auto;
   }
 
+  form {
+    div {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 1em;
+    }
+
+    label {
+      font-size: 1.1rem;
+      font-style: italic;
+      padding-bottom: 0.25em;
+    }
+
+    input {
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      font: inherit;
+      font-size: 0.995rem;
+    }
+  }
+
   &:not(.fw) {
     @media screen and (max-width: $md) {
       h1,
@@ -491,7 +539,8 @@ section {
       li,
       video,
       details,
-      .pre-wrapper {
+      .pre-wrapper,
+      form {
         max-width: 90vw;
         margin: 0.75em auto;
       }
@@ -511,7 +560,8 @@ section {
       li,
       video,
       details,
-      .pre-wrapper {
+      .pre-wrapper,
+      form {
         max-width: 85vw;
         margin: 0.75em auto;
       }
@@ -531,7 +581,8 @@ section {
       li,
       video,
       details,
-      .pre-wrapper {
+      .pre-wrapper,
+      form {
         max-width: 60vw;
         margin: 0.75em auto;
       }
