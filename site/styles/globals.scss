@@ -109,6 +109,11 @@ header {
     line-height: 1.2;
     font-style: italic;
     margin: 0;
+
+    @media screen and (max-width: $sm) {
+      font-family: 'Newsreader';
+      font-weight: 500;
+    }
   }
 
   h2 {
@@ -165,6 +170,11 @@ footer {
   border-top: 1px solid var(--border);
   background-color: var(--background);
   padding: 1rem 2rem;
+
+  @media screen and (max-width: $sm) {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
 
   .footer {
     display: flex;
@@ -269,7 +279,7 @@ section {
   }
 
   @media screen and (max-width: $lg) {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
   .markdown-node-label {
@@ -315,6 +325,7 @@ section {
 
     @media screen and (max-width: $lg) {
       border-bottom: 1px solid var(--border);
+      margin-top: 1em;
       margin-bottom: 1em;
       // width: 100%;
 
@@ -331,6 +342,13 @@ section {
       text-align: right;
       position: relative;
       float: left;
+    }
+  }
+
+  b,
+  strong {
+    @media screen and (max-width: $sm) {
+      font-weight: 500;
     }
   }
 
@@ -470,9 +488,12 @@ section {
     font-size: 1.1rem;
     user-select: none;
     padding: 0;
-    max-height: 50vh;
-    overflow-y: auto;
     display: block;
+
+    @media screen and (min-width: $md) {
+      max-height: 50vh;
+      overflow-y: auto;
+    }
 
     &:default {
       margin-inline: 0 !important;
@@ -503,6 +524,11 @@ section {
     font-style: italic;
     color: var(--hint);
     line-height: 1.4;
+
+    @media screen and (max-width: $sm) {
+      line-height: 1.2;
+      font-weight: 500;
+    }
   }
 
   h1 {

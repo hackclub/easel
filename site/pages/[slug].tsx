@@ -111,7 +111,7 @@ export default function Index({
           <h2>chapters</h2>
           {parts.map((part, idx) => (
             <p key={idx}>
-              <Link href={part.slug}>{part.title}</Link>
+              <a href={part.slug}>{part.title}</a>
             </p>
           ))}
         </div>
