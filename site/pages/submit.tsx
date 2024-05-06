@@ -65,6 +65,14 @@ export default function Submit({
               <label>Name</label>
               <input type="text" name="name" placeholder="Name" />
             </div>
+            <div>
+              <label>Address</label>
+              <label>So we can ship you fudge!</label>
+              <input type="text" name="address" />
+            </div>
+            <div>
+              <label>Address</label>
+            </div>
           </form>
         </div>
       </main>

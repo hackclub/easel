@@ -168,7 +168,15 @@ footer {
 
   .footer {
     display: flex;
-    justify-content: space-between;
+    gap: 4rem;
+  }
+
+  .logo {
+    width: 100px;
+  }
+
+  .icons {
+    display: flex;
   }
 
   .prose {
@@ -284,6 +292,10 @@ section {
 
     &:hover {
       background-color: var(--yellow);
+    }
+
+    &.no-hover {
+      background-color: transparent;
     }
   }
 

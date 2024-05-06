@@ -76,6 +76,33 @@ const writeFile = (location, data) =>
       input.close()
     })
 
+    const startStmt = line => {
+      if (['{', '(', '['].includes(line[line.length - 1])) return true
+      return false
+    }
+
+    const readLines = initial =>
+      new Promise((resolve, reject) => {
+        let level = 1
+
+        const readLine = () => {
+          input.question('..'.repeat(level), line => {
+            // Check if line is empty
+            if (line.length) {
+              initial.push(line)
+            }
+          })
+        }
+
+        let next = input.question('..'.repeat(level), line => {
+          // Check if line is empty
+          if (line.length) {
+            initial.push(line)
+          }
+        })
+        return initial
+      })
+
     const repl = line => {
       let hadError = false
 
@@ -94,8 +121,13 @@ const writeFile = (location, data) =>
         try {
           parser.parse()
         } catch (err) {
-          if (err instanceof EaselError) console.log(err.toString())
-          else throw err
+          if (err instanceof EaselError) {
+            // Check if start of block statement
+            if (startStmt(line)) {
+              console.log(readLines())
+              process.exit(1)
+            } else console.log(err.toString())
+          } else throw err
         }
 
         try {

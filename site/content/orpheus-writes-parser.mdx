@@ -698,7 +698,7 @@ export class Func {
 }
 
 export {
-  Func
+  Func,
   // ...
 }
 ```
@@ -760,7 +760,7 @@ export default {
 
 Let's deal with the loops next. For loops will gobble up the `loop` keyword, grab the identifier we'll be using to keep track of the current iteration, the range, and of course, the body:
 
-<Editor initialTab="ast.js">
+<Editor initialTab="parser.js">
 ```js
 const forStmt = () => {
   this.eatKeyword('loop')
@@ -1066,7 +1066,7 @@ simple() {
         return new Ast.Instance(id, members)
       }
       break
-    // ...
+      // ...
     }
   }
   this.error(token, 'Expected expression but got ' + token)

@@ -8,21 +8,6 @@ declare global {
   }
 }
 
-export const server = `
-import http from "http";
-import "./easel.js";
-
-const server = http.createServer((req, res) => {
-  res.writeHead(200, {
-    "Content-Type": "type/plain"
-  })
-  res.end("Hello world")
-})
-
-server.listen(3000, () => {
-})
-`
-
 export async function loadRuntime(iframe: HTMLIFrameElement) {
   const runtime = new Nodebox({
     iframe

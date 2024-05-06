@@ -8,7 +8,6 @@ import 'highlight.js/styles/base16/solarized-light.min.css'
 import rehypeHighlight from 'rehype-highlight'
 import Canvas from '@/components/Canvas'
 import Lexer from '@/components/interactive/Lexer'
-import LexerParserTransform from '@/components/interactive/LexerParserTransform'
 import dynamic from 'next/dynamic'
 import path from 'path'
 import Head from 'next/head'
@@ -19,9 +18,9 @@ import { rehype } from 'rehype'
 import { Demo } from '@/components/Interpreter'
 import styles from '@/styles/Part.module.scss'
 import Confetti from 'react-canvas-confetti'
-import { useEffect, useState } from 'react'
-
-const trim = (str, chars) => str.split(chars).filter(Boolean).join(chars)
+import { useRef, useEffect, useState } from 'react'
+import { trim } from '@/components/trim'
+import Icon from '@hackclub/icons'
 
 const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
 const Editor = dynamic(() => import('@/components/Editor'), { ssr: false })
@@ -31,7 +30,6 @@ const components = {
   Canvas,
   Lexer,
   Mermaid,
-  LexerParserTransform,
   Node,
   pre: props => {
     return (
@@ -142,11 +140,14 @@ export default function Index({
           components={{
             ...components,
             Editor: props => {
-              console.log(props)
               return (
                 <>
                   {props.children}
-                  <Editor {...props} tabs={tabs} setTabs={setTabs} />
+                  <Editor
+                    {...props}
+                    initialTabs={tabs}
+                    setInitialTabs={setTabs}
+                  />
                 </>
               )
             }
@@ -179,31 +180,64 @@ export default function Index({
           <p>
             Hack Club is a registered 501(c)3 nonprofit organization that
             supports a network of 20k+ technical high schoolers. We believe you
-            learn best by building so we're removing barriers to hardware access
-            so any teenager can explore. In the past few years, we fabricated
-            custom PCBs designed by 265 teenagers, hosted the world's longest
-            hackathon on land, and gave away $75k of hardware.
+            learn best by building when you're learning and shipping technical
+            projects with your friends, so we've started You Ship, We Ship, a
+            program where you ship a technical project and we ship you something
+            in exchange. In the past few years, we{' '}
+            <a href="https://hackclub.com/onboard">
+              fabricated custom PCBs designed by 265 teenagers
+            </a>
+            ,{' '}
+            <a href="https://github.com/hackclub/the-hacker-zephyr">
+              hosted the world's longest hackathon on land
+            </a>
+            , and{' '}
+            <a href="https://hackclub.com/winter">gave away $75k of hardware</a>
+            .
           </p>
           <div className="footer">
             <div>
               <h3>Hack Club</h3>
-              <p>Philosophy</p>
-              <p>Our Team & Board</p>
-              <p>Jobs</p>
-              <p>Branding</p>
-              <p>Press Inquiries</p>
-              <p>Donate</p>
+              <p>
+                <a href="https://hackclub.com/philosophy">Philosophy</a>
+              </p>
+              <p>
+                <a href="https://hackclub.com/team">Our Team & Board</a>
+              </p>
+              <p>
+                <a href="https://hackclub.com/jobs">Jobs</a>
+              </p>
+              <p>
+                <a href="https://hackclub.com/brand">Branding</a>
+              </p>
+              <p>
+                <a href="https://hackclub.com/press">Press Inquiries</a>
+              </p>
+              <p>
+                <a href="https://hackclub.com/donate">Donate</a>
+              </p>
             </div>
             <div>
-              <h3>Resou rces</h3>
-              <p>Clubs Pizza Grant</p>
-              <p>Community Events</p>
-              <p>Jams</p>
-              <p>Toolbox</p>
-              <p>Clubs Directory</p>
-              <p>Code of Conduct</p>
+              <h3>Resources</h3>
+              <p>
+                <a href="https://hackclub.com/community">Community</a>
+              </p>
+              <p>
+                <a href="https://hackclub.com/onboard">OnBoard</a>
+              </p>
+              <p>
+                <a href="https://sprig.hackclub.com">Sprig</a>
+              </p>
+              <p>
+                <a href="https://blot.hackclub.com">Blot</a>
+              </p>
+              <p>
+                <a href="https://hackclub.com/bin">Bin</a>
+              </p>
+              <p>
+                <a href="https://jams.hackclub.com">Jams</a>
+              </p>
             </div>
-            <div></div>
           </div>
           <p>
             © {new Date().getFullYear()} Hack Club. 501(c)(3) nonprofit (EIN:

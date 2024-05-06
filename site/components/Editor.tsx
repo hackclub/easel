@@ -1,10 +1,10 @@
-import CodeMirror from '@uiw/react-codemirror'
+import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import styles from './Editor.module.scss'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, MutableRefObject } from 'react'
 import { quietlight } from '@uiw/codemirror-theme-quietlight'
 import { Nodebox, type ShellProcess } from '@codesandbox/nodebox'
-import { loadRuntime } from './Runtime'
+import { trim } from './trim'
 
 declare global {
   interface Window {
@@ -14,12 +14,15 @@ declare global {
 }
 
 export function Output({ code }: { code: string }) {
+  console.log(code)
   return (
     <CodeMirror
       value={code}
       minHeight="50vh"
       height="50vh"
       theme={quietlight}
+      readOnly={true}
+      extensions={[javascript()]}
     />
   )
 }
@@ -31,7 +34,7 @@ export function Code({
 }: {
   tab: string
   value?: string
-  setValue: () => any
+  setValue: (value: string) => any
 }) {
   return (
     <CodeMirror
@@ -42,7 +45,10 @@ export function Code({
       theme={quietlight}
       extensions={tab.endsWith('.js') ? [javascript({ jsx: true })] : []}
       onChange={value => {
-        localStorage.setItem(tab, value)
+        setValue(value)
+      }}
+      onFocus={event => {
+        setValue(localStorage.getItem(tab) || '')
       }}
     />
   )
@@ -71,19 +77,25 @@ function Loading() {
 export default function Editor({
   initialTab = 'easel.js',
   easelFile = 'program.easel',
-  tabs,
-  setTabs
+  initialTabs,
+  setInitialTabs
 }: {
   initialTab?: string
   easelFile?: string
-  tabs: { [key: string]: string }
-  setTabs: (old: any) => any
+  initialTabs: { [key: string]: string }
+  setInitialTabs: (old: any) => any
 }) {
+  const [tabs, setTabs] = useState(Object.assign({}, initialTabs))
   const [loading, setLoading] = useState(false)
+  const [outputTabs, setOutputTabs] = useState<{ [key: string]: string }>({
+    'tokens.json': '',
+    'ast.json': ''
+  })
   const [output, setOutput] = useState<Array<{ type: string; value: string }>>(
     []
   )
-  const [activeTab, setActiveTab] = useState(initialTab)
+  const [activeTab, setActiveTab] = useState<string>(initialTab)
+  const [activeOutput, setActiveOutput] = useState('Output')
 
   const run = async () => {
     const nodeIframe = document.getElementById('node-iframe')
@@ -105,11 +117,21 @@ export default function Editor({
 
       try {
         await shell.runCommand('node', ['index.js', easelFile, '--dbg'])
+        runtime.fs.watch(Object.keys(outputTabs), [], async event => {
+          // @ts-expect-error
+          const path = trim(event.path, '/')
+          const content = await runtime.fs.readFile(path, 'utf-8')
+          setOutputTabs(old => ({
+            ...old,
+            [path]: content
+          }))
+        })
         shell.stdout.on('data', async (data: string) => {
+          // Update output files
           setOutput(old => [
             ...old,
             ...data.split('\n').map(line => ({
-              type: 'stdout',
+              type: data.startsWith('Error') ? 'stderr' : 'stdout',
               value: line
             }))
           ])
@@ -140,11 +162,12 @@ export default function Editor({
         <Code
           tab={activeTab}
           value={tabs[activeTab]}
-          setValue={() => {
+          setValue={(value: string) => {
             setTabs(old => {
+              localStorage.setItem(activeTab, value)
               return {
                 ...old,
-                [activeTab]: localStorage.getItem(activeTab) || ''
+                [activeTab]: value
               }
             })
           }}
@@ -158,28 +181,42 @@ export default function Editor({
                 backgroundColor:
                   activeTab === tab ? 'transparent' : 'var(--background)'
               }}
-              onClick={() => setActiveTab(tab)}>
+              onClick={() => {
+                setActiveTab(tab)
+                setTabs(old => ({
+                  ...old,
+                  [activeTab]: localStorage.getItem(activeTab) || ''
+                }))
+              }}>
               {tab}
             </div>
           ))}
         </div>
       </div>
       <div className={styles.output}>
-        <div className={styles.terminal}>
-          {loading === true && <Loading />}
-          {output.length > 0 &&
-            output.map((line, idx) => (
-              <code
-                key={idx}
-                style={{ color: line.type === 'stdout' ? 'inherit' : 'red' }}>
-                {line.value}
-              </code>
-            ))}
-        </div>
+        {activeOutput === 'Output' ? (
+          <div className={styles.terminal}>
+            {loading === true && <Loading />}
+            {output.length > 0 &&
+              output.map((line, idx) => (
+                <code
+                  key={idx}
+                  style={{ color: line.type === 'stdout' ? 'inherit' : 'red' }}>
+                  {line.value}
+                </code>
+              ))}
+          </div>
+        ) : (
+          <Output code={outputTabs[activeOutput]} />
+        )}
         <div className={styles.tabs}>
           <div
             className={styles.tab}
-            style={{ backgroundColor: 'var(--background)' }}>
+            style={{
+              backgroundColor:
+                activeOutput === 'Output' ? 'var(--background)' : 'transparent'
+            }}
+            onClick={() => setActiveOutput('Output')}>
             Output
           </div>
           <div className={styles.tab}>Easel</div>
@@ -188,6 +225,28 @@ export default function Editor({
             style={{ alignSelf: 'flex-end' }}
             onClick={run}>
             Run
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flex: 1,
+              justifyContent: 'flex-end'
+            }}>
+            {Object.keys(outputTabs)
+              .filter(tab => outputTabs[tab].length > 0)
+              .map((tab, idx) => (
+                <div
+                  className={styles.tab}
+                  key={tab}
+                  style={{
+                    borderLeft: idx === 0 ? '1px solid var(--border)' : 'none',
+                    backgroundColor:
+                      activeOutput === tab ? 'var(--background)' : 'transparent'
+                  }}
+                  onClick={() => setActiveOutput(tab)}>
+                  {tab}
+                </div>
+              ))}
           </div>
         </div>
       </div>
