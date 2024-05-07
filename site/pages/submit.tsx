@@ -5,12 +5,97 @@ import fs from 'fs'
 import path from 'path'
 import { serialize } from 'next-mdx-remote/serialize'
 import styles from '@/styles/Submit.module.scss'
+import { FormEvent, useState, useRef } from 'react'
 
 export default function Submit({
   parts
 }: {
   parts: Array<{ title: string; slug: string }>
 }) {
+  const [id, setId] = useState('')
+  const idRef = useRef(null)
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    const data = {
+      firstname: {
+        required: true,
+        value: event.target.firstname.value
+      },
+      lastname: {
+        required: true,
+        value: event.target.lastname.value
+      },
+      birthdate: {
+        required: true,
+        value: event.target.birthdate.value
+      },
+      address: {
+        required: true,
+        value: event.target.address.value
+      },
+      city: {
+        required: true,
+        value: event.target.city.value
+      },
+      state: {
+        required: true,
+        value: event.target.state.value
+      },
+      zip: {
+        required: true,
+        value: event.target.zip.value
+      },
+      country: {
+        required: true,
+        value: event.target.country.value
+      },
+      address2: {
+        value: event.target.address2.value
+      },
+      file: {
+        required: true,
+        value: idRef.current.files[0]
+      },
+      pr: {
+        required: true,
+        value: event.target.pr.value
+      },
+      demo: {
+        required: true,
+        value: event.target.demo.value
+      },
+      discovery: {
+        required: true,
+        value: event.target.discovery.value
+      },
+      compliments: {
+        value: event.target.compliments.value
+      },
+      improvements: {
+        value: event.target.improvements.value
+      }
+    }
+
+    let submission = new FormData()
+    for (let [key, value] of Object.entries(data)) {
+      if (value.required && !value.value) {
+        console.log(key, value)
+        return
+      }
+      submission.append(key, value)
+    }
+
+    fetch('/api/submit', {
+      method: 'POST',
+      body: submission
+    })
+      .then(res => res.json())
+      .then(res => {
+        console.log(res)
+      })
+  }
+
   return (
     <>
       <Meta
@@ -41,7 +126,10 @@ export default function Submit({
       </header>
       <main className={styles.form}>
         <div className="prose">
-          <h1>
+          <h1
+            style={{
+              marginTop: '1em'
+            }}>
             So, I heard you wrote a programming language! That's awesome. Here's
             some fudge (currently) in exchange.
           </h1>
@@ -52,26 +140,176 @@ export default function Submit({
               This programming language was made recently (since May 01, 2024)
             </li>
             <li>
-              Your programming language meets the following criteria:
-              <ul>
-                <li>Has variables</li>
-              </ul>
+              Your programming language meets the criteria listed{' '}
+              <a href="/orpheus-decodes-program">here</a>
             </li>
           </ul>
           <hr />
-          <form>
+          <form onSubmit={submit}>
             <h2>You</h2>
-            <div>
-              <label>Name</label>
-              <input type="text" name="name" placeholder="Name" />
+            <div className={styles.flex}>
+              <div>
+                <label className={styles.required}>First Name</label>
+                <input
+                  type="text"
+                  name="firstname"
+                  required
+                  placeholder="First name"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className={styles.required}>Last Name</label>
+                <input
+                  type="text"
+                  name="lastname"
+                  required
+                  placeholder="Last name"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className={styles.required}>Birthdate</label>
+                <input type="date" name="birthdate" required />
+              </div>
             </div>
             <div>
-              <label>Address</label>
-              <label>So we can ship you fudge!</label>
-              <input type="text" name="address" />
+              <label className={styles.required}>Address</label>
+              <p>So we can ship you fudge!</p>
+              <input
+                type="text"
+                name="address"
+                required
+                placeholder="15 Falls Road"
+                autoComplete="off"
+              />
+            </div>
+            <div className={styles.flex}>
+              <div>
+                <label className={styles.required}>City</label>
+                <input
+                  type="text"
+                  name="city"
+                  required
+                  placeholder="Shelburne"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className={styles.required}>State</label>
+                <input
+                  type="text"
+                  name="state"
+                  required
+                  placeholder="VT"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className={styles.required}>Zip code</label>
+                <input
+                  autoComplete="off"
+                  type="text"
+                  required
+                  name="zip"
+                  placeholder="05482"
+                />
+              </div>
+              <div>
+                <label className={styles.required}>Country</label>
+                <input
+                  autoComplete="off"
+                  type="text"
+                  required
+                  name="country"
+                  placeholder="USA"
+                />
+              </div>
             </div>
             <div>
-              <label>Address</label>
+              <label>Address line 2</label>
+              <input
+                type="text"
+                name="address2"
+                placeholder="15 Falls Road, Shelburne VT 05482"
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <label className={styles.required}>Photo of student ID</label>
+              <p>We need this to confirm that you are, in fact, a student.</p>
+              <label className={styles.fileUpload} for="id">
+                Upload a picture of your ID{' '}
+                {id.length > 0 && <span>- {id}</span>}
+              </label>
+              <input
+                required
+                accept="image/*"
+                type="file"
+                name="id"
+                id="id"
+                onChange={event => {
+                  const file = event.target.files![0]
+                  setId(file.name)
+                }}
+                ref={idRef}
+              />
+            </div>
+            <h2>Project</h2>
+            <div>
+              <div>
+                <label className={styles.required}>
+                  Link to your pull request
+                </label>
+                <p>
+                  Don't know how to make a pull request? Check out{' '}
+                  <a href="">our guide</a>.
+                </p>
+                <input
+                  type="text"
+                  name="pr"
+                  required
+                  autoComplete="off"
+                  placeholder="https://github.com/hackclub/langjam/issues/3"
+                />
+              </div>
+              <div>
+                <label className={styles.required}>
+                  Demo of your project on{' '}
+                  <a href="https://asciinema.org/">Asciinema</a>
+                </label>
+                <p>
+                  Record a demo using Asciinema! Don't know how to get started?
+                  Check out <a href="#">our guide</a>.
+                </p>
+                <input
+                  type="text"
+                  name="demo"
+                  required
+                  autoComplete="off"
+                  placeholder="https://asciinema.org/a/590145"
+                />
+              </div>
+            </div>
+            <h2>Hack Club</h2>
+            <div>
+              <label className={styles.required}>
+                How did you find out about this?
+              </label>
+              <textarea name="discovery"></textarea>
+            </div>
+            <div className={styles.flex}>
+              <div>
+                <label>Is there anything we're doing really well?</label>
+                <textarea name="compliments"></textarea>
+              </div>
+              <div>
+                <label>Likewise, anything we could improve on?</label>
+                <textarea name="improvements"></textarea>
+              </div>
+            </div>
+            <div>
+              <button type="submit">Get my fudge!</button>
             </div>
           </form>
         </div>

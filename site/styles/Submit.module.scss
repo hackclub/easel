@@ -3,17 +3,96 @@
   border-top: 1px solid var(--border);
   margin-top: 1em;
 
-  h1 {
-    line-height: 1.2;
+  h1,
+  h2,
+  h3 {
+    font-family: 'Virgil';
   }
 
   hr {
     margin: 2em auto;
+  }
+
+  form {
+    input[type='file'] {
+      display: none;
+    }
+
+    button[type='submit'] {
+      background-color: var(--theme);
+      border: none;
+      padding: 7px 12px;
+      color: white;
+      font: inherit;
+      align-self: flex-end;
+      cursor: pointer;
+      transition: all 0.1s;
+      font-size: 1.1rem;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    div:not(.flex) {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 1em;
+    }
+
+    label,
+    p {
+      font-size: 1.1rem;
+      padding-bottom: 0.25em;
+      position: relative;
+    }
+
+    p {
+      margin-top: 0 !important;
+      margin-inline: 0 !important;
+      color: #606060;
+      font-style: italic;
+    }
+
+    .fileUpload {
+      background: white;
+      cursor: pointer;
+    }
+
+    input,
+    textarea,
+    .fileUpload {
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      font: inherit;
+      font-size: 0.995rem;
+      resize: none;
+
+      &:focus {
+        outline-color: var(--theme);
+      }
+    }
+  }
+}
+
+.flex {
+  display: flex;
+  gap: 7px;
+
+  > div {
+    flex: 1;
   }
 }
 
 .criteria {
   li {
     line-height: 1.2 !important;
+  }
+}
+
+.required {
+  &::after {
+    content: '*';
+    color: red;
   }
 }

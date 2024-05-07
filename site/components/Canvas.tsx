@@ -139,9 +139,9 @@ export function Easel({
   return <canvas className={styles.easel} ref={canvasRef} />
 }
 
-export default function Canvas() {
+export default function Canvas({ initialCode = '' }: { initialCode: string }) {
   const gridRef = useRef<HTMLDivElement | null>(null)
-  const [code, setCode] = useState('')
+  const [code, setCode] = useState(initialCode)
   const [current, setCurrent] = useState('')
   const [output, setOutput] = useState<string[]>([])
   const [height, setHeight] = useState('1px')
@@ -164,6 +164,7 @@ export default function Canvas() {
           onChange={value => {
             setCurrent(value)
           }}
+          value={code}
         />
       </div>
       <div>

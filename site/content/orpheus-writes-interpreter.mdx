@@ -9,7 +9,7 @@ But today's an exciting day! Because today, we'll get the interpreter up and run
 
 ## How the interpreter's going to work
 
-The interpreter's going to be a little different from the lexer and parser, but not too different! It's going to take the nodes that the parser created, and make actual things happen. The best part is that it's surprisingly easy - we've done all the hard work in the parser and now we can glide on by, although it'll be bit longer-winded.
+The interpreter's going to be a little different from the lexer and parser, but not too different! It's going to take the nodes that the parser created, and make actual things happen. The best part is that it's surprisingly easy - we've done all the hard work in the parser and now we can glide on by, although it'll be a longer-winded.
 
 Orpheus opens up her computer. It's time to start writing the interpreter in `interpreter.js`:
 
@@ -23,7 +23,7 @@ export class Interpreter {
     throw new EaselError(`Runtime error: ${msg}`)
   }
 
-run(ast, scope) {}
+  run(ast, scope) {}
 }
 ```
 </Editor>
@@ -32,9 +32,9 @@ Just a little boilerplate here. Our main entry point is going to `run()`, which 
 
 ## So how does this scope thing work?
 
-Scope is what's going to make magic. I mean, turn our programming language into a power to be reckoned with. Like an actual programming language - in fact, one of the biggest criteria for a language to be Turing-complete is that it should be able to keep track of state. That's what scope is for - it'll keep track of what variables exist, what functions exist, what structs exist, and any other info we'll have. It's also we'll inject our _standard library_ into, as we'll see later.
+Scope is what's going to make magic. I mean, turn what we currently have into an actual programming language, by adding a place for us to store the current state of our program. Like an actual programming language - in fact, one of the biggest criteria for a language to be Turing-complete is that it should be able to keep track of state. That's what scope is for - it'll keep track of what variables exist, what functions exist, what structs exist, and any other info we'll have. It's also we'll inject our _standard library_ into, as we'll see later.
 
-We're going to use a simple key-value store to store our scope, especially since JavaScript is so lenient. While we're at it, let's add a quick util function to check if a value exists in our scope that'll come in handy later:
+We're going to use a simple key-value store to store our scope, especially since JavaScript is so lenient. While we're at it, let's add a quick utility function to check if a value exists in our scope that'll come in handy later:
 
 <Editor initialTab="interpreter.js">
 ```js
@@ -50,7 +50,7 @@ export class Interpreter {
 
 ## Let's get this working
 
-Ok, awesome. How exactly should we go about doing this? Well, it's quite simple really - we're going to loop over every node, and run whatever is inside that node. We can take advantage of the fact that we have different kinds of nodes and do different things based on what the node needs. For example, say we have a while statement:
+Ok, awesome. How exactly should we go about doing this? Well, it's quite simple really - we're going to loop over every node, and run whatever's inside that node. We can take advantage of the fact that we have different kinds of nodes and do different things based on what the node needs. For example, say we have a while statement:
 
 ```plaintext
 {
@@ -81,9 +81,9 @@ Ok, awesome. How exactly should we go about doing this? Well, it's quite simple 
   }
 ```
 
-Every while loop node will have a condition and a body. So when we encounter a while loop node, we know we'll need to run `while(condition) { run(body) }`. See where I'm going here?
+Every while loop node has a condition and a body. So when we encounter a while loop node, we know we'll need to run `while(condition) { run(body) }`. `condition` is a node of its own, and `body` also happens to be an array of nodes, so we'll need to process those too. 
 
-When we were writing our lexer, we differentiated between different token types. When we were writing our parser, we differentiated between different nodes. Now, we'll differentiate between values that need to be stored in memory and values that are just literals or references to values in memory. This turns into two main methods:
+When we were writing our lexer, we differentiated between different token types. When we were writing our parser, we differentiated between different node types. Now, we'll differentiate between values that need to be stored in memory and values that are just literals or references to values in memory. This turns into two main methods:
 
 <aside>Reminder that this all goes inside `Interpreter`.</aside>
 
@@ -95,9 +95,9 @@ execute(node, scope) {}
 ```
 </Editor>
 
-`execute()` will call `evaluate()` for _evaluating_ basic expressions, but `execute()` will be doing the. It's similar to the recursive descent we applied while writing our parser, except now we've condensed it down to three methods - `run()` for blocks of statements, `execute()` for those statements, and `evaluate()` for expressions.
+`execute()` will call `evaluate()` for _evaluating_ basic expressions, but `execute()` will be doing the actual adding of values to our scope. It's similar to the recursive descent we applied while writing our parser, except now we've condensed it down to three methods - `run()` for blocks of statements, `execute()` for those statements, and `evaluate()` for expressions.
 
-C'mon, let's fill out `execute()`!
+Let's fill out `execute()` with a skeleton to get us started:
 
 <Editor initialTab="interpreter.js">
 ```js
@@ -119,7 +119,7 @@ execute(node, scope) {
 ```
 </Editor>
 
-`node.constructor` returns the class that the node is a child of, effectively letting us check what class it belongs to.
+[`node.constructor`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/constructor) returns the class that the node is a child of, effectively letting us check what class it belongs to.
 
 Do you notice something? Compare this to `Parser.stmt()`, and you'll notice that they basically match up! This makes sense, since statements make changes to state.
 
@@ -149,11 +149,11 @@ case Ast.Var: {
 ```
 </Editor>
 
-This is pretty self-explanatory, but it looks like...
+This is pretty self-explanatory. We evaluate the value of the variable (e.g., we evaluate something like 40 + 2) and add it to our scope. But it looks like...
 
 ## Quick detour to evaluate
 
-Here's our first usage of `evaluate()`! So let's take a quick detour to fill it out. It looks super similar, except we won't really be tweaking what's in `scope` here:
+We haven't filled out `evaluate()` yet! So let's take a quick detour to fill it out. It looks super similar, except we won't really be tweaking what's in `scope` here:
 
 <Editor initialTab="interpreter.js">
 ```js
@@ -166,7 +166,7 @@ evaluate(value, scope) {
     }
     case Ast.Unary: {
       const operations = { '!': apply => !apply }
-        return operations[value.operator](this.evaluate(value.apply, scope))
+      return operations[value.operator](this.evaluate(value.apply, scope))
     }
     case Ast.Binary: {
       const operations = {
@@ -202,9 +202,9 @@ evaluate(value, scope) {
 ```
 </Editor>
 
-I started out with the most obvious ones here. If we get a reference to a variable, we'll search `scope` and return a value if it's there. If it's a unary or a binary operator, we apply the operator to the appropriate expression(s). Literals and arrays are also pretty simple.
+I started out with the most obvious ones here. If we get a reference to a variable, we'll search `scope` and return a value if it's there. If it's a unary or a binary operator, we apply the operator to the appropriate expression(s). Literals and arrays are also pretty simple, we literally just return the value (or map over the values, in the case of arrays.)
 
-Notice how it's recursive! Some of these also call `evaluate()` to further evaluate an expression until we get to the simplest possible value - either a reference to another value or the value itself.
+Notice how it's recursive! Some of these also call `evaluate()` to further evaluate an expression until we get to the simplest possible value - either a reference to another value or the value itself (i.e., a literal).
 
 ## Back up the rabbit hole
 
@@ -229,7 +229,7 @@ case Ast.Struct: {
     let instance = {}
     for (let key of Object.keys(members)) {
       if (!node.members.includes(key))
-        this.error(`Unexpected member ${key}`)
+        this.error(`Unexpected member ${key} found while creating instance of ${node.name}`)
       instance[key] = members[key]
     }
     return instance
@@ -239,7 +239,7 @@ case Ast.Struct: {
 ```
 </Editor>
 
-This is run when we create a struct definition, like `brush Cell has { x, y, live }`. Notice how it's a function. When we create a struct using `prep Cell(x: x, y: y, live: live)`, it's like a function, except we're passing
+This is run when we create a struct definition, like `brush Cell has { x, y, live }`. Notice how it's a function. Think of it like running a predefined function, a constructor of sorts - when we create a struct using `prep Cell(x: x, y: y, live: live)`, we're running a function that'll return a object that contains those keys, e.g. `{ x: 1, y: 1, live: false }`.
 
 Where does the code for creating a struct go then? Since it evaluates to an expression (`{ x: 1, y: 1, live: false }`), we'll tackle an extra case in `evaluate()`:
 
@@ -258,7 +258,7 @@ case Ast.Instance: {
 ```
 </Editor>
 
-That's where the constructor comes into play! And notice that when we create a struct, we pass in a list of expressions rather than a list of identifiers.
+That's where the constructor comes into play! And notice that when we create a struct, we pass in a list of expressions rather than a list of identifiers, as opposed to what we did when we created the original constructor.
 
 `Ast.Func`:
 
@@ -315,10 +315,10 @@ case Ast.Return:
 
 <aside>
   Just as a reminder, return statements can be anywhere in a function, which is
-  why exceptions work so well.
+  why exceptions work so well for exiting our function wrapper when we process a `Ast.Return` node.
 </aside>
 
-`ReturnException` doesn't exist yet, so let's make it happen. And hopefully now the pieces are clicking into place - throwing an exception is a really useful way of exiting running a block of code, it turns out.
+`ReturnException` doesn't exist yet, so let's make it happen, at the top of `interpreter.js`. And hopefully now the pieces are clicking into place - throwing an exception is a really useful way of exiting running a block of code, it turns out.
 
 <Editor initialTab="interpreter.js">
 ```js
@@ -330,8 +330,6 @@ export class ReturnException extends Error {
 }
 ```
 </Editor>
-
-(Towards the top of `interpreter.js`.)
 
 Now that we have functions that can return shtuff, we need to be able to actually call functions. This is a job for `evaluate`, since ultimately we'll use a function we find in our scope to return a value.
 
@@ -397,7 +395,7 @@ case Ast.For: {
 ```
 </Editor>
 
-For loops are really just variations on while loops. Here, we set up a local scope and inject the variable we'll use to keep track of what iteration we're on.
+For loops are really just variations on while loops. Here, we set up a local scope and inject the variable we'll use to keep track of what iteration we're on, and of course we make to update it every iteration.
 
 `Ast.Conditional`:
 
@@ -425,6 +423,8 @@ case Ast.Conditional: {
 </Editor>
 
 This is pretty expected. We evaluate the condition, and if it's true, we run the if-statement's body. Otherwise, we loop through the other conditions left and do the same exact thing by recursively calling `execute()`. The useful thing is that if there is an else statement in there, we've set its condition to always be true so it'll always run if the other conditions don't match up.
+
+Hey, I think we forgot one last node in `evaluate()`! Let's add it now:
 
 `Ast.Set`:
 
@@ -479,6 +479,10 @@ case Ast.Get:
 
 We're finally going to make use of that extra `isExpr` property we've attached to our getter nodes!
 
+<aside>
+  Sorry if you've been following along with the built-in editor :( [Working on it!](https://github.com/hackclub/langjam/issues/3)
+</aside>
+
 But also, notice the last part of this - we have a special case for properties that actually happen to be functions - we make sure to _bind_ the function to the caller. What does this mean exactly? Well, let me give you a quick example in JavaScript. Run `node` in a terminal somewhere:
 
 ```js
@@ -507,7 +511,7 @@ run(ast, scope) {
 This is great and dandy, but there's one thing we can't really do, and that is: print something to the console! What's the point of our programming language if we can't write "Hello, world!" in it and view what our values are? Not much, honestly. Let's fix that now with a standard library in `stdlib.js`:
 
 <aside>
-  By a lot of fun, I mean there's a ton of options you can add here!
+  There's a ton of options you can add here! A wrapper around `fetch` would be really cool, I bet.
 </aside>
 
 <Editor initialTab="stdlib.js">

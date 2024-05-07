@@ -13,6 +13,10 @@ Orpheus drew a diagram for us last chapter on how lexers turn a blob of text tha
 
 Parsers take these tokens and in turn output a tree of sorts that describes how tokens apply to one another. Here's an example of such an transformation:
 
+```plaintext
+prepare rows as 50
+```
+
 <Mermaid chart={`
 flowchart LR
     subgraph nodes
@@ -28,9 +32,7 @@ flowchart LR
 
 We took four tokens and smooshed them into one _node_. The four tokens described the syntax of our program but the node describes what the syntax actually does - creates a variable with a value of 50!
 
-We're going to write that parser now. It's actually, surprisingly, similar to how we wrote our lexer, except that we're working with a tree now, which means we'll need some form of recursion.
-
-Let's start with the usual! Orpheus opens a file called `parser.js` and throw this in there:
+We're going to write that parser now. It's actually, surprisingly, similar to how we wrote our lexer, except that we're working with a tree now, which means we'll need some form of recursion. We'll get to that. For now, let's start with the usual! Orpheus opens a file called `parser.js` and throws this in there:
 
 <Editor initialTab="parser.js">
 ```js
@@ -68,7 +70,7 @@ export class Parser {
 ```
 </Editor>
 
-This is pretty similar to our `scanTokens()` method in our lexer, but last time, we dealt with each character at a time. Tokens have more information then that - we also get a token's type - so we have two helper `peek()` methods this time instead of one:
+This is pretty similar to our `scanTokens()` method in our lexer, but last time, we dealt with each character at a time. Tokens have more information then that - being able to see the next token's type would also be pretty useful - so we have two helper `peek()` methods this time instead of one:
 
 <Editor initialTab="parser.js">
 ```js
@@ -92,11 +94,11 @@ export class Parser {
 ```
 </Editor>
 
-Cool! Now, what exactly do with these tokens?
+Cool! Now, what exactly do we do with these tokens?
 
 ## Recursive descent
 
-With our lexer, we looped through every character and checked if it could be a token or belong to set of characters that would belong to a token. Here, we're going to do something different - we're going to define a grammar for what our program could look like and work our way up until we can describe an entire chunk of code.
+With our lexer, we looped through every character and checked if it could be a token or belong to a set of characters that would belong to a token. Here, we're going to do something different - we're going to define a grammar for what our program could look like and work our way up until we can describe an entire chunk of code.
 
 First up: what do these have in similar?
 
@@ -133,12 +135,16 @@ Ok. So we know literals can form expressions. What can expressions form? It turn
   number is between two numbers.
 </aside>
 
-- Variables. Specifically, assignment! `prepare phoneVolume as 50` is assigning a literal (see what I did there?) to a variable.
+- Variables. Specifically, assignment! `prepare phoneVolume as 50` is assigning a literal to a variable.
 - Structs. Specifically, defining what a struct looks like. `brush Phone has { phoneVolume }` is a statement.
 - Functions are blocks of expressions with attached metadata of sorts, like what arguments we might need to pass in!
 - Return statements
 - For loops and while loops are blocks of expressions also with attached metadata too, like what condition we should check for every iteration.
 - Last but not least in Easel - if-else statements are blocks of expressions with, you guessed it, attached metadata like what conditions we shoud check for.
+
+<aside>
+  This makes so much more sense when you write the code.
+</aside>
 
 Our job now is to write a parser that can understand this hierarchy. The parser will start by looking for statements, which are made of expressions, which are made of literals. In other words: basic recursive descent!
 
@@ -215,7 +221,7 @@ simple() {
 
 Notice how we throw an error if we don't get anything. Since this is the last method we reach when we're looking at a token, there must be a _syntax error_ if we can't get a proper node.
 
-Something we didn't consider ahead of time was how we would define how these nodes look like. We'll do this really easily. Let's create a new file called `ast.js`, and put our first kind of node in there:
+Something we didn't consider ahead of time was how we would define how these nodes look like. We can do this really easily. Let's create a new file called `ast.js`, and put our first kind of node in there:
 
 <aside>
   We technically don't need the `type` property, but we'll include it because
@@ -232,7 +238,6 @@ export class Literal {
 }
 
 export default {
-  // ...
   Literal
 }
 ```
@@ -266,7 +271,31 @@ simple() {
 ```
 </Editor>
 
-That means we'll need to add a new kind of node:
+Our predictions were correct. We gobble up the left bracket, create a new array, and if we haven't already reached the right bracket (i.e. empty array), we grab the list of expressions in between.
+
+Now, we make use of an extra helper called `exprList()` to do this.
+
+<aside>
+  You've got to thank Orpheus for this, she was smart and decided it would be
+  useful to have a separate method because we'd use it again in the future. And
+  she was right.
+</aside>
+
+<Editor initialTab="parser.js">
+```js
+exprList() {
+  let exprs = []
+  exprs.push(this.expr())
+  while (this.peekType() === TOKENS.Comma) {
+    this.eat(TOKENS.Comma)
+    exprs.push(this.expr())
+  }
+  return exprs
+}
+```
+</Editor>
+
+We'll also need to add a new kind of node:
 
 <Editor initialTab="ast.js">
 ```js
@@ -280,30 +309,6 @@ export class Array {
 return {
   Array,
   // ...
-}
-```
-</Editor>
-
-<aside>
-  You've got to thank Orpheus for this, she was smart and decided it would be
-  useful to have a separate method because we'd use it again in the future. And
-  she was right.
-</aside>
-
-Our predictions were correct. We gobble up the left bracket, create a new array, and if we haven't already reached the right bracket (i.e. empty array), we grab the list of expressions in between.
-
-Now, we make use of an extra helper called `exprList()` to do this.
-
-<Editor initialTab="parser.js">
-```js
-exprList() {
-  let exprs = []
-  exprs.push(this.expr())
-  while (this.peekType() === TOKENS.Comma) {
-    this.eat(TOKENS.Comma)
-    exprs.push(this.expr())
-  }
-  return exprs
 }
 ```
 </Editor>
@@ -324,7 +329,7 @@ simple() {
 ```
 </Editor>
 
-This might confuse you a bit - didn't we say variables were statements? Yes, but this is not that - this is referring to when we reference a variable, not direct assignment.
+This might confuse you a bit - didn't we say variables were statements? Yes, but this is not that - this is referring to when we reference a variable, not direct assignment - e.g., the variable reference in `ink(x)`.
 
 This does make use of a new kind of node though, so let's add that to `ast.js`:
 
@@ -354,7 +359,7 @@ expr() {
   const left = this.simple()
   if (isOp(this.peekType())) {
     const op = this.eat(this.peekType()).value
-    let right = this.expr()
+    const right = this.expr()
     return new Ast.Binary(left, op, right)
   }
   return left
@@ -362,7 +367,7 @@ expr() {
 ```
 </Editor>
 
-Looks like we need an extra `isOp` function. I'll put this at the top of `parser.js`:
+Looks like we need an extra `isOp` function. Orpheus and I are going to put this at the top of `parser.js`:
 
 <Editor initialTab="parser.js">
 ```js

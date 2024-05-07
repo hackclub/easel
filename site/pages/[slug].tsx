@@ -141,14 +141,14 @@ export default function Index({
             ...components,
             Editor: props => {
               return (
-                <>
+                <div className="editor-wrapper">
                   {props.children}
                   <Editor
                     {...props}
                     initialTabs={tabs}
                     setInitialTabs={setTabs}
                   />
-                </>
+                </div>
               )
             }
           }}

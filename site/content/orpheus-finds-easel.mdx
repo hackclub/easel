@@ -3,55 +3,44 @@ title: Orpheus finds an easel in the mail
 order: 1
 ---
 
+It's a normal Saturday for Orpheus the dinosaur. Or rather, not normal. This is the first Saturday in a while where she can lie in bed alone, and look out the window, and daydream about whatever she wants to. No tea parties to go to, no meetings, no nothing. She can just lie in bed and think about pancakes for breakfast, lunch, and dinner.
+
+What a perfect day. You know what would be even more perfect? Actual pancakes. Blueberry pancakes, chocolate pancakes, banana pancakes. That means she has got to get out of bed and check if she has those ingredients. She rolls over and out of bed and into the kitchen.
+
+When she gets to the kitchen, there's a knock on the door. Now, Orpheus' house is laid out in such a way where the front door leads to the kitchen. Or rather, the kitchen leads to the front door. The magic of perspective.
+
 <aside>
-  This page is more in beta than the other pages... especially plot wise.
-  Working on it!
+  I know when you read this you will be most suspicious of me, the narrator. Trust me. I am not the mysterious person that you will learn about later. I just happen to be omnipresent.
 </aside>
 
-It's a normal Saturday for Orpheus the dino. She wakes up, lies in bed for a while, and looks out the window.
+*Perfect timing!*, she thinks. *Almost like someone knows what I'm doing at the current moment.*
 
-It's raining outside! She likes rainy days. You can hear the rain splattering every time a car comes by, and the soft pitter patter on the windows. It's the best sound. Add pancakes for breakfast and lunch but especially dinner and it's got to be the best day ever.
+The doorbell rings insistently again. Orpheus <strike>runs</strike> stomps her way over to the door and opens it, but no one's there! She looks around. Nobody's around. It's kind of a dull and gray day outside, honestly, although the rain is making nice pitter-patter sounds on the porch screens.
+
+She looks down. There's a box at her feet. Ooh. Could it be fan mail? She bends down to pick it up.
+
+## Orpheus gets mail
 
 <aside>
   Yes, Orpheus gets fan mail. If you want to send her some after reading this
-  you can send them to 15 Falls Road, Shelburne VT 05482.
+  you can send them to 15 Falls Road, Shelburne VT 05482. If you want fan mail in exchange, we will also send you something to your return address.
 </aside>
 
-Just then, the post office truck passes by and stops. Normally the mailman just stops by to drop off fan mail in the mailbox, but today he has a bigger, bulkier package. Orpheus hops up and walks to her front door. It's a package! Orpheus gets very excited about packages. Mysterious packages, to be precise.
+She rips apart the box with her claws, and three things fall out: a keyboard sort of thing with a very small screen (a computer??), a grid-like boxy sort of ([something like this.](https://www.adafruit.com/product/5362) Orpheus and I couldn't come up with a better description when we were arguing over the sequence of events) contraption, and a nice, fancy piece of paper that Orpheus can't help but put her nose up to. It smells good. Like paper, you know?
 
-## Easel, the programming language
-
-Orpheus gingerly opens the package and pulls out the contents one by one. She recognizes the first item instantly. It's an easel!
-
-_Here's the [easel in question](https://www.adafruit.com/product/5362?gad_source=1&gclid=Cj0KCQjwiYOxBhC5ARIsAIvdH526LPYOruOasZj9FkW5TYN6OlXZMV3q0ER-CwS5_S9a3JUZIJ-4d2UaAkGhEALw_wcB)._
-
-<Canvas />
-
-Orpheus has wanted to paint a easel for the longest time.
-
-There's also a letter that. Orpheus reads the letter.
+Orpheus reads the letter.
 
 ---
 
-I hope this letter finds you well. [TODO]
+I hope this letter finds you well. Maybe on a cozy rainy Saturday morning. In the confines of this package (there is only so much you can fit inside a decent package when you are trying to adhere to USPS shipping guidelines while also trying to be budget-friendly), there are two things: a computer unlike anything you normally use, for interfacing with the second thing, an easel.
 
-Signed,
+The easel is a blank, sad thing right now. You need to paint it. Now, you can't paint it with any normal paint and brush. What, do you think this is, that one boy with that one purple crayon that he can just make random shite come to life with by scribbling?
 
-your mysterious benefactor
+No, *you must talk to it*.
 
----
-
-Ooh. I guess it's time for Orpheus to write a programming language so she can start painting the easel. Here's Easel:
-
-<aside>
-  Is that... [Conway's Game of Life](https://playgameoflife.com/)? Yup, and
-  we're going to get it to run on an easel.
-</aside>
-
-<Editor initialTab="program.easel">
-```easel
-prepare rows as 50
-prepare cols as 20
+<Canvas initialCode={`prepare rows as 64
+prepare cols as 64
+prepare dbg as true
 
 brush Cell has { x, y, live }
 
@@ -62,7 +51,7 @@ sketch seed {
     loop y through (0, cols) {
       prepare live as false
       prepare chance as random(0, 100)
-      if (chance < 20) {
+      if (chance < 10) {
         prepare live as true
       }
       cells.add(prep Cell(x: x, y: y, live: live))
@@ -74,7 +63,7 @@ sketch seed {
 prepare cells as seed()
 
 sketch getNeighbors needs (cells, index) {
-  ~ Get neighbors around seed
+  ~ Get neighbors around a cell
   prepare neighbors as []
 
   ~ Populate neighbors
@@ -112,17 +101,210 @@ sketch getNeighbors needs (cells, index) {
   finished alive
 }
 
+if (dbg) {
+  ink(getNeighbors(cells, rows * cols / 2))
+}
+
 sketch painting {
   ~ This loop runs every iteration and must be in every program
   loop i through (0, cells.length) {
     prepare cell as cells[i]
-    prepare neighbors as getNeighbors(cell, i)
+    prepare neighbors as getNeighbors(cells, i)
     if (cell.live) {
       if (neighbors.length < 2 || neighbors.length > 3) {
         ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
-        ~ Any live cell with more than three live neighbors dies, as if by underpopulation
+        ~ Any live cell with more than three live neighbors dies, as if by overpopulation
         prepare cell.live as false
-      } elif (!(cell.live && neighbors == 3)) {
+      } elif (!cell.live && neighbors.length == 3) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    } else {
+      if (neighbors.length == 3) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    }
+    
+    if (cell.live) {
+      ~ Now draw the cell if it's alive!
+      prepare color as prep Color(r: 255, g: 0, b: 0)
+      Canvas.fill(cell.x, cell.y, color)
+    } else {
+      ~ If it's dead, turn the cell off
+      Canvas.erase(cell.x, cell.y)
+    }
+  }
+}
+
+if (dbg) {
+  sketch includes needs (array, value) {
+    loop i through (0, array.length) {
+      if (array[i] == value) {
+        finished true
+      }
+    }
+    
+    finished false
+  }
+
+  prepare test as ["hello", "world", "fox"]
+  ink(test)
+
+  if (!(false && includes(test, "foxes"))) {
+    ink("NOT false AND includes foxes in test evaluates to true")
+  }
+
+  painting()
+}`} />
+
+I know you've wanted to be an artist. And now you have a chance to be a special one. An artist that can also perform magic! Figure out how to talk to the easel with the computer I have provided, and you can do both. Hint: you need to write a programming language. The one I have included is called Easel, and is a good starting point.
+
+There is much you'll learn along the way. You might even find that there's a surprise or two, too. (See what I did there? Punny. Yes, I am quite a humorous person. It is something I pride myself on. Quite masterful at pranks, too.)
+
+You'll probably go back to cooking pancakes or something. There are many reasons to do this, though, and here I'll rank them in alphabetical order:
+
+<aside>
+  From the narrator: programming language idea? Star Wars-based programming language? Very based. (I heard that's the hip word nowadays.)
+</aside>
+
+1. It will be lots of fun.
+2. You will believe in yourself more.
+3. Learn much, you will. (Sorry. I've been watching Star Wars.)
+
+Signed,
+your mysterious sender
+
+P.S. I know that you would like to know who I am because who doesn't? So let's strike a compromise. Once you figure out how to paint this easel, you'll be able to run this:
+
+```plaintext
+prepare rows as 64
+prepare cols as 64
+
+sketch color needs (r, g, b) {
+  finished prep Color(r: r, g: g, b: b)
+}
+
+prepare me as [
+  []
+]
+
+sketch draw {
+  loop i through (0, me.length) {
+    prepare row as me.get(i)
+    loop j through (0, row.length) {
+      prepare col as row.get(j)
+      Canvas.fill(i, j, col)
+    }
+  }
+}
+
+draw()
+```
+
+And figure out who I am.
+
+---
+
+Orpheus is slightly taken aback. Erm, crepey. Sorry, creepy. Her stomach rumbles. Sorry. Just a little bit hungry. How does this mysterious sender know everything that is happening, in realtime? Guess the only way to find out is to write that programming language. 
+
+Hm. Orpheus could go cook pancakes, or she could figure out this easel and who in the hecktie-neckties this mysterious person is. Or she could do both.
+
+She's never written a programming language before, but then, I presume you haven't, either. This is an invitation for you to join Orpheus' pancake party.
+
+Go cook your pancakes! We'll be back in half an hour.
+
+## Easel, the programming language
+
+Ok. We both have a steaming pile of pancakes. (I hoped you found the secret [redacted] pancake recipe. 🤭 It tastes very good, contrary to popular belief.)
+
+Let's take a look at Easel:
+
+<aside>
+  Is that... [Conway's Game of Life](https://playgameoflife.com/)? Yup, and
+  we're going to get it to run on an easel.
+</aside>
+
+<Editor initialTab="program.easel">
+```easel
+prepare rows as 64
+prepare cols as 64
+
+brush Cell has { x, y, live }
+
+~ Exercise: try setting a custom pattern instead of randomness!
+sketch seed {
+  prepare cells as []
+  loop x through (0, rows) {
+    loop y through (0, cols) {
+      prepare live as false
+      prepare chance as random(0, 100)
+      if (chance < 10) {
+        prepare live as true
+      }
+      cells.add(prep Cell(x: x, y: y, live: live))
+    }
+  }
+  finished cells
+}
+
+prepare cells as seed()
+
+sketch getNeighbors needs (cells, index) {
+  ~ Get neighbors around a cell
+  prepare neighbors as []
+
+  ~ Populate neighbors
+  if (index - rows - 1 > 0) {
+    neighbors.add(cells[index - rows - 1])
+  } 
+  if (index - rows > 0) {
+    neighbors.add(cells[index - rows])
+  }
+  if (index - rows + 1 > 0) {
+    neighbors.add(cells[index - rows + 1])
+  }
+  if (index > 0) {
+    neighbors.add(cells[index - 1])
+  }
+  if (index < cells.length - 1) {
+    neighbors.add(cells[index + 1])
+  }
+  if (index + rows - 1 < cells.length - 1) {
+    neighbors.add(cells[index + rows - 1])
+  }
+  if (index + rows < cells.length - 1) {
+    neighbors.add(cells[index + rows])
+  }
+  if (index + rows + 1 < cells.length - 1) {
+    neighbors.add(cells[index + rows + 1])
+  }
+
+  prepare alive as []
+  loop i through (0, neighbors.length) {
+    if (neighbors[i].live) {
+      alive.add(neighbors[i])
+    }
+  }
+  finished alive
+}
+
+sketch painting {
+  ~ This loop runs every iteration and must be in every program
+  loop i through (0, cells.length) {
+    prepare cell as cells[i]
+    prepare neighbors as getNeighbors(cells, i)
+    if (cell.live) {
+      if (neighbors.length < 2 || neighbors.length > 3) {
+        ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
+        ~ Any live cell with more than three live neighbors dies, as if by overpopulation
+        prepare cell.live as false
+      } elif (!cell.live && neighbors.length == 3) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    } else {
+      if (neighbors.length == 3) {
         ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
         prepare cell.live as true
       }
@@ -141,7 +323,7 @@ sketch painting {
 ```
 </Editor>
 
-I bet you can already start to see the different features Easel has.
+I bet you can already start to see the different features Easel has. Orpheus can, although it's ended up in a lot of dripping syrup over the letter.
 
 ### Variables
 
@@ -154,7 +336,7 @@ Variables are created with the `prepare` keyword and `as` keywords, like `prepar
   grammar police!
 </aside>
 
-Comments are dictated by the tilde symbol. Me and Orpheus have decided that it looks pretty similar to her eyebrows when she's surprised by something.
+Comments are dictated by the tilde symbol. Me and Orpheus have decided that it looks pretty similar to her eyebrows when she's surprised by something, and comments help you when you're surprised by a pie ce of code, so we've decided that it's a pretty effective way of annotating our comments.
 
 ### Structs
 
@@ -186,11 +368,11 @@ if (!(false && includes(test, "foxes"))) {
 }
 ```
 
-Easel has support for the usual operators: AND `&&`, OR `||`, and NOT `!`.
+Easel also has support for the usual operators: AND `&&`, OR `||`, and NOT `!`.
 
 ## Setup
 
-Let's start doing this! Orpheus wants to make sure we've got the basics now. It's like building Lego, really. The first step is to open dat terminal and start a new project:
+Orpheus wipes her mouth with her hands and pushes her plate aside. Let's start doing this! We're going to make sure we have the basics first. It's like building Lego, really. The first step is to open dat terminal and start a new project:
 
 ```plaintext
 mkdir easel
@@ -198,12 +380,9 @@ cd easel
 npm init -y
 ```
 
-<aside>
-  Orpheus wants this to be useful for anyone who knows a bit of JavaScript.
-  Here, all we're doing is creating a imprt
-</aside>
+Of course, if you're on a Chromebook or some device of that sort, and you've been following along with our built-in editor, you won't be able to follow this step or the following ones. Just skip down to writing the actual code.
 
-Open up the `package.json` that's been created, and add this extra line:
+Open up the `package.json` that's been created, and add this extra line that'll let us use the modern `import` syntax.
 
 ```json
 {
@@ -212,13 +391,13 @@ Open up the `package.json` that's been created, and add this extra line:
 }
 ```
 
-This will let us use the modern `import` syntax. Next, let's start writing some code! Here's some boilerplate code to go inside `easel.js`:
+Next, let's start writing some code! Here's some boilerplate code to go inside `easel.js`:
 
 <aside>
   Go ahead. Type it out! It's good for your health. Well, to be specific, it's
   good for Orpheus' health. She only has three claws (fingers?) on either hand.
   Her hand-o-pedon (yes, I learned today that it's a thing) says it's good for
-  her health. I trust docotors. [shrugs]
+  her health. I trust doctors. [shrugs] Anyways, I digress. You can't copy it, unless you're really *desperate*, and that's kind of sad.
 </aside>
 
 <Editor initialTab="easel.js">

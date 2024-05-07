@@ -100,7 +100,9 @@ export class Interpreter {
           let instance = {}
           for (let key of Object.keys(members)) {
             if (!node.members.includes(key))
-              this.error(`Unexpected member ${key}`)
+              this.error(
+                `Unexpected member ${key} found while creating instance of ${node.name}`
+              )
             instance[key] = members[key]
           }
           return instance

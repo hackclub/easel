@@ -76,9 +76,8 @@ const writeFile = (location, data) =>
       input.close()
     })
 
-    const startStmt = line => {
-      if (['{', '(', '['].includes(line[line.length - 1])) return true
-      return false
+    const getLevel = () => {
+      // Get level in line
     }
 
     const readLines = initial =>
@@ -90,6 +89,7 @@ const writeFile = (location, data) =>
             // Check if line is empty
             if (line.length) {
               initial.push(line)
+              if (startStmt(line)) level++
             }
           })
         }
