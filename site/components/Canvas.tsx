@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './Editor.module.scss'
 import CodeMirror from '@uiw/react-codemirror'
 import { quietlight } from '@uiw/codemirror-theme-quietlight'
-import stdlib, { Canvas as ParentCanvas } from '../../easel/stdlib'
-import { Lexer } from '../../easel/lexer'
-import { Parser } from '../../easel/parser'
-import { Interpreter } from '../../easel/interpreter'
+import stdlib, { Canvas as ParentCanvas } from '../../languages/easel/stdlib'
+import { Lexer } from '../../languages/easel/lexer'
+import { Parser } from '../../languages/easel/parser'
+import { Interpreter } from '../../languages/easel/interpreter'
 
 export function Easel({
   code,

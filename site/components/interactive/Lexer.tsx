@@ -1,4 +1,4 @@
-import { Lexer, Token, TOKENS } from '../../../easel/lexer'
+import { Lexer, Token, TOKENS } from '../../../languages/easel/lexer'
 import { useEffect, useState } from 'react'
 import styles from './Lexer.module.scss'
 

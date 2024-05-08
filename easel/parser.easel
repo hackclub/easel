@@ -1,2 +1,0 @@
-ink("Hello, world!")
-ink(random(0, 100))
