@@ -27,7 +27,7 @@ And the top five will get a hard copy of [Crafting Interpreters](https://craftin
 
 ## Step two: record a demo!
 
-Record a demo of your programming language in action, preferably using [Asciinema](https://asciinema.org/). Instructions can be found [here]() for how to install Asciinema and then record your terminal with it. After you've got a recording of you running your programming language, grab the Asciinema link, which will look something like [https://asciinema.org/a/590145](https://asciinema.org/a/590145).
+Record a demo of your programming language in action, preferably using [Asciinema](https://asciinema.org/). Instructions can be found [here](https://docs.asciinema.org/getting-started/) for how to install Asciinema and then record your terminal with it. After you've got a recording of you running your programming language, grab the Asciinema link, which will look something like [https://asciinema.org/a/590145](https://asciinema.org/a/590145).
 
 ## Step three: open a PR!
 
