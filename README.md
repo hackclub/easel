@@ -8,7 +8,7 @@ Check out [#building-programming-languages](https://app.slack.com/client/T0266FR
 
 **What if you don't know how to write a programming language?** Never fear, Orpheus the dinosaur to the rescue! We've written a guide on writing a programming language from scratch that'll teach you how to write a programming language called [Easel](https://easel.hackclub.com):
 
-![](https://cloud-b4c46vbzw-hack-club-bot.vercel.app/0screen_recording_2024-05-08_at_2.26.14_pm.gif)
+https://github.com/hackclub/easel/assets/59099858/9580bc79-933c-4c4d-b5f9-221af9adab2b
 
 By the end of it, you'll have written a programming language and learned about how tree-walk interpreters work! Give it a spin at [https://easel.hackclub.com](https://easel.hackclub.com).
 
