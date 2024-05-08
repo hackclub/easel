@@ -1,9 +1,14 @@
 ---
 title: Orpheus writes a lexer
 order: 2
+done: true
 ---
 
-The first thing Orpheus does the next morning is she fires up the computer again, and opens a new file to start writing some code.
+Now Orpheus fires up the computer our mysterious sender has so graciously included. It's kind of like an actual computer, except mini. Very small.
+
+<aside>
+  Narrator: today I'm craving a smoothie, not tea. You can also have a smoothie. Just saying.
+</aside>
 
 _Wait_, she thinks. _I'm forgetting something_. She swings by the kitchen to pick up some tea. You can't forget the tea. Ambiance is rather important.
 
@@ -15,7 +20,7 @@ Orpheus thinks this is kind of like speaking English, or Dinoese. You can divide
 
 <aside>
   I talked to Orpheus about this for quite a while and apparently Dinoese is
-  quite easy. It just involves a lot of *rawr*s of different intensities.
+  quite easy. It just involves a lot of *rawr*s of different intensities. Hey hey! Potential programming language?
 </aside>
 
 ![](/cartoons/english-tokens.png)
@@ -178,6 +183,8 @@ advance() {
 }
 ```
 </Editor>
+
+## scanToken
 
 Ok. Let's start writing this `scanToken` method:
 
@@ -530,8 +537,9 @@ try {
 ```
 </Editor>
 
-Run `node easel.js test.easel --dbg` and you'll get this:
+Run `node easel.js test.easel --dbg` and you'll get this in `tokens.json`:
 
+<CroppedOutput>
 ```json
 [
   {
@@ -3360,7 +3368,8 @@ Run `node easel.js test.easel --dbg` and you'll get this:
   }
 ]
 ```
+</CroppedOutput>
 
-Isn't that cool? We've done that in a little more than 200 lines of code. That's pretty cool, I think. The next step is to start combining tokens into a grammar that represents our programming language, which is what writing a parser will do for us.
+Isn't that cool? We've done that in a little more than 200 lines of code. That's pretty cool. The next step is to start combining tokens into a grammar that represents our programming language, which is what writing a parser will do for us.
 
 _The complete code here is at [lexer.js](https://github.com/hackclub/langjam/blob/main/easel/lexer.js)._

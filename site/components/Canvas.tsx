@@ -11,12 +11,14 @@ export function Easel({
   code,
   ink,
   defaultColor = '#ddd',
-  gap = 2
+  gap = 2,
+  run
 }: {
   code: string
   ink: (args: any[]) => void
   defaultColor?: string
   gap?: number
+  run: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
@@ -41,35 +43,49 @@ export function Easel({
   }
 
   useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
+    if (run) {
+      if (canvasRef.current) {
+        const canvas = canvasRef.current
+        const ctx = canvas.getContext('2d')
 
-      if (ctx && canvas.parentElement) {
-        canvas.width = canvas.parentElement.offsetWidth
-        canvas.height = canvas.width
+        if (ctx && canvas.parentElement) {
+          canvas.width = canvas.parentElement.offsetWidth
+          canvas.height = canvas.width
 
-        const width = 64
-        const height = 64
-        const cellSize = ctx.canvas.width / width - gap
+          const width = 64
+          const height = 64
+          let cellSize = ctx.canvas.width / width - gap
 
-        clear(ctx, width, height, cellSize)
+          clear(ctx, width, height, cellSize)
 
-        class CustomCanvas extends ParentCanvas {
-          fill([x, y, color]: [
-            number,
-            number,
-            { r: number; g: number; b: number }
-          ]) {
-            let cell = this.grid[y * this.cols + x]
-            if (cell) {
-              cell.r = color.r
-              cell.g = color.g
-              cell.b = color.b
+          class CustomCanvas extends ParentCanvas {
+            fill([x, y, color]: [
+              number,
+              number,
+              { r: number; g: number; b: number }
+            ]) {
+              let cell = this.grid[y * this.cols + x]
+              if (cell) {
+                cell.r = color.r
+                cell.g = color.g
+                cell.b = color.b
 
-              // Set actual cell color to that
+                // Set actual cell color to that
+                if (ctx) {
+                  ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
+                  ctx.fillRect(
+                    x * cellSize + gap * x,
+                    y * cellSize + gap * y,
+                    cellSize,
+                    cellSize
+                  )
+                }
+              }
+            }
+
+            erase([x, y]: [number, number]) {
               if (ctx) {
-                ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
+                ctx.fillStyle = '#ddd'
                 ctx.fillRect(
                   x * cellSize + gap * x,
                   y * cellSize + gap * y,
@@ -80,71 +96,84 @@ export function Easel({
             }
           }
 
-          erase([x, y]: [number, number]) {
-            if (ctx) {
-              ctx.fillStyle = '#ddd'
-              ctx.fillRect(
-                x * cellSize + gap * x,
-                y * cellSize + gap * y,
-                cellSize,
-                cellSize
-              )
+          const lexer = new Lexer(code)
+          lexer.scanTokens()
+          const parser = new Parser(lexer.tokens)
+          parser.parse()
+          const interpreter = new Interpreter()
+          let scope = interpreter.run(parser.ast, {
+            ...stdlib,
+            Canvas: new CustomCanvas(),
+            img: args => {
+              console.log(args)
+            },
+            ink
+          })
+
+          const interval: any = setInterval(() => {
+            if (!interpreter.inScope(scope, 'painting'))
+              return clearInterval(interval)
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+            try {
+              const lexer = new Lexer('painting()')
+              lexer.scanTokens()
+              const parser = new Parser(lexer.tokens)
+              parser.parse()
+              scope = interpreter.run(parser.ast, scope)
+            } catch {
+              clearInterval(interval)
             }
-          }
-        }
+          }, 100)
 
-        const lexer = new Lexer(code)
-        lexer.scanTokens()
-        const parser = new Parser(lexer.tokens)
-        parser.parse()
-        const interpreter = new Interpreter()
-        let scope = interpreter.run(parser.ast, {
-          ...stdlib,
-          Canvas: new CustomCanvas(),
-          ink
-        })
+          window.addEventListener('resize', () => {
+            if (canvas.parentElement) {
+              canvas.width = canvas.parentElement.offsetWidth
+              canvas.height = canvas.width
+              cellSize = ctx.canvas.width / width - gap
+              clear(ctx, width, height, cellSize)
+            }
+          })
 
-        const interval: any = setInterval(() => {
-          if (!interpreter.inScope(scope, 'painting'))
-            return clearInterval(interval)
-          ctx.fillStyle = 'white'
-          ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-          try {
-            const lexer = new Lexer('painting()')
-            lexer.scanTokens()
-            const parser = new Parser(lexer.tokens)
-            parser.parse()
-            scope = interpreter.run(parser.ast, scope)
-          } catch {
+          return () => {
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
             clearInterval(interval)
           }
-        }, 100)
-
-        window.addEventListener('resize', () => {
-          if (canvas.parentElement) {
-            canvas.width = canvas.parentElement.offsetWidth
-            canvas.height = canvas.width
-          }
-        })
-
-        return () => {
-          ctx.fillStyle = 'white'
-          ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-          clearInterval(interval)
         }
       }
+    } else if (canvasRef.current) {
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
+
+      if (ctx && canvas.parentElement) {
+        canvas.width = canvas.parentElement.offsetWidth
+        canvas.height = canvas.width
+
+        const width = 64
+        const height = 64
+
+        clear(ctx, width, height, ctx.canvas.width / width - gap)
+      }
     }
-  }, [code])
+  }, [run, code])
 
   return <canvas className={styles.easel} ref={canvasRef} />
 }
 
-export default function Canvas({ initialCode = '' }: { initialCode: string }) {
+export default function Canvas({
+  initialCode = '',
+  initialRun = true
+}: {
+  initialCode: string
+  initialRun: boolean
+}) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const [code, setCode] = useState(initialCode)
   const [current, setCurrent] = useState('')
   const [output, setOutput] = useState<string[]>([])
   const [height, setHeight] = useState('1px')
+  const [run, setRun] = useState<boolean>(true)
 
   useEffect(() => {
     if (gridRef.current) {
@@ -162,7 +191,7 @@ export default function Canvas({ initialCode = '' }: { initialCode: string }) {
           height={height}
           theme={quietlight}
           onChange={value => {
-            setCurrent(value)
+            setCode(value)
           }}
           value={code}
         />
@@ -172,16 +201,16 @@ export default function Canvas({ initialCode = '' }: { initialCode: string }) {
           <div
             className={styles.tab}
             onClick={() => {
-              setCode('')
               setOutput([])
+              setRun(false)
             }}>
             Clear
           </div>
           <div
             className={styles.tab}
             onClick={() => {
-              setCode(current)
               setOutput([])
+              setRun(true)
             }}>
             Run
           </div>
@@ -195,6 +224,7 @@ export default function Canvas({ initialCode = '' }: { initialCode: string }) {
                 ...args.map(arg => JSON.stringify(arg))
               ])
             }}
+            run={run}
           />
           <div className={styles.terminal}>
             {output.length ? (

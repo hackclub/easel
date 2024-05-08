@@ -12,9 +12,6 @@ export default function Submit({
 }: {
   parts: Array<{ title: string; slug: string }>
 }) {
-  const [id, setId] = useState('')
-  const idRef = useRef(null)
-
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     const data = {
@@ -29,6 +26,10 @@ export default function Submit({
       birthdate: {
         required: true,
         value: event.target.birthdate.value
+      },
+      email: {
+        required: true,
+        value: event.target.email.value
       },
       address: {
         required: true,
@@ -53,9 +54,13 @@ export default function Submit({
       address2: {
         value: event.target.address2.value
       },
-      file: {
+      id: {
         required: true,
-        value: idRef.current.files[0]
+        value: event.target.id.value
+      },
+      github: {
+        required: true,
+        value: event.target.github.value
       },
       pr: {
         required: true,
@@ -77,23 +82,28 @@ export default function Submit({
       }
     }
 
-    let submission = new FormData()
+    let submission = {}
     for (let [key, value] of Object.entries(data)) {
       if (value.required && !value.value) {
         console.log(key, value)
         return
       }
-      submission.append(key, value)
+      submission[key] = value.value
     }
 
     fetch('/api/submit', {
       method: 'POST',
-      body: submission
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(submission)
     })
       .then(res => res.json())
       .then(res => {
         console.log(res)
       })
+      .catch(err => console.log(err))
   }
 
   return (
@@ -184,6 +194,10 @@ export default function Submit({
                 autoComplete="off"
               />
             </div>
+            <div>
+              <label className={styles.required}>Email</label>
+              <input type="email" name="email" required autoComplete="off" />
+            </div>
             <div className={styles.flex}>
               <div>
                 <label className={styles.required}>City</label>
@@ -237,25 +251,35 @@ export default function Submit({
             </div>
             <div>
               <label className={styles.required}>Photo of student ID</label>
-              <p>We need this to confirm that you are, in fact, a student.</p>
-              <label className={styles.fileUpload} for="id">
-                Upload a picture of your ID{' '}
-                {id.length > 0 && <span>- {id}</span>}
-              </label>
+              <p>
+                We need this to confirm that you are, in fact, a student. Head
+                over to the{' '}
+                <a href="https://hackclub.com/slack">Hack Club Slack</a>, head
+                to{' '}
+                <a href="https://hackclub.slack.com/archives/C016DEDUL87">
+                  #cdn
+                </a>
+                , and upload your student ID to get a URL you can paste here.
+              </p>
               <input
-                required
-                accept="image/*"
-                type="file"
+                type="text"
                 name="id"
-                id="id"
-                onChange={event => {
-                  const file = event.target.files![0]
-                  setId(file.name)
-                }}
-                ref={idRef}
+                required
+                autoComplete="off"
+                placeholder="https://cloud-80eg2m8id-hack-club-bot.vercel.app/0thinking_rac.png"
               />
             </div>
             <h2>Project</h2>
+            <div>
+              <label className={styles.required}>GitHub username</label>
+              <input
+                type="text"
+                name="github"
+                required
+                autoComplete="off"
+                placeholder="hackclub"
+              />
+            </div>
             <div>
               <div>
                 <label className={styles.required}>

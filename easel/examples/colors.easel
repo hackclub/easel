@@ -1,0 +1,16 @@
+prepare rows as 64
+prepare cols as 64
+
+sketch randomColor {
+  finished prep Color(r: random(0, 255), g: random(0, 255), b: random(0, 255))
+}
+
+ink(randomColor())
+
+sketch painting {
+  loop y through (0, cols) {
+    loop x through (0, rows) {
+      Canvas.fill(x, y, randomColor())
+    }
+  }
+}

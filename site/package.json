@@ -21,6 +21,7 @@
     "@uiw/codemirror-theme-solarized": "^4.22.0",
     "@uiw/react-codemirror": "^4.22.0",
     "@webcontainer/api": "^1.1.9",
+    "airtable": "^0.12.2",
     "diff": "^5.2.0",
     "highlight.js": "^11.9.0",
     "isolated-vm": "^4.7.2",

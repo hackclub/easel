@@ -15,12 +15,13 @@ import Meta from '@hackclub/meta'
 import Node from '@/components/interactive/Node'
 import rehypeSlug from 'rehype-slug'
 import { rehype } from 'rehype'
-import { Demo } from '@/components/Interpreter'
+import Interpreter from '@/components/Interpreter'
 import styles from '@/styles/Part.module.scss'
-import Confetti from 'react-canvas-confetti'
 import { useRef, useEffect, useState } from 'react'
 import { trim } from '@/components/trim'
 import Icon from '@hackclub/icons'
+import Pancakes from '@/components/interactive/Pancakes'
+import Confetti from '@/components/interactive/Confetti'
 
 const Mermaid = dynamic(() => import('@/components/Mermaid'), { ssr: false })
 const Editor = dynamic(() => import('@/components/Editor'), { ssr: false })
@@ -38,7 +39,7 @@ const components = {
       </div>
     )
   },
-  Demo,
+  Interpreter,
   Celebrate: () => {
     return (
       <>
@@ -46,9 +47,13 @@ const components = {
           <img src="https://github.com/hackclub/dinosaurs/raw/main/party_orpheus.png" />
           <button>Celebrate with Orpheus</button>
         </div>
-        <Confetti className={styles.confetti} width={200} height={200} />
+        <Confetti />
       </>
     )
+  },
+  Pancakes,
+  CroppedOutput: props => {
+    return <div className="editor-wrapper">{props.children}</div>
   }
 }
 

@@ -1,0 +1,26 @@
+.wrapper {
+  font-family: 'Virgil';
+  display: flex;
+  border: 3px solid black;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  border-bottom-right-radius: 225px 15px;
+  border-bottom-left-radius: 15px 255px;
+}
+
+.recipe {
+  padding: 1rem;
+}
+
+.select {
+  border-right: 1px solid black;
+
+  > div {
+    padding: 1rem;
+    cursor: pointer;
+
+    &:not(:nth-child(1)) {
+      border-top: 2px solid black;
+    }
+  }
+}

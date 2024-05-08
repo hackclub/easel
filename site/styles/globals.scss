@@ -57,6 +57,10 @@ $lg: 991.98px;
 
 * {
   box-sizing: border-box;
+
+  &[contenteditable='true'] {
+    outline: none;
+  }
 }
 
 ::selection {
@@ -109,11 +113,6 @@ header {
     line-height: 1.2;
     font-style: italic;
     margin: 0;
-
-    @media screen and (max-width: $sm) {
-      font-family: 'Newsreader';
-      font-weight: 500;
-    }
   }
 
   h2 {
@@ -338,13 +337,6 @@ section {
     }
   }
 
-  b,
-  strong {
-    @media screen and (max-width: $sm) {
-      font-weight: 500;
-    }
-  }
-
   .toc {
     font-size: 1.1rem;
     overflow: auto;
@@ -519,11 +511,6 @@ section {
     font-style: italic;
     // color: var(--hint);
     line-height: 1.4;
-
-    @media screen and (max-width: $sm) {
-      line-height: 1.2;
-      font-weight: 500;
-    }
   }
 
   h1 {

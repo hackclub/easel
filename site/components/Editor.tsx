@@ -14,7 +14,6 @@ declare global {
 }
 
 export function Output({ code }: { code: string }) {
-  console.log(code)
   return (
     <CodeMirror
       value={code}

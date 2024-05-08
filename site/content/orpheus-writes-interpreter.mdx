@@ -3,7 +3,16 @@ title: Orpheus writes an interpreter
 order: 4
 ---
 
-Orpheus has her smock and beret on today. She's ready to do some painting. She sits down at the computer. The smock is slightly awkward. The beret's about to fall off.
+<aside>
+  Narrator: It's a Sunday. Just wanted to remind you of the timeline.
+</aside>
+
+Orpheus has her smock and beret on today. She's ready to do some painting. She sits down at the computer. The smock is slightly awkward. The beret's about to fall off. I mean, this is probably because the smock and the beret are for humans and not dinosaurs, but I digress.
+
+
+<img src="/cartoons/painter.jpg" style={{ width: "45vw" }}/>
+
+(Ok. Maybe the beret fits on her nicely. I'm just saying the smock is a bit tiny though.)
 
 But today's an exciting day! Because today, we'll get the interpreter up and running, and we'll be able to run programs for real now. And Orpheus will finally be able to get this easel to work.
 
@@ -586,13 +595,13 @@ Hello, world!
 
 Oh smokes. Our programming language is working! 🎉 🎉 🎉
 
-<Celebrate/>
+![](https://github.com/hackclub/dinosaurs/raw/main/party_orpheus.png)
 
 Can we run that program that was at the beginning of this journey? Let's add a few more features to our standard library first and try again:
 
 <aside>
   Orpheus is going to use `Canvas` and `Color` to simulate changes on a digital
-  easel, and then map it to a real easel.
+  easel, and then map it to a real easel. That way, you can have different kinds of easels.
 </aside>
 
 <Editor initialTab="stdlib.js">
@@ -647,33 +656,37 @@ export default {
 ```
 </Editor>
 
-One last thing: arrays in Easel have a special method called `add` that'll, well, add an item to itself. Let's add a prototype method to take care of that at the top of `interpreter.js`:
+One last thing: arrays in Easel have two special methods called `add` and `get` that'll, well, add and get an item from itself, respectively. Let's add some prototype methods to take care of that at the top of `interpreter.js`:
 
 <Editor initialTab="interpreter.js">
 ```js
 Array.prototype.add = function (args) {
   this.push(...args)
 }
+
+Array.prototype.get = function ([index]) {
+  return this[index]
+}
 ```
 </Editor>
 
-Go ahead and run `node easel.js test.easel --dbg`.
+Go ahead and run `node easel.js program.easel --dbg`.
 
+<Editor initialTab="program.easel">
 ```plaintext
-prepare rows as 50
-prepare cols as 20
+prepare rows as 64
+prepare cols as 64
 
 brush Cell has { x, y, live }
 
 ~ Exercise: try setting a custom pattern instead of randomness!
 sketch seed {
   prepare cells as []
-
   loop x through (0, rows) {
     loop y through (0, cols) {
       prepare live as false
       prepare chance as random(0, 100)
-      if (chance < 20) {
+      if (chance < 10) {
         prepare live as true
       }
       cells.add(prep Cell(x: x, y: y, live: live))
@@ -691,7 +704,7 @@ sketch getNeighbors needs (cells, index) {
   ~ Populate neighbors
   if (index - rows - 1 > 0) {
     neighbors.add(cells[index - rows - 1])
-  }
+  } 
   if (index - rows > 0) {
     neighbors.add(cells[index - rows])
   }
@@ -708,10 +721,10 @@ sketch getNeighbors needs (cells, index) {
     neighbors.add(cells[index + rows - 1])
   }
   if (index + rows < cells.length - 1) {
-    neighbors.add(cells[index + 1])
+    neighbors.add(cells[index + rows])
   }
   if (index + rows + 1 < cells.length - 1) {
-    neighbors.add(cells[index + rows - 1])
+    neighbors.add(cells[index + rows + 1])
   }
 
   prepare alive as []
@@ -720,11 +733,11 @@ sketch getNeighbors needs (cells, index) {
       alive.add(neighbors[i])
     }
   }
-
   finished alive
 }
 
 sketch painting {
+  ~ This loop runs every iteration and must be in every program
   loop i through (0, cells.length) {
     prepare cell as cells[i]
     prepare neighbors as getNeighbors(cells, i)
@@ -733,7 +746,12 @@ sketch painting {
         ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
         ~ Any live cell with more than three live neighbors dies, as if by overpopulation
         prepare cell.live as false
-      } elif (!(cell.live && neighbors == 3)) {
+      } elif (!cell.live && neighbors.length == 3) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    } else {
+      if (neighbors.length == 3) {
         ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
         prepare cell.live as true
       }
@@ -741,13 +759,11 @@ sketch painting {
 
     if (cell.live) {
       ~ Now draw the cell if it's alive!
-      prepare color as prep Color(r: 0, g: 255, b: 0)
-      Canvas.fill(cell.x, cell.y)
-      ink(Canvas.get(cell.x, cell.y))
+      prepare color as prep Color(r: 255, g: 0, b: 0)
+      Canvas.fill(cell.x, cell.y, color)
     } else {
       ~ If it's dead, turn the cell off
       Canvas.erase(cell.x, cell.y)
-      ink(Canvas.get(cell.x, cell.y))
     }
   }
 }
@@ -767,6 +783,7 @@ painting()
 ~ ...
 
 ```
+</Editor>
 
 Congrats. You, you just wrote a programming language. That was pretty magical, wasn't it?
 
@@ -774,13 +791,15 @@ Congrats. You, you just wrote a programming language. That was pretty magical, w
 
 ## What about... interactivity?
 
+*If you're running the web editor, this part won't work quite yet, unfortunately. :(*
+
 What happened to interactivity? What if we don't want to run a program from a file? Let's add a REPL (read, evaluate, print, loop) now.
 
 <video controls>
   <source src="https://cloud-1cma98jhs-hack-club-bot.vercel.app/0screen_recording_2024-04-17_at_12_07_43_pm_adobeexpress.mp4" />
 </video>
 
-
+<Interpreter/>
 
 <aside>
   Orpheus: This reminds me... we should get an easel in the terminal working. Or
@@ -793,7 +812,6 @@ It's actually quite easy to do, and we have left a placeholder for it, if you re
 
 Let's head on over and fill that sad and empty else-statement now. The obvious first step: let's set up the interpreter and the scope.
 
-<Editor initialTab="easel.js">
 ```js
 //  ...
 if (location) {
@@ -807,21 +825,17 @@ if (location) {
   }
 }
 ```
-</Editor>
 
 I've added an extra `exit()` function so we can exit from the REPL.
 
 Let's read a line from the terminal now. We'll need `node:readline`:
 
-<Editor initialTab="easel.js">
 ```js
 import readline from 'node:readline'
 ```
-</Editor>
 
 And back in the else statement:
 
-<Editor initialTab="easel.js">
 ```js
 const input = readline.createInterface({
   input: process.stdin,
@@ -840,11 +854,9 @@ const repl = line => {
 
 input.question('> ', repl)
 ```
-</Editor>
 
 There's the infinite loop we need. Now, instead of reading a file, we're going to read the line:
 
-<Editor initialTab="easel.js">
 ```js
 const repl = line => {
   let hadError = false
@@ -877,12 +889,11 @@ const repl = line => {
   }
 }
 ```
-</Editor>
 
 The only different here, frankly, is that we introduce `hadError`. The logic is that if our lexer runs into an error, we don't want to keep going. For the parser it's a little bit different - when we run into an error, we can technically keep going because we're always guaranteed to have a valid AST (or an empty one).
 
 And that's really all! Now you can fire up a terminal, run `node easel.js`, and boom! you have an interpreter that reads line by line.
 
-What about multiple lines? Well, the logic behind multiple lines is that we'll check if the end of our first line is representative of a list of sorts. Basically, then: left brackets, left braces, and left parentheses. Then we'll keep reading and keeping track of the given operator until we reach the matching closing one. [TODO]
+What about multiple lines? Well, the logic behind multiple lines is that we'll check if the end of our first line has a token that allows us to keep going. Basically, then: left brackets, left braces, and left parentheses. Then we'll keep reading and keeping track of the given operator until we reach the matching closing one.
 
 _The complete code here is at [interpreter.js](https://github.com/hackclub/langjam/blob/main/easel/interpreter.js)._

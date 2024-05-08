@@ -1,0 +1,119 @@
+prepare rows as 64
+prepare cols as 64
+prepare dbg as true
+
+brush Cell has { x, y, live }
+
+~ Exercise: try setting a custom pattern instead of randomness!
+sketch seed {
+  prepare cells as []
+  loop x through (0, rows) {
+    loop y through (0, cols) {
+      prepare live as false
+      prepare chance as random(0, 100)
+      if (chance < 10) {
+        prepare live as true
+      }
+      cells.add(prep Cell(x: x, y: y, live: live))
+    }
+  }
+  finished cells
+}
+
+prepare cells as seed()
+
+sketch getNeighbors needs (cells, index) {
+  ~ Get neighbors around a cell
+  prepare neighbors as []
+
+  ~ Populate neighbors
+  if (index - rows - 1 > 0) {
+    neighbors.add(cells[index - rows - 1])
+  }
+  if (index - rows > 0) {
+    neighbors.add(cells[index - rows])
+  }
+  if (index - rows + 1 > 0) {
+    neighbors.add(cells[index - rows + 1])
+  }
+  if (index > 0) {
+    neighbors.add(cells[index - 1])
+  }
+  if (index < cells.length - 1) {
+    neighbors.add(cells[index + 1])
+  }
+  if (index + rows - 1 < cells.length - 1) {
+    neighbors.add(cells[index + rows - 1])
+  }
+  if (index + rows < cells.length - 1) {
+    neighbors.add(cells[index + rows])
+  }
+  if (index + rows + 1 < cells.length - 1) {
+    neighbors.add(cells[index + rows + 1])
+  }
+
+  prepare alive as []
+  loop i through (0, neighbors.length) {
+    if (neighbors[i].live) {
+      alive.add(neighbors[i])
+    }
+  }
+  finished alive
+}
+
+if (dbg) {
+  ink(getNeighbors(cells, rows * cols / 2))
+}
+
+sketch painting {
+  ~ This loop runs every iteration and must be in every program
+  loop i through (0, cells.length) {
+    prepare cell as cells[i]
+    prepare neighbors as getNeighbors(cells, i)
+    if (cell.live) {
+      if (neighbors.length < 2 || neighbors.length > 3) {
+        ~ Any live cell with fewer than two neighbors dies, as if by underpopulation
+        ~ Any live cell with more than three live neighbors dies, as if by overpopulation
+        prepare cell.live as false
+      } elif (!(cell.live && neighbors.length == 3)) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    } else {
+      if (neighbors.length == 3) {
+        ~ Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction
+        prepare cell.live as true
+      }
+    }
+    
+    if (cell.live) {
+      ~ Now draw the cell if it's alive!
+      prepare color as prep Color(r: 255, g: 0, b: 0)
+      Canvas.fill(cell.x, cell.y, color)
+    } else {
+      ~ If it's dead, turn the cell off
+      Canvas.erase(cell.x, cell.y)
+    }
+  }
+}
+
+if (dbg) {
+  sketch includes needs (array, value) {
+    loop i through (0, array.length) {
+      if (array[i] == value) {
+        finished true
+      }
+    }
+    
+    finished false
+  }
+
+  prepare test as ["hello", "world", "fox"]
+  ink(test)
+
+  if (!(false && includes(test, "foxes"))) {
+    ink("NOT false AND includes foxes in test evaluates to true")
+  }
+
+  painting()
+}

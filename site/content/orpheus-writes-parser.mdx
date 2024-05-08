@@ -1,6 +1,7 @@
 ---
 title: Orpheus writes a parser
 order: 3
+done: true
 ---
 
 Ok. We have a bunch of nice tokens now.
@@ -112,6 +113,10 @@ First up: what do these have in similar?
 Orpheus has an answer! _They're all super basic._ They're what we'll call **literals** - we can't really break them down further, or they'd just be unintelligible chunks that we can't use, and they also happen to be the most basic values we can reference.
 
 To give an exact definition we'll reference later when writing our parser, literals in Easel can be: strings, numbers, or booleans.
+
+<aside>
+  I thought the obssession was over pancakes? When did we start talking about Froot Loops.
+</aside>
 
 Ok, what's the next obvious step from here? I'm thinking like arrays, or data types that build off literals by collecting them and storing them together. In Easel, it's quite simple - I can think of two data types and those are arrays and structs (or maps or whatever you want to call them. Orpheus decided to stick to structs while editing this, although that might not semantically be the best.)
 
@@ -466,7 +471,7 @@ Cool! Let's test this out with a test program in `test.easel`:
 Try it out with `node easel.js test.easel --dbg`! It's not really a complete program because we haven't taken care of statements yet, but I digress. You'll get something like this `ast.json`:
 
 ```js
-;[
+[
   {
     type: 'Literal',
     value: [
@@ -1104,9 +1109,21 @@ Bring, bling! Bring, bring!
 
 I think that's Orpheus' phone ringing. She's going to answer it.
 
-I think Orpheus knows a little more than we've been let onto. Is that what was up with all the, uh, phone-related examples earlier? Probs.
+Who is it, Orpheus?
 
-It's our mysterious benefactor, just reminding us about... calls? Calls! That's right! We're missing a extra step between binary expressions and simple literals, and that happens to be function calls and getters. I like to think of this like a chain, like `orpheus.picksUp(phone).numbers[0]`. It's an intermediate step between `expr()` and `simple()` because it can be one half of an expression but evaluates down to a simple value.
+Wait, our mysterious sender? Nah, beware of those scam calls. We've talked about this before!
+
+What do you mean, he's telling me to stop drinking so much hot chocolate? [sputters] How does he even know about that? *Why is he calling us?* Wait, he's a he? Ok, so we know he's some random dude harassing us.
+
+Just reminding us about... calls? Calls! Oh, right! We almost forgot about those! Our programming language would be pretty useful without those.
+
+<aside>
+Orpheus: Like a chain of Froot Loops?
+
+Narrator: Oh, stop it! We can make Froot Loop necklaces later.
+</aside>
+
+We're missing a extra step between binary expressions and simple literals, and that happens to be function calls and getters. I like to think of this like a chain, like `orpheus.picksUp(phone).numbers[0]`. It's an intermediate step between `expr()` and `simple()` because it can be one half of an expression but evaluates down to a simple value.
 
 <Editor initialTab="parser.js">
 ```js
@@ -1170,6 +1187,10 @@ export default {
 ```
 </Editor>
 
+Getting random calls from a stranger is kind of fun. You're right about that, Orpheus.
+
+[Actually, I have a funny story. One time, one of my friends got his phone number changed, and some other bloke with the same name got his phone number. (What are the coincidences?) Anyways, a friend tried to text him but ended up texting this other person with the same name who played along for a solid *two weeks*. That's my funny story of the day.]
+
 ## Unary operators
 
 There's just one last token we haven't accounted for. I'll give you a moment to think about it. Which token could we possibly be forgetting about?
@@ -1222,6 +1243,7 @@ expr() {
 
 Let's test out everything we have so far. Try running `node easel.js test.easel --dbg`, and you'll get a new debug file containing the AST in `ast.json`. Mine looks something like this:
 
+<CroppedOutput>
 ```json
 [
   {
@@ -2051,9 +2073,10 @@ Let's test out everything we have so far. Try running `node easel.js test.easel 
   }
 ]
 ```
+</CroppedOutput>
 
 Awesome! We've got a parser working. Clap yourself on the back - that wasn't so hard, was it?
 
-That was definitely longer than writing a lexer, for sure, but rev up - we're going to see our programming language in action in the next part!
+That was definitely longer than writing a lexer, for sure, but rev up - we're going to see our programming language in action in the next part, and get Conway's Game of Life running (eventually)!
 
 _The complete code here is at [parser.js](https://github.com/hackclub/langjam/blob/main/easel/parser.js)._
