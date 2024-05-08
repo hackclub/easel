@@ -6,14 +6,22 @@
   border-top-right-radius: 15px 225px;
   border-bottom-right-radius: 225px 15px;
   border-bottom-left-radius: 15px 255px;
+  height: 500px;
+
+  h2 {
+    font-family: 'Virgil' !important;
+  }
 }
 
 .recipe {
   padding: 1rem;
+  overflow: auto;
 }
 
 .select {
-  border-right: 1px solid black;
+  border-right: 2px solid black;
+  flex: 1;
+  height: 100%;
 
   > div {
     padding: 1rem;

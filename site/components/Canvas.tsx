@@ -156,17 +156,19 @@ export function Easel({
         clear(ctx, width, height, ctx.canvas.width / width - gap)
       }
     }
-  }, [run, code])
+  }, [run])
 
   return <canvas className={styles.easel} ref={canvasRef} />
 }
 
 export default function Canvas({
   initialCode = '',
-  initialRun = true
+  initialRun = true,
+  editable
 }: {
   initialCode: string
   initialRun: boolean
+  editable: boolean
 }) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const [code, setCode] = useState(initialCode)
@@ -194,6 +196,7 @@ export default function Canvas({
             setCode(value)
           }}
           value={code}
+          editable={editable}
         />
       </div>
       <div>
