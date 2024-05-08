@@ -1,0 +1,11 @@
+burn number = int(load("Enter the number of terms: "))
+burn one = 0
+burn two = 1
+burn nextTerm = 1
+
+for i through (0, number) {
+    fire(one)
+    burn nextTerm = one + two
+    burn one = two
+    burn two = nextTerm
+}

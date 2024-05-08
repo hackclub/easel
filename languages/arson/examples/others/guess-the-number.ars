@@ -1,0 +1,24 @@
+burn min = 0
+burn max = 1000
+burn tries = 10
+
+prepmatch guessingGame(min, max, tries) {
+    burn num = random(min, max)
+    burn lives = tries
+    fire("I'm thinking of a number between ", min, " and ", max, ". You have ", lives, " tries to guess it.")
+    while (lives > 0) {
+        burn guess = int(load("Guess a number between " + str(min) + " and " + str(max) + ": "))
+        if (num == guess) {
+            fire("That's right! You won with ", lives, " lives left!")
+            return True
+        } elif (num > guess) {
+            fire("Nope! The number I'm thinking of is larger than that.")
+        } else {
+            fire("Nope! The number I'm thinking of is smaller than that.")
+        }
+        burn lives = lives - 1
+    }
+    fire("You lost! The number was ", num)
+}
+
+guessingGame(min, max, tries)

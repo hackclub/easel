@@ -10,7 +10,7 @@ Check out [#building-programming-languages](https://app.slack.com/client/T0266FR
 
 ![](https://cloud-b4c46vbzw-hack-club-bot.vercel.app/0screen_recording_2024-05-08_at_2.26.14_pm.gif)
 
-By the end of it, you'll have written a programming language and learned about how tree-walk interpreters work! Give it a spin.
+By the end of it, you'll have written a programming language and learned about how tree-walk interpreters work! Give it a spin at [https://easel.hackclub.com](https://easel.hackclub.com).
 
 ## Step one: write your programming language!
 
@@ -36,7 +36,7 @@ Open a PR by heading over to Pull requests and opening a PR. Your PR should have
 - [ ] A link to your repo, which should have an `examples` folder with at least one example other people can run and a README that describes how to build and run your repo and an explanation of the syntax and what makes it special.
 - [ ] A copy of your repo inside a folder inside `languages`.
   
-A good example to take a look at is [Easel](https://github.com/hackclub/easel/tree/main/languages/easel).
+A good example to take a look at is [Arson](https://github.com/hackclub/easel/tree/main/languages/arson).
 
 When you're done, you can submit the form [here](https://easel.hackclub.com/submit) to move on to step four!
 

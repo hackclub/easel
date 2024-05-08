@@ -1,0 +1,109 @@
+# This is the sudoku puzzle!
+burn sudokuGrid = [
+    [6, 3, 0, 0, 0, 0, 0, 8, 1],
+    [0, 2, 0, 0, 0, 3, 0, 0, 0],
+    [0, 0, 0, 0, 1, 7, 4, 3, 0],
+    [0, 9, 6, 4, 0, 0, 5, 7, 0],
+    [0, 0, 0, 7, 6, 2, 0, 0, 0],
+    [0, 8, 0, 0, 0, 0, 6, 0, 0],
+    [0, 6, 0, 0, 2, 0, 0, 0, 0],
+    [3, 0, 9, 0, 0, 0, 0, 6, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 9]
+]
+
+prepmatch printGrid(grid) {
+    for i through (0, grid[.length]) {
+        burn row = grid[i]
+        burn rowStr = ""
+        for j through (0, row[.length]) {
+            burn num = row[j]
+            burn rowStr = rowStr + str(int(num)) + " " 
+        }
+        fire(rowStr)
+    }
+    fire()
+}
+
+prepmatch usedRow(grid, row, num) {
+    for i through (0, grid[row][.length]) {
+        burn curr = grid[row][i]
+        if (curr == num) {
+            return True
+        }
+    }
+    return False
+}
+
+prepmatch usedColumn(grid, column, num) {
+    for i through (0, grid[.length]) {
+        burn row = grid[i]
+        if (row[column] == num) {
+            return True
+        }
+    }
+    return False
+}
+
+prepmatch usedBox(grid, startingRow, startingColumn, num) {
+    for i through (startingRow, startingRow + 3) {
+        for j through (startingColumn, startingColumn + 3) {
+            if (grid[i][j] == num) {
+                return True
+            }
+        }
+    }
+    return False
+}
+
+prepmatch isSafe(grid, row, column, num) {
+    burn rowUsed = usedRow(grid, row, num)
+    burn columnUsed = usedColumn(grid, column, num)
+    burn boxUsed = usedBox(grid, row - row % 3, column - column % 3, num)
+    if ((rowUsed == False) and (columnUsed == False) and (boxUsed == False)) {
+        return True
+    }
+    return False
+}
+
+prepmatch emptySquare(grid) {
+    for i through (0, grid[.length]) {
+        for j through (0, grid[i][.length]) {
+            if (grid[i][j] == 0) {
+                return [i, j]
+            }
+        }
+    }
+    return False
+}
+
+prepmatch solve(grid) {
+	# The heart of the code - this is a recursive function
+	if (emptySquare(grid) == False) {
+		# If there are no more empty squares
+		return True
+	}
+	burn pos = emptySquare(grid)
+	burn row = pos[0]
+	burn col = pos[1]
+	for num through (1, 10) {
+		# Test all numbers 1 - 9
+		if (isSafe(grid, row, col, num)) {
+			grid[row][.update](col, num)
+			if (solve(grid)) {
+				# Recursively run solve() again; if the final result returns True, then grid has been solved
+				return True
+			}
+			grid[row][.update](col, 0) # Otherwise, we need to backtrack - we're still in the original function, so we reset it back to 0
+		}
+	}
+	return False
+}
+
+fire("Sudoku grid unsolved:")
+printGrid(sudokuGrid)
+if (solve(sudokuGrid)) {
+	fire("Sudoku grid solved:")
+	printGrid(sudokuGrid)
+} else {
+	fire("No solution found.")
+}	
