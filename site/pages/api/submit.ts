@@ -11,21 +11,22 @@ export default async function submit(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log(req.body)
   if (
-    req.body.firstname ||
-    req.body.lastname ||
-    req.body.birthdate ||
-    req.body.email ||
-    req.body.address ||
-    req.body.city ||
-    req.body.state ||
-    req.body.zip ||
-    req.body.country ||
-    req.body.id ||
-    req.body.github ||
-    req.body.pr ||
-    req.body.demo ||
-    req.body.discovery
+    !req.body.firstname ||
+    !req.body.lastname ||
+    !req.body.birthdate ||
+    !req.body.email ||
+    !req.body.address ||
+    !req.body.city ||
+    !req.body.state ||
+    !req.body.zip ||
+    !req.body.country ||
+    !req.body.id ||
+    !req.body.github ||
+    !req.body.pr ||
+    !req.body.demo ||
+    !req.body.discovery
   )
     return res
       .status(401)

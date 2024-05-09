@@ -11,7 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
         data-domain="easel.hackclub.com"
         src="https://plausible.io/js/script.js"
       />
-      {/* <Toaster /> */}
+      <Toaster />
       <Component {...pageProps} />
     </>
   )

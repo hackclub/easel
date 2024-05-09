@@ -1,4 +1,4 @@
-Write a programming language, get a terminal-in-a-box to run your programming language on! From now until July 01, we're also running a programming language jam, where you'll also have the chance to win a copy of [Crafting Interpreters](https://craftinginterpreters.com/).
+Write a programming language, get fudge! From now until the end of the school year (June 30), we're also running a programming language jam, where you'll also have the chance to win a copy of [Crafting Interpreters](https://craftinginterpreters.com/).
 
 The gist: write a programming language &rarr; record a demo video with [Asciinema](https://asciinema.org/) and write a quick guide on how to get up and running with your programming language (including build instructions, if any!) &rarr; open a PR with a link to your repo containing these three things and your name, [#ship](https://hackclub.slack.com/archives/C0M8PUPU6) a demo on [Slack](https://hackclub.com/slack), and then submit the form [here](https://easel.hackclub.com/submit).
 
@@ -40,6 +40,6 @@ A good example to take a look at is [Arson](https://github.com/hackclub/easel/tr
 
 When you're done, you can submit the form [here](https://easel.hackclub.com/submit) to move on to step four!
 
-## Step four: get your terminal-in-a-box in the mail!
+## Step four: get your stuff in the mail!
 
-This one's easy. Wait for your stuff to come in the mail! The terminal-in-a-box is currently in active dev but come hang out and help along in [#building-programming-languages](https://app.slack.com/client/T0266FRGM/C06T22ZFQGP) in the meantime.
+This one's easy. Wait for your stuff to come in the mail! The terminal-in-a-box that you might have heard of is currently in active dev but come hang out and help along in [#building-programming-languages](https://app.slack.com/client/T0266FRGM/C06T22ZFQGP) in the meantime.

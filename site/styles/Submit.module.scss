@@ -4,6 +4,7 @@
   background-color: var(--background);
   border-top: 1px solid var(--border);
   margin-top: 1em;
+  height: 100%;
 
   h1,
   h2,
@@ -96,8 +97,17 @@
 }
 
 .criteria {
-  li {
-    line-height: 1.2 !important;
+  @media screen and (max-width: $md) {
+    li {
+      margin-top: 0.25em !important;
+      margin-bottom: 0.25em !important;
+    }
+  }
+
+  @media screen and (min-width: $md) {
+    li {
+      line-height: 1.2 !important;
+    }
   }
 }
 
