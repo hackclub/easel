@@ -76,7 +76,8 @@ export default function Index({
     'parser.js': '',
     'stdlib.js': '',
     'program.easel': '',
-    'test.easel': ''
+    'test.easel': '',
+    'index.html': ''
   })
   const curr = parts.findIndex(part => part.title === title)
   const prev = parts[curr - 1]

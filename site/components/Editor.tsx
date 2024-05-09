@@ -1,10 +1,12 @@
 import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
+import { html } from '@codemirror/lang-html'
 import styles from './Editor.module.scss'
 import { useEffect, useState, useRef, MutableRefObject } from 'react'
 import { quietlight } from '@uiw/codemirror-theme-quietlight'
 import { Nodebox, type ShellProcess } from '@codesandbox/nodebox'
 import { trim } from './trim'
+import { Easel } from './Canvas'
 
 declare global {
   interface Window {
@@ -13,12 +15,18 @@ declare global {
   }
 }
 
-export function Output({ code }: { code: string }) {
+export function Output({
+  code,
+  height = '50vh'
+}: {
+  code: string
+  height?: string
+}) {
   return (
     <CodeMirror
       value={code}
-      minHeight="50vh"
-      height="50vh"
+      minHeight={height}
+      height={height}
       theme={quietlight}
       readOnly={true}
       extensions={[javascript()]}
@@ -29,20 +37,28 @@ export function Output({ code }: { code: string }) {
 export function Code({
   tab,
   value = '// Start typing to get started!',
-  setValue
+  setValue,
+  height = '50vh'
 }: {
   tab: string
   value?: string
   setValue: (value: string) => any
+  height?: string
 }) {
   return (
     <CodeMirror
       value={value}
-      minHeight="50vh"
-      maxHeight="50vh"
-      height="50vh"
+      minHeight={height}
+      maxHeight={height}
+      height={height}
       theme={quietlight}
-      extensions={tab.endsWith('.js') ? [javascript({ jsx: true })] : []}
+      extensions={
+        tab.endsWith('.js')
+          ? [javascript({ jsx: true })]
+          : tab.endsWith('.html')
+          ? [html()]
+          : []
+      }
       onChange={value => {
         setValue(value)
       }}
@@ -84,6 +100,8 @@ export default function Editor({
   initialTabs: { [key: string]: string }
   setInitialTabs: (old: any) => any
 }) {
+  const gridRef = useRef<HTMLDivElement>(null)
+  const previewIframe = useRef<HTMLIFrameElement>(null)
   const [tabs, setTabs] = useState(Object.assign({}, initialTabs))
   const [loading, setLoading] = useState(false)
   const [outputTabs, setOutputTabs] = useState<{ [key: string]: string }>({
@@ -95,6 +113,14 @@ export default function Editor({
   )
   const [activeTab, setActiveTab] = useState<string>(initialTab)
   const [activeOutput, setActiveOutput] = useState('Output')
+  const [height, setHeight] = useState('1px')
+
+  useEffect(() => {
+    if (gridRef.current) {
+      const grid = gridRef.current
+      setHeight(`${grid.parentElement?.offsetWidth}px`)
+    }
+  }, [])
 
   const run = async () => {
     const nodeIframe = document.getElementById('node-iframe')
@@ -115,7 +141,17 @@ export default function Editor({
       const idx = window.shells.push(shell) - 1
 
       try {
-        await shell.runCommand('node', ['index.js', easelFile, '--dbg'])
+        const command = await shell.runCommand('node', [
+          'index.js',
+          easelFile,
+          '--dbg'
+        ])
+
+        if (previewIframe.current) {
+          const { url } = await runtime.preview.getByShellId(command.id)
+          previewIframe.current.setAttribute('src', url)
+        }
+
         runtime.fs.watch(Object.keys(outputTabs), [], async event => {
           // @ts-expect-error
           const path = trim(event.path, '/')
@@ -159,6 +195,7 @@ export default function Editor({
     <div className={styles.editor}>
       <div className={styles.editable}>
         <Code
+          height={height}
           tab={activeTab}
           value={tabs[activeTab]}
           setValue={(value: string) => {
@@ -193,21 +230,31 @@ export default function Editor({
         </div>
       </div>
       <div className={styles.output}>
-        {activeOutput === 'Output' ? (
-          <div className={styles.terminal}>
-            {loading === true && <Loading />}
-            {output.length > 0 &&
-              output.map((line, idx) => (
-                <code
-                  key={idx}
-                  style={{ color: line.type === 'stdout' ? 'inherit' : 'red' }}>
-                  {line.value}
-                </code>
-              ))}
-          </div>
-        ) : (
-          <Output code={outputTabs[activeOutput]} />
-        )}
+        <div ref={gridRef} style={{ height }}>
+          {activeOutput === 'Output' ? (
+            <div className={styles.terminal}>
+              {loading === true && <Loading />}
+              {output.length > 0 &&
+                output.map((line, idx) => (
+                  <code
+                    key={idx}
+                    style={{
+                      color: line.type === 'stdout' ? 'inherit' : 'red'
+                    }}>
+                    {line.value}
+                  </code>
+                ))}
+            </div>
+          ) : (
+            activeOutput !== 'Easel' && (
+              <Output height={height} code={outputTabs[activeOutput]} />
+            )
+          )}
+          <iframe
+            ref={previewIframe}
+            style={{ display: activeOutput === 'Easel' ? 'block' : 'none' }}
+          />
+        </div>
         <div className={styles.tabs}>
           <div
             className={styles.tab}
@@ -218,7 +265,15 @@ export default function Editor({
             onClick={() => setActiveOutput('Output')}>
             Output
           </div>
-          <div className={styles.tab}>Easel</div>
+          <div
+            className={styles.tab}
+            style={{
+              backgroundColor:
+                activeOutput === 'Easel' ? 'var(--background)' : 'transparent'
+            }}
+            onClick={() => setActiveOutput('Easel')}>
+            Easel
+          </div>
           <div
             className={styles.tab}
             style={{ alignSelf: 'flex-end' }}

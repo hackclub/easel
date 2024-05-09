@@ -49,25 +49,8 @@
   border-right: 1px solid var(--border);
 }
 
-.easel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  > div {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-
-    > div {
-      display: flex;
-      gap: 2px;
-    }
-  }
-}
-
 .terminal {
-  height: 200px;
+  height: 100%;
   overflow: auto;
   padding: 1rem;
 
@@ -82,9 +65,4 @@
 .output {
   display: flex;
   flex-direction: column;
-
-  .terminal {
-    flex: 1;
-    max-height: 50vh;
-  }
 }

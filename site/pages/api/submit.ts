@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import Airtable from 'airtable'
+import invalidBirthdate from '@/components/invalidBirthdate'
 
 const airtable = new Airtable({ apiKey: process.env.AIRTABLE_KEY }).base(
   'appi7nULrVjE5uqtk'
@@ -10,7 +11,30 @@ export default async function submit(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log(req.body)
+  if (
+    req.body.firstname ||
+    req.body.lastname ||
+    req.body.birthdate ||
+    req.body.email ||
+    req.body.address ||
+    req.body.city ||
+    req.body.state ||
+    req.body.zip ||
+    req.body.country ||
+    req.body.id ||
+    req.body.github ||
+    req.body.pr ||
+    req.body.demo ||
+    req.body.discovery
+  )
+    return res
+      .status(401)
+      .json({ error: 'Make sure you fill out all the fields!' })
+  else if (invalidBirthdate(req.body.date))
+    return res
+      .status(401)
+      .json({ error: 'You must be a high schooler or younger to submit here.' })
+
   submissions.create(
     {
       'First Name': req.body.firstname,

@@ -799,8 +799,6 @@ What happened to interactivity? What if we don't want to run a program from a fi
   <source src="https://cloud-1cma98jhs-hack-club-bot.vercel.app/0screen_recording_2024-04-17_at_12_07_43_pm_adobeexpress.mp4" />
 </video>
 
-<Interpreter/>
-
 <aside>
   Orpheus: This reminds me... we should get an easel in the terminal working. Or
   that could be a challenge for you.
@@ -894,6 +892,8 @@ The only different here, frankly, is that we introduce `hadError`. The logic is 
 
 And that's really all! Now you can fire up a terminal, run `node easel.js`, and boom! you have an interpreter that reads line by line.
 
-What about multiple lines? Well, the logic behind multiple lines is that we'll check if the end of our first line has a token that allows us to keep going. Basically, then: left brackets, left braces, and left parentheses. Then we'll keep reading and keeping track of the given operator until we reach the matching closing one.
+<div style={{ display: "none" }}>
+  What about multiple lines? Well, the logic behind multiple lines is that we'll check if the end of our first line has a token that allows us to keep going. Basically, then: left brackets, left braces, and left parentheses. Then we'll keep reading and keeping track of the given operator until we reach the matching closing one.
+</div>
 
 _The complete code here is at [interpreter.js](https://github.com/hackclub/langjam/blob/main/easel/interpreter.js)._

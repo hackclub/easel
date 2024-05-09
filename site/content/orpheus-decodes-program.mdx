@@ -1,11 +1,293 @@
 ---
 order: 5
-title: Orpheus has more fun, and extras
+title: Orpheus decodes the program, and extras
 ---
 
-## Bonus: what about the easel?
+And now it's time for the grand finale: getting the easel to work.
 
-By now, you might be asking about the easel!
+Orpheus picks up the easel again and flips it over. Oops. We forgot one question. How do we turn this thing on? No, I don't think smacking the easel is the correct move to make here, Orpheus.
+
+You know 
+
+### In which we find out our mysterious sender
+
+Let's run the program now.
+
+[sputters] What???
+
+Just then there's another knock on the door. Orpheus, I think that'
+
+He left us another letter, though.
+
+---
+
+Congratulations on figuring out the easel.
+
+I know you're a tad bit disappointed that you haven't figured out who I am, but it's about the journey along the way. You're probably doing something funky with your face right now.
+
+But I digress! You just made magic happen! Isn't that amazing? You got the easel working. You're a artist and a magician and a hacker, Orpheus.
+
+Signed, 
+your mysterious sender
+
+---
+
+I guess we'll never figure out who our mysterious sender is.
+
+### Bonus: how's the easel working on this website?
+
+This website runs with [Next.js](https://nextjs.org/), which means we use React. We've separated the editor and actual easel into two separate parts, so we can have the easel by itself. Here's what the code for it looks like:
+
+```typescript
+import { useEffect, useRef, useState } from 'react'
+import stdlib, { Canvas as ParentCanvas } from '../../languages/easel/stdlib'
+import { Lexer } from '../../languages/easel/lexer'
+import { Parser } from '../../languages/easel/parser'
+import { Interpreter } from '../../languages/easel/interpreter'
+import styles from './Editor.module.scss'
+import ReactCodeMirror from '@uiw/react-codemirror'
+import { quietlight } from '@uiw/codemirror-theme-quietlight'
+
+export function Easel({
+  code,
+  lib,
+  defaultColor = '#ddd',
+  gap = 2,
+  width = 64,
+  height = 64,
+  run
+}: {
+  code: string
+  lib: { [key: string]: (args: any[]) => any }
+  defaultColor?: string
+  gap?: number
+  width?: number
+  height?: number
+  run: boolean
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  const clear = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    cellSize: number
+  ) => {
+    // Restore grid
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.fillStyle = defaultColor
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        ctx.fillRect(
+          x * cellSize + gap * x,
+          y * cellSize + gap * y,
+          cellSize,
+          cellSize
+        )
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (run) {
+      if (canvasRef.current) {
+        const canvas = canvasRef.current
+        const ctx = canvas.getContext('2d')
+
+        if (ctx && canvas.parentElement) {
+          canvas.width = canvas.parentElement.offsetWidth
+          canvas.height = canvas.width
+
+          let cellSize = canvas.width / width - gap
+
+          class CustomCanvas extends ParentCanvas {
+            fill([x, y, color]: [
+              number,
+              number,
+              { r: number; g: number; b: number }
+            ]) {
+              let cell = this.grid[y * this.cols + x]
+              if (cell) {
+                cell.r = color.r
+                cell.g = color.g
+                cell.b = color.b
+
+                if (ctx) {
+                  ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
+                  ctx.fillRect(
+                    x * cellSize + gap * x,
+                    y * cellSize + gap * y,
+                    cellSize,
+                    cellSize
+                  )
+                }
+              }
+            }
+
+            erase([x, y]: [number, number]) {
+              if (ctx) {
+                ctx.fillStyle = defaultColor
+                ctx.fillRect(
+                  x * cellSize + gap * x,
+                  y * cellSize + gap * y,
+                  cellSize,
+                  cellSize
+                )
+              }
+            }
+          }
+
+          const lexer = new Lexer(code)
+          lexer.scanTokens()
+          const parser = new Parser(lexer.tokens)
+          parser.parse()
+          const interpreter = new Interpreter()
+          let scope = interpreter.run(parser.ast, {
+            ...stdlib,
+            ...lib,
+            Canvas: new CustomCanvas()
+          })
+
+          const interval: NodeJS.Timeout = setInterval(() => {
+            if (!interpreter.inScope(scope, 'painting'))
+              return clearInterval(interval)
+
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+            try {
+              const lexer = new Lexer('painting()')
+              lexer.scanTokens()
+              const parser = new Parser(lexer.tokens)
+              parser.parse()
+              scope = interpreter.run(parser.ast, scope)
+            } catch {
+              clearInterval(interval)
+            }
+          }, 100)
+
+          window.addEventListener('resize', () => {
+            if (canvas.parentElement) {
+              canvas.width = canvas.parentElement.offsetWidth
+              canvas.height = canvas.width
+              cellSize = ctx.canvas.width / width - gap
+              clear(ctx, width, height, cellSize)
+            }
+          })
+
+          return () => {
+            clearInterval(interval)
+            clear(ctx, width, height, cellSize)
+          }
+        }
+      }
+    } else if (canvasRef.current) {
+      // When paused, clear canvas
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
+
+      if (ctx && canvas.parentElement) {
+        canvas.width = canvas.parentElement.offsetWidth
+        canvas.height = canvas.width
+        clear(ctx, width, height, ctx.canvas.width / width - gap)
+      }
+    }
+  }, [run])
+
+  return <canvas className={styles.easel} ref={canvasRef} />
+}
+
+export default function Canvas({
+  initialCode = '',
+  initialRun = true,
+  editable = true
+}: {
+  initialCode: string
+  initialRun: boolean
+  editable: boolean
+}) {
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [code, setCode] = useState(initialCode)
+  const [output, setOutput] = useState<string[]>([])
+  const [height, setHeight] = useState('1px')
+  const [run, setRun] = useState<boolean>(initialRun)
+
+  useEffect(() => {
+    if (gridRef.current) {
+      const grid = gridRef.current
+      setHeight(`${grid.parentElement?.offsetHeight}px`)
+    }
+
+    return () => setOutput([])
+  }, [])
+
+  return (
+    <div className={styles.editor}>
+      <div className={styles.editable}>
+        <ReactCodeMirror
+          height={height}
+          theme={quietlight}
+          onChange={value => {
+            setCode(value)
+          }}
+          value={code}
+          editable={editable}
+        />
+      </div>
+      <div>
+        <div className={styles.tabs} style={{ borderTopWidth: '0 !important' }}>
+          <div
+            className={styles.tab}
+            onClick={() => {
+              setOutput([])
+              setRun(false)
+            }}>
+            Clear
+          </div>
+          <div
+            className={styles.tab}
+            onClick={() => {
+              if (!run) {
+                setOutput([])
+                setRun(true)
+              }
+            }}>
+            Run
+          </div>
+        </div>
+        <div ref={gridRef}>
+          <Easel
+            code={code}
+            lib={{
+              ink: (args: string[]): void => {
+                setOutput(old => [
+                  ...old,
+                  ...args.map(arg => JSON.stringify(arg))
+                ])
+              }
+            }}
+            run={run}
+          />
+          <div className={styles.terminal}>
+            {output.length ? (
+              output.map((line, idx) => <code key={idx}>{line}</code>)
+            ) : (
+              <code>
+                <i>Output will show up here.</i>
+              </code>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+We have a custom canvas that wraps around
+
+---
 
 Well, smokes. That was fun. It's almost Monday again. Ugh. Orpheus hates Mondays. Mondays are always so boring and dull. And she has to do the dishes. Yes, she's unfortunately collected an untolerable pile of dishes from the past few days. A few too many pancakes have been consumed, and too many cups of tea have been drunk.
 
@@ -32,22 +314,20 @@ And the top five will get a hard copy of [Crafting Interpreters](https://craftin
 
 The gist: write a programming language &rarr; record a demo video with [Asciinema](https://asciinema.org/) and write a quick guide on how to get up and running with your programming language (including build instructions, if any!) &rarr; open a PR with these three things and your name on [Slack](https://hackclub.com/slack).
 
-**Check out what other teenagers have made on the front page!** [TODO - this information will be moved to the front page]
+Interested! Get more info [here](https://github.com/hackclub/easel).
 
 ---
-
-Orpheus is personally going to get the easel working now. [TODO: Actually get it working?! We have the board in real life, after all. Will update you.]
 
 ## Resources
 
 [Crafting Interpreters](https://craftinginterpreters.com/) is a great, accessible next step.
 
-Check out [#programming-lang-jam](https://app.slack.com/client/T0266FRGM/C06T22ZFQGP) on the Hack Club Slack if you're a teenager to hang out with other teenagers working on building programming languages!
+Check out [#building-programming-languages](https://app.slack.com/client/T0266FRGM/C06T22ZFQGP) on the Hack Club Slack if you're a teenager to hang out with other teenagers working on building programming languages!
 
 ## Acknowledgements
 
-Acknowledgements: Hack Club. Friends. Some of Orpheus' silly habits or choices like dinner for breakfast, running a marathon (on an impulse) are things I do with friends or friends have convinced me to do. One such decision was to drive to Boston one weekend to stay up extra late and hack on projects.
+Hi! I'm [@jc](https://github.com/jianmin-chen). I wrote this with Orpheus, but this wouldn't have been possible without: Hack Club. Friends. Some of Orpheus' silly habits or choices like dinner for breakfast, running a marathon (on an impulse) are things I do with friends or friends have convinced me to do. One such decision was to drive to Boston on weekends to stay up extra late and hack on projects like this.
 
-All code, including this website, is fully open source on [GitHub]().
+All code, including this website, is fully open source on [GitHub](https://github.com/hackclub/easel).
 
 If you're a teenager and find this cool, join [Hack Club](https://hackclub.com)! We work on extra cool projects we call _You Ship, We Ship_, where you build something cool with friends and we do too, like [Sprig](https://sprig.hackclub.com) and [OnBoard](https://onboard.hackclub.com)!

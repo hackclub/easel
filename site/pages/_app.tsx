@@ -1,6 +1,7 @@
 import '@/styles/globals.scss'
 import type { AppProps } from 'next/app'
 import Script from 'next/script'
+import { Toaster } from 'react-hot-toast'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -10,6 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
         data-domain="easel.hackclub.com"
         src="https://plausible.io/js/plausible.js"
       />
+      {/* <Toaster /> */}
       <Component {...pageProps} />
     </>
   )

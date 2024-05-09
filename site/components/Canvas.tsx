@@ -1,26 +1,30 @@
 import { useEffect, useRef, useState } from 'react'
-import styles from './Editor.module.scss'
-import CodeMirror from '@uiw/react-codemirror'
-import { quietlight } from '@uiw/codemirror-theme-quietlight'
 import stdlib, { Canvas as ParentCanvas } from '../../languages/easel/stdlib'
 import { Lexer } from '../../languages/easel/lexer'
 import { Parser } from '../../languages/easel/parser'
 import { Interpreter } from '../../languages/easel/interpreter'
+import styles from './Editor.module.scss'
+import ReactCodeMirror from '@uiw/react-codemirror'
+import { quietlight } from '@uiw/codemirror-theme-quietlight'
 
 export function Easel({
   code,
-  ink,
+  lib,
   defaultColor = '#ddd',
   gap = 2,
+  width = 64,
+  height = 64,
   run
 }: {
   code: string
-  ink: (args: any[]) => void
+  lib: { [key: string]: (args: any[]) => any }
   defaultColor?: string
   gap?: number
+  width?: number
+  height?: number
   run: boolean
 }) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const clear = (
     ctx: CanvasRenderingContext2D,
@@ -29,6 +33,8 @@ export function Easel({
     cellSize: number
   ) => {
     // Restore grid
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.fillStyle = defaultColor
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -52,11 +58,7 @@ export function Easel({
           canvas.width = canvas.parentElement.offsetWidth
           canvas.height = canvas.width
 
-          const width = 64
-          const height = 64
-          let cellSize = ctx.canvas.width / width - gap
-
-          clear(ctx, width, height, cellSize)
+          let cellSize = canvas.width / width - gap
 
           class CustomCanvas extends ParentCanvas {
             fill([x, y, color]: [
@@ -70,7 +72,6 @@ export function Easel({
                 cell.g = color.g
                 cell.b = color.b
 
-                // Set actual cell color to that
                 if (ctx) {
                   ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
                   ctx.fillRect(
@@ -85,7 +86,7 @@ export function Easel({
 
             erase([x, y]: [number, number]) {
               if (ctx) {
-                ctx.fillStyle = '#ddd'
+                ctx.fillStyle = defaultColor
                 ctx.fillRect(
                   x * cellSize + gap * x,
                   y * cellSize + gap * y,
@@ -103,18 +104,17 @@ export function Easel({
           const interpreter = new Interpreter()
           let scope = interpreter.run(parser.ast, {
             ...stdlib,
-            Canvas: new CustomCanvas(),
-            img: args => {
-              console.log(args)
-            },
-            ink
+            ...lib,
+            Canvas: new CustomCanvas()
           })
 
-          const interval: any = setInterval(() => {
+          const interval: NodeJS.Timeout = setInterval(() => {
             if (!interpreter.inScope(scope, 'painting'))
               return clearInterval(interval)
+
             ctx.fillStyle = 'white'
             ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
             try {
               const lexer = new Lexer('painting()')
               lexer.scanTokens()
@@ -136,23 +136,19 @@ export function Easel({
           })
 
           return () => {
-            ctx.fillStyle = 'white'
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
             clearInterval(interval)
+            clear(ctx, width, height, cellSize)
           }
         }
       }
     } else if (canvasRef.current) {
+      // When paused, clear canvas
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
 
       if (ctx && canvas.parentElement) {
         canvas.width = canvas.parentElement.offsetWidth
         canvas.height = canvas.width
-
-        const width = 64
-        const height = 64
-
         clear(ctx, width, height, ctx.canvas.width / width - gap)
       }
     }
@@ -164,18 +160,17 @@ export function Easel({
 export default function Canvas({
   initialCode = '',
   initialRun = true,
-  editable
+  editable = true
 }: {
   initialCode: string
   initialRun: boolean
   editable: boolean
 }) {
-  const gridRef = useRef<HTMLDivElement | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
   const [code, setCode] = useState(initialCode)
-  const [current, setCurrent] = useState('')
   const [output, setOutput] = useState<string[]>([])
   const [height, setHeight] = useState('1px')
-  const [run, setRun] = useState<boolean>(true)
+  const [run, setRun] = useState<boolean>(initialRun)
 
   useEffect(() => {
     if (gridRef.current) {
@@ -189,7 +184,7 @@ export default function Canvas({
   return (
     <div className={styles.editor}>
       <div className={styles.editable}>
-        <CodeMirror
+        <ReactCodeMirror
           height={height}
           theme={quietlight}
           onChange={value => {
@@ -200,7 +195,7 @@ export default function Canvas({
         />
       </div>
       <div>
-        <div className={styles.tabs} style={{ borderTop: 'none !important' }}>
+        <div className={styles.tabs} style={{ borderTopWidth: '0 !important' }}>
           <div
             className={styles.tab}
             onClick={() => {
@@ -212,8 +207,10 @@ export default function Canvas({
           <div
             className={styles.tab}
             onClick={() => {
-              setOutput([])
-              setRun(true)
+              if (!run) {
+                setOutput([])
+                setRun(true)
+              }
             }}>
             Run
           </div>
@@ -221,11 +218,13 @@ export default function Canvas({
         <div ref={gridRef}>
           <Easel
             code={code}
-            ink={(args: string[]): void => {
-              setOutput(old => [
-                ...old,
-                ...args.map(arg => JSON.stringify(arg))
-              ])
+            lib={{
+              ink: (args: string[]): void => {
+                setOutput(old => [
+                  ...old,
+                  ...args.map(arg => JSON.stringify(arg))
+                ])
+              }
             }}
             run={run}
           />

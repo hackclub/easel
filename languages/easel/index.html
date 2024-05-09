@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="module" src="lexer.js"></script>
+    <script type="module" src="parser.js"></script>
+    <script type="module" src="interpreter.js"></script>
+    <script type="module" src="stdlib.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body,
+      html {
+        margin: 0;
+        overflow-x: hidden;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script type="module">
+      import stdlib, { Canvas } from './stdlib.js'
+      import { Lexer } from './lexer.js'
+      import { Parser } from './parser.js'
+      import { Interpreter } from './interpreter.js'
+
+      const defaultColor = '#ddd'
+      const width = 64
+      const height = 64
+      const gap = 2
+      let canvas, ctx, cellSize
+
+      class CustomCanvas extends Canvas {
+        fill([x, y, color]) {
+          let cell = this.grid[y * this.cols + x]
+          if (cell) {
+            cell.r = color.r
+            cell.g = color.g
+            cell.b = color.b
+
+            if (ctx) {
+              ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
+              ctx.fillRect(
+                x * cellSize + gap * x,
+                y * cellSize + gap * y,
+                cellSize,
+                cellSize
+              )
+            }
+          }
+        }
+
+        erase([x, y]) {
+          ctx.fillStyle = defaultColor
+          ctx.fillRect(
+            x * cellSize + gap * x,
+            y * cellSize + gap * y,
+            cellSize,
+            cellSize
+          )
+        }
+      }
+
+      const clear = () => {
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.fillStyle = defaultColor
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            ctx.fillRect(
+              x * cellSize + gap * x,
+              y * cellSize + gap * y,
+              cellSize,
+              cellSize
+            )
+          }
+        }
+      }
+
+      const resize = () => {
+        const innerWidth = window.innerWidth
+        const innerHeight = window.innerHeight
+        const size = Math.min(innerWidth, innerHeight)
+
+        canvas.width = canvas.height = size
+
+        cellSize = size / width - gap
+      }
+
+      window.onload = () => {
+        canvas = document.getElementById('canvas')
+        ctx = canvas.getContext('2d')
+
+        resize()
+        clear()
+
+        fetch('/examples/gol.easel')
+          .then(res => res.text())
+          .then(code => {
+            // Run program
+            const lexer = new Lexer(code)
+            lexer.scanTokens()
+            const parser = new Parser(lexer.tokens)
+            parser.parse()
+            const interpreter = new Interpreter()
+            let scope = interpreter.run(parser.ast, {
+              ...stdlib,
+              Canvas: new CustomCanvas()
+            })
+
+            const interval = setInterval(() => {
+              if (!interpreter.inScope(scope, 'painting'))
+                return clearInterval(interval)
+
+              ctx.fillStyle = 'white'
+              ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+              try {
+                const lexer = new Lexer('painting()')
+                lexer.scanTokens()
+                const parser = new Parser(lexer.tokens)
+                parser.parse()
+                scope = interpreter.run(parser.ast, scope)
+              } catch {
+                clearInterval(interval)
+              }
+            }, 100)
+          })
+          .catch(err => console.log(err))
+
+        window.addEventListener('resize', resize)
+      }
+    </script>
+  </body>
+</html>

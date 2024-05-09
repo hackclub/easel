@@ -6,6 +6,8 @@ import path from 'path'
 import { serialize } from 'next-mdx-remote/serialize'
 import styles from '@/styles/Submit.module.scss'
 import { FormEvent, useState, useRef } from 'react'
+import invalidBirthdate from '@/components/invalidBirthdate'
+import toast from 'react-hot-toast'
 
 export default function Submit({
   parts
@@ -14,6 +16,7 @@ export default function Submit({
 }) {
   const submit = async (event: FormEvent) => {
     event.preventDefault()
+
     const data = {
       firstname: {
         required: true,
@@ -81,6 +84,8 @@ export default function Submit({
         value: event.target.improvements.value
       }
     }
+
+    if (invalidBirthdate(data.birthdate.value)) toast.error('Invalid birthdate')
 
     let submission = {}
     for (let [key, value] of Object.entries(data)) {

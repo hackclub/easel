@@ -21,13 +21,15 @@ export async function loadRuntime(iframe: HTMLIFrameElement) {
       // type: 'module'
     }),
     'index.js': `
-import http from "http";
+import http from "http"
+import fs from "fs"
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   res.writeHead(200, {
-    "Content-Type": "type/plain"
+    "Content-Type": "text/html"
   })
-  res.end("Hello world")
+  res.write(fs.readFileSync("index.html", "utf-8"))
+  res.end()
 })
 
 server.listen(3000, async () => {
