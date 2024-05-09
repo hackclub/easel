@@ -34,7 +34,6 @@ const writeFile = (location, data) =>
     try {
       lexer.scanTokens()
     } catch (err) {
-      console.log(err, lexer.tokens)
       if (err instanceof EaselError) console.log(err)
       process.exit(1)
     } finally {
@@ -76,33 +75,6 @@ const writeFile = (location, data) =>
       input.close()
     })
 
-    const getLevel = () => {
-      // Get level in line
-    }
-
-    const readLines = initial =>
-      new Promise((resolve, reject) => {
-        let level = 1
-
-        const readLine = () => {
-          input.question('..'.repeat(level), line => {
-            // Check if line is empty
-            if (line.length) {
-              initial.push(line)
-              if (startStmt(line)) level++
-            }
-          })
-        }
-
-        let next = input.question('..'.repeat(level), line => {
-          // Check if line is empty
-          if (line.length) {
-            initial.push(line)
-          }
-        })
-        return initial
-      })
-
     const repl = line => {
       let hadError = false
 
@@ -112,7 +84,6 @@ const writeFile = (location, data) =>
       } catch (err) {
         if (err instanceof EaselError) {
           hadError = true
-          console.log(err.toString())
         } else throw err
       }
 
@@ -123,10 +94,6 @@ const writeFile = (location, data) =>
         } catch (err) {
           if (err instanceof EaselError) {
             // Check if start of block statement
-            if (startStmt(line)) {
-              console.log(readLines())
-              process.exit(1)
-            } else console.log(err.toString())
           } else throw err
         }
 

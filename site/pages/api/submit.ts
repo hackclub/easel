@@ -56,7 +56,6 @@ export default async function submit(
       'How can we improve?': req.body.improvements
     },
     (err, record) => {
-      console.log(err, record)
       if (err) return res.status(500).json({ err: err.toString() })
       return res.json(200)
     }

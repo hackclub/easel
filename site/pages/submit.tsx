@@ -14,6 +14,8 @@ export default function Submit({
 }: {
   parts: Array<{ title: string; slug: string }>
 }) {
+  const [submitted, setSubmitted] = useState<boolean>(false)
+
   const submit = async (event: FormEvent) => {
     event.preventDefault()
 
@@ -146,7 +148,7 @@ export default function Submit({
               marginTop: '1em'
             }}>
             So, I heard you wrote a programming language! That's awesome. Here's
-            some fudge (currently) in exchange.
+            some fudge in exchange.
           </h1>
           <p>First up, let's confirm a few things:</p>
           <ul className={styles.criteria}>

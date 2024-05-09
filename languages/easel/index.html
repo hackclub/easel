@@ -39,15 +39,13 @@
             cell.g = color.g
             cell.b = color.b
 
-            if (ctx) {
-              ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
-              ctx.fillRect(
-                x * cellSize + gap * x,
-                y * cellSize + gap * y,
-                cellSize,
-                cellSize
-              )
-            }
+            ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
+            ctx.fillRect(
+              x * cellSize + gap * x,
+              y * cellSize + gap * y,
+              cellSize,
+              cellSize
+            )
           }
         }
 

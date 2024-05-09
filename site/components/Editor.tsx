@@ -6,7 +6,6 @@ import { useEffect, useState, useRef, MutableRefObject } from 'react'
 import { quietlight } from '@uiw/codemirror-theme-quietlight'
 import { Nodebox, type ShellProcess } from '@codesandbox/nodebox'
 import { trim } from './trim'
-import { Easel } from './Canvas'
 
 declare global {
   interface Window {
@@ -162,7 +161,6 @@ export default function Editor({
           }))
         })
         shell.stdout.on('data', async (data: string) => {
-          console.log(data)
           // Update output files
           setOutput(old => [
             ...old,
@@ -248,7 +246,13 @@ export default function Editor({
               <Output height={height} code={outputTabs[activeOutput]} />
             )
           )}
-          <iframe ref={previewIframe} />
+          <iframe
+            ref={previewIframe}
+            style={{
+              height,
+              display: activeOutput === 'Easel' ? 'block' : 'none'
+            }}
+          />
         </div>
         <div className={styles.tabs}>
           <div

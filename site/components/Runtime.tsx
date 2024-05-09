@@ -24,40 +24,34 @@ export async function loadRuntime(iframe: HTMLIFrameElement) {
 import http from "http"
 import fs from "fs"
 
+const returnFile = (res, mime, file) => {
+  const content = fs.readFileSync(file, "utf-8")
+  res.writeHead(200, {
+    "Content-Type": mime
+  })
+  res.write(content)
+  res.end()
+}
+
 const server = http.createServer(async (req, res) => {
   req.url = req.url.replace("/", "")
-  console.log(req.url)
-  if (req.url === "program.easel") {
-    try {
-      const content = fs.readFileSync("program.easel", "utf-8")
-      res.writeHead(200, {
-        "Content-Type": "text/plain"
-      })
-      res.write(content)
-      res.end()
-    } catch (err) {
-      console.log(err)
-    }
-  } else if (req.url === "lexer.js") {
-    const content = fs.readFileSync("lexer.js", "utf-8")
-    res.writeHead(200, {
-      "Content-Type": "text/javascript"
-    })
-    res.write(content)
-    res.end()
-  } else if (req.url === "stdlib.js") {
-    const content = fs.readFileSync("stdlib.js", "utf-8")
-    res.writeHead(200, {
-      "Content-Type": "text/javascript"
-    })
-    res.write(content)
-    res.end()
-  } else {
-    res.writeHead(200, {
-      "Content-Type": "text/html"
-    })
-    res.write(fs.readFileSync("index.html", "utf-8"))
-    res.end()
+  switch (req.url) {
+    case "program.easel":
+      return returnFile(res, "text/plain", "program.easel")
+    case "test.easel":
+      return returnFile(res, "text/plain", "test.easel")
+    case "lexer.js":
+      return returnFile(res, "text/javascript", "lexer.js")
+    case "parser.js":
+      return returnFile(res, "text/javascript", "parser.js")
+    case "interpreter.js":
+      return returnFile(res, "text/javascript", "interpreter.js")
+    case "ast.js":
+      return returnFile(res, "text/javascript", "ast.js")
+    case "stdlib.js":
+      return returnFile(res, "text/javascript", "stdlib.js")
+    default:
+      return returnFile(res, "text/html", "index.html")
   }
 })
 
