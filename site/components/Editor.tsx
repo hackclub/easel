@@ -162,6 +162,7 @@ export default function Editor({
           }))
         })
         shell.stdout.on('data', async (data: string) => {
+          console.log(data)
           // Update output files
           setOutput(old => [
             ...old,
@@ -179,9 +180,6 @@ export default function Editor({
               value: line
             }))
           ])
-        })
-        shell.on('exit', () => {
-          window.shells.splice(idx, 1)
         })
       } catch (err) {
         console.log(err)
@@ -250,10 +248,7 @@ export default function Editor({
               <Output height={height} code={outputTabs[activeOutput]} />
             )
           )}
-          <iframe
-            ref={previewIframe}
-            style={{ display: activeOutput === 'Easel' ? 'block' : 'none' }}
-          />
+          <iframe ref={previewIframe} />
         </div>
         <div className={styles.tabs}>
           <div

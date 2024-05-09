@@ -9,7 +9,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <Script
         defer
         data-domain="easel.hackclub.com"
-        src="https://plausible.io/js/plausible.js"
+        src="https://plausible.io/js/script.js"
       />
       {/* <Toaster /> */}
       <Component {...pageProps} />

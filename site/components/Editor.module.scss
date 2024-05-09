@@ -8,6 +8,10 @@
   margin-bottom: 1em;
   font-size: 0.995rem;
 
+  iframe {
+    height: 100%;
+  }
+
   > div {
     flex: 50%;
     position: relative;

@@ -25,11 +25,40 @@ import http from "http"
 import fs from "fs"
 
 const server = http.createServer(async (req, res) => {
-  res.writeHead(200, {
-    "Content-Type": "text/html"
-  })
-  res.write(fs.readFileSync("index.html", "utf-8"))
-  res.end()
+  req.url = req.url.replace("/", "")
+  console.log(req.url)
+  if (req.url === "program.easel") {
+    try {
+      const content = fs.readFileSync("program.easel", "utf-8")
+      res.writeHead(200, {
+        "Content-Type": "text/plain"
+      })
+      res.write(content)
+      res.end()
+    } catch (err) {
+      console.log(err)
+    }
+  } else if (req.url === "lexer.js") {
+    const content = fs.readFileSync("lexer.js", "utf-8")
+    res.writeHead(200, {
+      "Content-Type": "text/javascript"
+    })
+    res.write(content)
+    res.end()
+  } else if (req.url === "stdlib.js") {
+    const content = fs.readFileSync("stdlib.js", "utf-8")
+    res.writeHead(200, {
+      "Content-Type": "text/javascript"
+    })
+    res.write(content)
+    res.end()
+  } else {
+    res.writeHead(200, {
+      "Content-Type": "text/html"
+    })
+    res.write(fs.readFileSync("index.html", "utf-8"))
+    res.end()
+  }
 })
 
 server.listen(3000, async () => {
