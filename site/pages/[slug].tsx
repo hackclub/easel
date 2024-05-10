@@ -224,8 +224,7 @@ draw()`,
           <a href="https://github.com/hackclub/langjam" target="_blank">
             programming language jam
           </a>
-          . Build a fun programming language with friends, get a
-          terminal-in-a-box to run it on!
+          . Build a fun programming language with friends, get fudge!
         </p>
       </section>
       <div className="prose">
