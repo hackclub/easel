@@ -1,21 +1,201 @@
 ---
 order: 5
 title: Orpheus decodes the program, and extras
+done: true
 ---
 
 And now it's time for the grand finale: getting the easel to work.
 
 Orpheus picks up the easel again and flips it over. Oops. We forgot one question. How do we turn this thing on? No, I don't think smacking the easel is the correct move to make here, Orpheus.
 
-You know what?
+What if we took a look at the source of the easel? It looks something like this:
+
+<aside>
+  If you've been going through this locally, you'll need to place this inside an `index.html` in the same project folder!
+</aside>
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body, html {
+        margin: 0;
+        overflow-x: hidden;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script type="module">
+      const defaultColor = '#ddd'
+      const width = 64
+      const height = 64
+      const gap = 2
+      let canvas, ctx, cellSize
+
+      const clear = () => {
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.fillStyle = defaultColor
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            ctx.fillRect(
+              x * cellSize + gap * x,
+              y * cellSize + gap * y,
+              cellSize,
+              cellSize
+            )
+          }
+        }
+      }
+
+      const resize = () => {
+        const innerWidth = window.innerWidth
+        const innerHeight = window.innerHeight
+        const size = Math.min(innerWidth, innerHeight)
+
+        canvas.width = canvas.height = size
+
+        cellSize = size / width - gap
+      }
+
+      window.onload = () => {
+        canvas = document.getElementById('canvas')
+        ctx = canvas.getContext('2d')
+
+        resize()
+        clear()
+
+        window.addEventListener('resize', resize)
+      }
+    </script>
+  </body>
+</html>
+```
+
+<aside>
+  If you've been following along locally, run this with `npx` [`http-server`](https://www.npmjs.com/package/http-server) to get started and head over to the link that it gives you!
+</aside>
+
+Our first step should be to tweak that canvas class of ours to fit this. Remember how Orpheus mentioned while we were writing our interpreter that the idea was to take our digital canvas and map it onto a real canvas? We're going to do that by creating a `CustomCanvas` that extends from our OG canvas:
+
+<Editor initialTab="index.html">
+```js
+import stdlib, { Canvas } from "./stdlib.js"
+
+// ...
+let canvas, ctx, cellSize
+
+class CustomCanvas extends Canvas {
+  fill([x, y, color]) {
+    let cell = this.grid[y * this.cols + x]
+    if (cell) {
+      cell.r = color.r
+      cell.g = color.g
+      cell.b = color.b
+
+      ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`
+      ctx.fillRect(
+        x * cellSize + gap * x,
+        y * cellSize + gap * y,
+        cellSize,
+        cellSize
+      )
+    }
+  }
+
+  erase([x, y]) {
+    ctx.fillStyle = defaultColor
+    ctx.fillRect(
+      x * cellSize + gap * x,
+      y * cellSize + gap * y,
+      cellSize,
+      cellSize
+    )
+  }
+}
+```
+</Editor>
+
+<aside>
+  If you've written an Arduino program before (it was the first example I could think of off the top of my head!), you'll notice this logic is pretty similar to the `setup()` and `loop()` functions that are the core of every Arduino program.
+</aside>
+
+Now that we have an extension (it's not that different, is it?), we can run `program.easel`! We're going to have the same pipeline of lexer &rarr; parser &rarr; interpreter, but this time around, we'll going to add one condition - we'll refresh our easel every so often if our Easel program has a `painting` function. How do we know if it does? Why, by searching our global scope, of course!
+
+<Editor initialTab="index.html">
+```js
+import stdlib, { Canvas } from "./stdlib.js"
+import { Lexer } from "./lexer.js"
+import { Parser } from "./parser.js"
+import { Interpreter } from "./interpreter.js"
+
+window.onload = () => {
+  // ...
+  clear()
+
+  fetch("/program.easel").then(res => res.text()).then(code => {
+    // Run program
+    const lexer = new Lexer(code)
+    lexer.scanTokens()
+    const parser = new Parser(lexer.tokens)
+    parser.parse()
+    const interpreter = new Interpreter()
+    let scope = interpreter.run(parser.ast, {
+      ...stdlib,
+      Canvas: new CustomCanvas()
+    })
+
+    const interval = setInterval(() => {
+      if (!interpreter.inScope(scope, "painting")) return clearInterval(interval)
+
+      ctx.fillStyle = "white"
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+      try {
+        const lexer = new Lexer("painting()")
+        lexer.scanTokens()
+        const parser = new Parser(lexer.tokens)
+        parser.parse()
+        scope = interpreter.run(parser.ast, scope)
+      } catch {
+        clearInterval(interval)
+      }
+    }, 100)
+  }).catch(err => console.log(err))
+
+  window.addEventListener("resize", resize)
+}
+```
+</Editor>
+
+<aside>
+  Also pat yourself on the back.
+</aside>
+
+If you head over to the Easel tab and click Run, it works now! You know what that means?
 
 ### In which we find out our mysterious sender
 
-Let's run the program now.
+Heck yeah! We can finally use the little program our sender has given to us. It's our only clue. Let's run the program now.
 
-[sputters] What???
+<Editor initialTab="whoami.easel">
+</Editor>
 
-Just then there's another knock on the door. Orpheus, I think that'
+What???
+
+Just then there's another knock on the door. Orpheus, I think that's our man. Now's our chance to find out who he is, exactly!
+
+Orpheus <strike>runs</strike> stomps over to the door, but there's no one there, again. The only difference is that it's sunny outside now. Oh well. 
 
 He left us another letter, though.
 
@@ -32,7 +212,13 @@ your mysterious sender
 
 ---
 
-I guess we'll never figure out who our mysterious sender is.
+I guess we'll never figure out who our mysterious sender is. But he's right, I guess? 
+
+Ooh, Orpehus. You know what we should do? We should celebrate with a picnic.
+
+... 
+
+I can't tell if I'm always hungry or if Orpheus is. Maybe the both of us.
 
 ---
 
@@ -46,7 +232,7 @@ I like the idea of this.
 
 ---
 
-Interested? If you're a teenager, Hack Club is running a programming language jam from now (May 01) until July 01. Write a programming language, get a terminal-in-a-box that can run your programming language!
+Interested? If you're a teenager, Hack Club is running a programming language jam from now (May 01) ntil June 30. Write a programming language, get a terminal-in-a-box that can run your programming language!
 
 Here's the criteria:
 

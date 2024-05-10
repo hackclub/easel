@@ -40,6 +40,8 @@ const server = http.createServer(async (req, res) => {
       return returnFile(res, "text/plain", "program.easel")
     case "test.easel":
       return returnFile(res, "text/plain", "test.easel")
+    case "whoami.easel":
+      return returnFile(res, "text/plain", "whoami.easel")
     case "lexer.js":
       return returnFile(res, "text/javascript", "lexer.js")
     case "parser.js":
@@ -56,6 +58,7 @@ const server = http.createServer(async (req, res) => {
 })
 
 server.listen(3000, async () => {
+  console.log("Sandbox run complete")
   require("./easel.js")(process.argv)
 })
 `,

@@ -118,6 +118,8 @@ export default function Editor({
     if (gridRef.current) {
       const grid = gridRef.current
       setHeight(`${grid.parentElement?.offsetWidth}px`)
+
+      // const resize = ()
     }
   }, [])
 
