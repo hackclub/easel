@@ -124,7 +124,7 @@ export default function Submit({
       <Meta
         as={Head}
         title={`Submit | Orpheus' Hacky Guide to Writing a Programming Language`}
-        description="Learn how to write a programming language in a weekend."
+        description="Learn how to write a programming language in a weekend!"
         image="/cartoons/site.png"
         color="#ec3750"
       />

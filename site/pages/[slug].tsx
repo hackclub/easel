@@ -188,10 +188,13 @@ draw()`,
         as={Head}
         title={`${title}`}
         name="Orpheus' Hacky Guide to Writing a Programming Language"
-        description="Learn how to write a programming language in a weekend."
+        description="Learn how to write a programming language in a weekend!"
         image="/cartoons/site.png"
         color="#ec3750"
       />
+      <Head>
+        <title>{title}</title>
+      </Head>
       <header>
         <div>
           <img
