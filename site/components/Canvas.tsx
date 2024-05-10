@@ -167,22 +167,30 @@ export default function Canvas({
   editable: boolean
 }) {
   const gridRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const [code, setCode] = useState(initialCode)
   const [output, setOutput] = useState<string[]>([])
   const [height, setHeight] = useState('1px')
   const [run, setRun] = useState<boolean>(initialRun)
 
   useEffect(() => {
-    if (gridRef.current) {
-      const grid = gridRef.current
-      setHeight(`${grid.parentElement?.offsetHeight}px`)
+    // if (gridRef.current) {
+    //   const grid = gridRef.current
+    //   if (grid.parentElement) {
+    //     setHeight(`${grid.parentElement.parentElement.offsetHeight}px`)
+    //   }
+    // }
+
+    if (wrapperRef.current) {
+      const wrapper = wrapperRef.current
+      setHeight(`${wrapper.offsetHeight + 100}px`)
     }
 
     return () => setOutput([])
   }, [])
 
   return (
-    <div className={styles.editor}>
+    <div className={styles.editor} ref={wrapperRef}>
       <div className={styles.editable}>
         <ReactCodeMirror
           height={height}
