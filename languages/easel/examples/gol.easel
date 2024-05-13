@@ -88,7 +88,7 @@ sketch painting {
     
     if (cell.live) {
       ~ Now draw the cell if it's alive!
-      prepare color as prep Color(r: 255, g: 0, b: 0)
+      prepare color as prep Color(r: 0, g: 255, b: 0)
       Canvas.fill(cell.x, cell.y, color)
     } else {
       ~ If it's dead, turn the cell off
