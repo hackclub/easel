@@ -434,7 +434,7 @@ case Ast.Conditional: {
 
 This is pretty expected. We evaluate the condition, and if it's true, we run the if-statement's body. Otherwise, we loop through the other conditions left and do the same exact thing by recursively calling `execute()`. The useful thing is that if there is an else statement in there, we've set its condition to always be true so it'll always run if the other conditions don't match up.
 
-Hey, I think we forgot one last node in `evaluate()`! Let's add it now:
+Hey, I think we forgot one last node in `execute()`! Let's add it now:
 
 `Ast.Set`:
 
