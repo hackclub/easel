@@ -42,7 +42,7 @@ Just a little boilerplate here. Our main entry point is going to `run()`, which 
 
 ## So how does this scope thing work?
 
-Scope is what's going to make magic. I mean, turn what we currently have into an actual programming language, by adding a place for us to store the current state of our program. Like an actual programming language - in fact, one of the biggest criteria for a language to be Turing-complete is that it should be able to keep track of state. That's what scope is for - it'll keep track of what variables exist, what functions exist, what structs exist, and any other info we'll have. It's also we'll inject our _standard library_ into, as we'll see later.
+Scope is what's going to make magic. I mean, turn what we currently have into an actual programming language, by adding a place for us to store the current state of our program. Like an actual programming language - in fact, one of the biggest criteria for a language to be Turing-complete is that it should be able to keep track of state. That's what scope is for - it'll keep track of what variables exist, what functions exist, what structs exist, and any other info we'll have. It's also where we'll inject our _standard library_ into, as we'll see later.
 
 We're going to use a simple key-value store to store our scope, especially since JavaScript is so lenient. While we're at it, let's add a quick utility function to check if a value exists in our scope that'll come in handy later:
 
