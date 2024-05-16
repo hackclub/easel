@@ -179,6 +179,15 @@ export default function Stickers({
                     autoComplete="off"
                   />
                 </div>
+                <div>
+                  <label>Address line 2</label>
+                  <input
+                    type="text"
+                    name="address2"
+                    placeholder="APT #2"
+                    autoComplete="off"
+                  />
+                </div>
                 <div className={styles.flex}>
                   <div>
                     <label className={styles.required}>City</label>
@@ -220,15 +229,6 @@ export default function Stickers({
                       placeholder="USA"
                     />
                   </div>
-                </div>
-                <div>
-                  <label>Address line 2</label>
-                  <input
-                    type="text"
-                    name="address2"
-                    placeholder="15 Falls Road, Shelburne VT 05482"
-                    autoComplete="off"
-                  />
                 </div>
                 <div>
                   <button type="submit">Subscribe</button>

@@ -215,6 +215,15 @@ export default function Submit({
                   />
                 </div>
                 <div>
+                  <label>Address line 2</label>
+                  <input
+                    type="text"
+                    name="address2"
+                    placeholder="APT 2"
+                    autoComplete="off"
+                  />
+                </div>
+                <div>
                   <label className={styles.required}>Email</label>
                   <input
                     type="email"
@@ -264,15 +273,6 @@ export default function Submit({
                       placeholder="USA"
                     />
                   </div>
-                </div>
-                <div>
-                  <label>Address line 2</label>
-                  <input
-                    type="text"
-                    name="address2"
-                    placeholder="15 Falls Road, Shelburne VT 05482"
-                    autoComplete="off"
-                  />
                 </div>
                 <div>
                   <label className={styles.required}>Photo of student ID</label>
