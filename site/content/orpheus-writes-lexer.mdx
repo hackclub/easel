@@ -14,12 +14,12 @@ _Wait_, she thinks. _I'm forgetting something_. She swings by the kitchen to pic
 
 ![](/cartoons/tea.png)
 
-So it turns out that the first step to writing a language, is to write a _lexer_. That's a funny word, but it just represents a tool that divides a language into chunks. These chunks are called _tokens_.
+So it turns out that the first step to writing a language is to write a _lexer_. That's a funny word, but it just represents a tool that divides a language into chunks. These chunks are called _tokens_.
 
 Orpheus thinks this is kind of like speaking English, or Dinoese. You can divide a sentence into tokens, after all.
 
 <aside>
-  I talked to Orpheus about this for quite a while and apparently Dinoese is
+  I talked to Orpheus about this for quite a while and apparently, Dinoese is
   quite easy. It just involves a lot of *rawr*s of different intensities. Hey hey! Potential programming language?
 </aside>
 
@@ -30,7 +30,7 @@ See? Tokens. Orpheus collects a lot of tokens, actually. Anyways, the point is t
 Orpheus picks up the letter and looks at the first program again. How does one go about dividing this language into tokens? Well, it's quite helpful to draw out the important chunks. Luckily, Orpheus already has notes for this something, if she can still find them among her pile of other assorted papers. She's got a really bad habit of always having a bunch of papers on her desk.
 
 <aside>
-  I just took a look at the papers on Orpheus' desk. Apparently she's running a
+  I just took a look at the papers on Orpheus' desk. Apparently, she's running a
   marathon soon? Wish her luck. No, no, not luck running the marathon, she can
   absolutely do that... it's the other participants I'm slightly worried for.
 </aside>
@@ -106,7 +106,7 @@ Now, the idea is to read every character one by one. If a set of characters form
 Sounds pretty simple, innit? Woah there. Where'd you get a British accent out of the blue from, Orpheus?
 
 <aside>
-  Quite a long tale, actually. Apparently Orpheus got stuck with some British
+  Quite a long tale, actually. Apparently, Orpheus got stuck with some British
   bloke once for two weeks in the same hostel (she's been to quite a few
   places!)
 </aside>
@@ -173,7 +173,7 @@ class Lexer {
 ```
 </Editor>
 
-Cool! Now we can see what the next character is. The most logical step, now that we can peek at the next character, is to actually move to the next character. Let's call this advancing. It'll look pretty similar to `peek()`, except we'll update what character we're on rather then just looking ahead:
+Cool! Now we can see what the next character is. The most logical step, now that we can peek at the next character, is to actually move to the next character. Let's call this advancing. It'll look pretty similar to `peek()`, except we'll update what character we're on rather than just looking ahead:
 
 <Editor initialTab="lexer.js">
 ```js
@@ -300,7 +300,7 @@ case '"': {
 ```
 </Editor>
 
-We remember to deal with both quotes, and if we reach the end of the file without finding a closing quote, that's a problem and we make sure to let the user know. Pretty solid, eh?
+We remember to deal with both quotes and if we reach the end of the file without finding a closing quote, that's a problem and we make sure to let the user know. Pretty solid, eh?
 
 Cool. String, check. Number, Boolean - we'll get to those later. Or - let's work on Or! The operator has two pipe characters. That means we need to see the next-next character. A smarter way of doing this, actually, is to introduce a new helper method, called `match()`, that will try to move to the next character but only if it matches up with what we expect the next character to be:
 
@@ -486,7 +486,7 @@ const isAlphanumeric = char => isNumber(char) || isChar(char)
 ```
 </Editor>
 
-Awesome. This is all that we really need for our lexer, but there's just two cases we need to deal with: comments and whitespace. Since Easel doesn't rely on whitespace, it makes sense to just ignore any characters that are whitespace-related. Let's deal with these two cases:
+Awesome. This is all that we really need for our lexer, but there are just two cases we need to deal with: comments and whitespace. Since Easel doesn't rely on whitespace, it makes sense to just ignore any characters that are whitespace-related. Let's deal with these two cases:
 
 <Editor initialTab="lexer.js">
 ```js
