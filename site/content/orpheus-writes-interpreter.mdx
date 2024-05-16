@@ -13,13 +13,13 @@ Orpheus has her smock and beret on today. She's ready to do some painting. She s
 
 <img src="/cartoons/painter.jpg" style={{ width: "45vw" }}/>
 
-(Ok. Maybe the beret fits on her nicely. I'm just saying the smock is a bit tiny though.)
+(Ok. Maybe the beret fits her nicely. I'm just saying the smock is a bit tiny though.)
 
 But today's an exciting day! Because today, we'll get the interpreter up and running, and we'll be able to run programs for real now. And Orpheus will finally be able to get this easel to work.
 
 ## How the interpreter's going to work
 
-The interpreter's going to be a little different from the lexer and parser, but not too different! It's going to take the nodes that the parser created, and make actual things happen. The best part is that it's surprisingly easy - we've done all the hard work in the parser and now we can glide on by, although it'll be a longer-winded.
+The interpreter's going to be a little different from the lexer and parser, but not too different! It's going to take the nodes that the parser created and make actual things happen. The best part is that it's surprisingly easy - we've done all the hard work in the parser and now we can glide on by, although it'll be a longer-winded.
 
 Orpheus opens up her computer. It's time to start writing the interpreter in `interpreter.js`:
 
@@ -60,7 +60,7 @@ export class Interpreter {
 
 ## Let's get this working
 
-Ok, awesome. How exactly should we go about doing this? Well, it's quite simple really - we're going to loop over every node, and run whatever's inside that node. We can take advantage of the fact that we have different kinds of nodes and do different things based on what the node needs. For example, say we have a while statement:
+Ok, awesome. How exactly should we go about doing this? Well, it's quite simple really - we're going to loop over every node and run whatever's inside that node. We can take advantage of the fact that we have different kinds of nodes and do different things based on what the node needs. For example, say we have a while statement:
 
 ```plaintext
 {
@@ -131,7 +131,7 @@ execute(node, scope) {
 
 [`node.constructor`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/constructor) returns the class that the node is a child of, effectively letting us check what class it belongs to.
 
-Do you notice something? Compare this to `Parser.stmt()`, and you'll notice that they basically match up! This makes sense, since statements make changes to state.
+Do you notice something? Compare this to `Parser.stmt()`, and you'll notice that they basically match up! This makes sense since statements make changes to state.
 
 Let's fill these out one by one. `Ast.Var`:
 
@@ -249,7 +249,7 @@ case Ast.Struct: {
 ```
 </Editor>
 
-This is run when we create a struct definition, like `brush Cell has { x, y, live }`. Notice how it's a function. Think of it like running a predefined function, a constructor of sorts - when we create a struct using `prep Cell(x: x, y: y, live: live)`, we're running a function that'll return a object that contains those keys, e.g. `{ x: 1, y: 1, live: false }`.
+This is run when we create a struct definition, like `brush Cell has { x, y, live }`. Notice how it's a function. Think of it like running a predefined function, a constructor of sorts - when we create a struct using `prep Cell(x: x, y: y, live: live)`, we're running a function that'll return an object that contains those keys, e.g. `{ x: 1, y: 1, live: false }`.
 
 Where does the code for creating a struct go then? Since it evaluates to an expression (`{ x: 1, y: 1, live: false }`), we'll tackle an extra case in `evaluate()`:
 
@@ -328,7 +328,7 @@ case Ast.Return:
   why exceptions work so well for exiting our function wrapper when we process a `Ast.Return` node.
 </aside>
 
-`ReturnException` doesn't exist yet, so let's make it happen, at the top of `interpreter.js`. And hopefully now the pieces are clicking into place - throwing an exception is a really useful way of exiting running a block of code, it turns out.
+`ReturnException` doesn't exist yet, so let's make it happen, at the top of `interpreter.js`. And hopefully, now the pieces are clicking into place - throwing an exception is a really useful way of exiting running a block of code, it turns out.
 
 <Editor initialTab="interpreter.js">
 ```js
@@ -405,7 +405,7 @@ case Ast.For: {
 ```
 </Editor>
 
-For loops are really just variations on while loops. Here, we set up a local scope and inject the variable we'll use to keep track of what iteration we're on, and of course we make to update it every iteration.
+For loops are really just variations on while loops. Here, we set up a local scope and inject the variable we'll use to keep track of what iteration we're on, and of course, we make to update it every iteration.
 
 `Ast.Conditional`:
 
@@ -891,7 +891,7 @@ const repl = line => {
 }
 ```
 
-The only different here, frankly, is that we introduce `hadError`. The logic is that if our lexer runs into an error, we don't want to keep going. For the parser it's a little bit different - when we run into an error, we can technically keep going because we're always guaranteed to have a valid AST (or an empty one).
+The only difference here, frankly, is that we introduce `hadError`. The logic is that if our lexer runs into an error, we don't want to keep going. For the parser it's a little bit different - when we run into an error, we can technically keep going because we're always guaranteed to have a valid AST (or an empty one).
 
 And that's really all! Now you can fire up a terminal, run `node easel.js`, and boom! you have an interpreter that reads line by line.
 
