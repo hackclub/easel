@@ -221,11 +221,17 @@ draw()`,
             Hack Club
           </a>{' '}
           is running a{' '}
-          <a href="https://github.com/hackclub/langjam" target="_blank">
+          <a href="https://github.com/hackclub/easel" target="_blank">
             programming language jam
           </a>
-          . Build a fun programming language with friends, get fudge! Ship your
-          programming language <a href="/submit">here</a>.
+          . Build a fun programming language with friends, get fudge and a
+          chance to win a copy of Crafting Interpreters! Ship your programming
+          language <a href="/submit">here</a>.
+        </p>
+        <p>
+          Want limited-edition stickers?{' '}
+          <a href="/stickers">Sign up for Hack Club updates</a> and we'll send
+          you some in the mail!
         </p>
       </section>
       <div className="prose">
@@ -238,6 +244,8 @@ draw()`,
           components={{
             ...components,
             Editor: props => {
+              const [editor, setEditor] = useState(false)
+
               return (
                 <div className="editor-wrapper">
                   {props.children}

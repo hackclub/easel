@@ -5,11 +5,11 @@ import fs from 'fs'
 import path from 'path'
 import { serialize } from 'next-mdx-remote/serialize'
 import styles from '@/styles/Submit.module.scss'
-import { FormEvent, useState, useRef } from 'react'
+import { FormEvent, useState } from 'react'
 import invalidBirthdate from '@/components/invalidBirthdate'
 import toast from 'react-hot-toast'
 
-export default function Submit({
+export default function Stickers({
   parts
 }: {
   parts: Array<{ title: string; slug: string }>
@@ -20,9 +20,9 @@ export default function Submit({
     event.preventDefault()
 
     const data = {
-      hours: {
+      email: {
         required: true,
-        value: event.target.hours.value
+        value: event.target.email.value
       },
       firstname: {
         required: true,
@@ -31,14 +31,6 @@ export default function Submit({
       lastname: {
         required: true,
         value: event.target.lastname.value
-      },
-      birthdate: {
-        required: true,
-        value: event.target.birthdate.value
-      },
-      email: {
-        required: true,
-        value: event.target.email.value
       },
       address: {
         required: true,
@@ -63,35 +55,10 @@ export default function Submit({
       address2: {
         value: event.target.address2.value
       },
-      id: {
-        required: true,
-        value: event.target.id.value
-      },
-      github: {
-        required: true,
-        value: event.target.github.value
-      },
-      pr: {
-        required: true,
-        value: event.target.pr.value
-      },
-      demo: {
-        required: true,
-        value: event.target.demo.value
-      },
-      discovery: {
-        required: true,
-        value: event.target.discovery.value
-      },
-      compliments: {
-        value: event.target.compliments.value
-      },
-      improvements: {
-        value: event.target.improvements.value
+      birthdate: {
+        value: event.target.birthdate.value
       }
     }
-
-    if (invalidBirthdate(data.birthdate.value)) toast.error('Invalid birthdate')
 
     let submission = {}
     for (let [key, value] of Object.entries(data)) {
@@ -101,7 +68,10 @@ export default function Submit({
       submission[key] = value.value
     }
 
-    fetch('/api/submit', {
+    if (invalidBirthdate(submission.birthdate)) submission.highschool = false
+    else submission.highschool = true
+
+    fetch('/api/stickers', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -127,7 +97,7 @@ export default function Submit({
       `}</style>
       <Meta
         as={Head}
-        title={`Submit | Orpheus' Hacky Guide to Writing a Programming Language`}
+        title={`Stickers | Orpheus' Hacky Guide to Writing a Programming Language`}
         description="Learn how to write a programming language in a weekend!"
         image="/cartoons/site.png"
         color="#ec3750"
@@ -153,30 +123,26 @@ export default function Submit({
       </header>
       <main className={styles.form}>
         <div className="prose">
-          <h1
-            style={{
-              marginTop: '1em'
-            }}>
-            So, I heard you wrote a programming language! That's awesome. Here's
-            some fudge in exchange.
+          <h1 style={{ marginTop: '1em' }}>
+            Sign up for Hack Club's mailing list! And if you're a teenager,
+            we'll send you some custom stickers, like{' '}
+            <a href="/orpheus-writes-interpreter#wizard-orpheus">
+              Wizard Orpheus
+            </a>
+            .
           </h1>
           {submitted === false ? (
             <>
-              <p>First up, let's confirm a few things:</p>
-              <ul className={styles.criteria}>
-                <li>You're a high schooler (or younger)</li>
-                <li>
-                  This programming language was made recently (since May 01,
-                  2024)
-                </li>
-                <li>
-                  Your programming language meets the criteria listed{' '}
-                  <a href="/orpheus-decodes-program">here</a>
-                </li>
-              </ul>
-              <hr />
               <form onSubmit={submit}>
-                <h2>You</h2>
+                <div>
+                  <label className={styles.required}>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    autoComplete="off"
+                  />
+                </div>
                 <div className={styles.flex}>
                   <div>
                     <label className={styles.required}>First Name</label>
@@ -205,21 +171,11 @@ export default function Submit({
                 </div>
                 <div>
                   <label className={styles.required}>Address</label>
-                  <p>So we can ship you fudge!</p>
                   <input
                     type="text"
                     name="address"
                     required
                     placeholder="15 Falls Road"
-                    autoComplete="off"
-                  />
-                </div>
-                <div>
-                  <label className={styles.required}>Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    required
                     autoComplete="off"
                   />
                 </div>
@@ -275,97 +231,15 @@ export default function Submit({
                   />
                 </div>
                 <div>
-                  <label className={styles.required}>Photo of student ID</label>
-                  <p>
-                    We need this to confirm that you are, in fact, a student.
-                    Head over to the{' '}
-                    <a href="https://hackclub.com/slack">Hack Club Slack</a>,
-                    head to{' '}
-                    <a href="https://hackclub.slack.com/archives/C016DEDUL87">
-                      #cdn
-                    </a>
-                    , and upload your student ID to get a URL you can paste
-                    here.
-                  </p>
-                  <input
-                    type="text"
-                    name="id"
-                    required
-                    autoComplete="off"
-                    placeholder="https://cloud-80eg2m8id-hack-club-bot.vercel.app/0thinking_rac.png"
-                  />
-                </div>
-                <h2>Project</h2>
-                <div>
-                  <label className={styles.required}>GitHub username</label>
-                  <input
-                    type="text"
-                    name="github"
-                    required
-                    autoComplete="off"
-                    placeholder="hackclub"
-                  />
-                </div>
-                <div>
-                  <label className={styles.required}>
-                    Link to your pull request
-                  </label>
-                  <p>
-                    Don't know how to make a pull request? Check out{' '}
-                    <a href="">our guide</a>.
-                  </p>
-                  <input
-                    type="text"
-                    name="pr"
-                    required
-                    autoComplete="off"
-                    placeholder="https://github.com/hackclub/langjam/pull/3"
-                  />
-                </div>
-                <div>
-                  <label className={styles.required}>
-                    Demo of your project on{' '}
-                    <a href="https://asciinema.org/">Asciinema</a>
-                  </label>
-                  <p>
-                    Record a demo using Asciinema! Don't know how to get
-                    started? Check out <a href="#">our guide</a>.
-                  </p>
-                  <input
-                    type="text"
-                    name="demo"
-                    required
-                    autoComplete="off"
-                    placeholder="https://asciinema.org/a/590145"
-                  />
-                </div>
-                <h2>Hack Club</h2>
-                <div>
-                  <label className={styles.required}>
-                    How did you find out about this?
-                  </label>
-                  <textarea name="discovery"></textarea>
-                </div>
-                <div className={styles.flex}>
-                  <div>
-                    <label>Is there anything we're doing really well?</label>
-                    <textarea name="compliments"></textarea>
-                  </div>
-                  <div>
-                    <label>Likewise, anything we could improve on?</label>
-                    <textarea name="improvements"></textarea>
-                  </div>
-                </div>
-                <div>
-                  <button type="submit">Get my fudge!</button>
+                  <button type="submit">Subscribe</button>
                 </div>
               </form>
             </>
           ) : (
             <div>
               <p>
-                Awesome! You're the coolest. Check your email sometime within
-                the next 24 - 48 hours.
+                Awesome! You're the coolest. If you're a high schooler, check
+                your mailbox in the coming week!
               </p>
             </div>
           )}
