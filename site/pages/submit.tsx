@@ -129,7 +129,7 @@ export default function Submit({
         as={Head}
         title={`Submit | Orpheus' Hacky Guide to Writing a Programming Language`}
         description="Learn how to write a programming language in a weekend!"
-        image="/cartoons/site.png"
+        image="https://cloud-j7gd4gvvy-hack-club-bot.vercel.app/0site.png"
         color="#ec3750"
       />
       <header>

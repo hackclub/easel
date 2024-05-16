@@ -189,12 +189,9 @@ draw()`,
         title={`${title}`}
         name="Orpheus' Hacky Guide to Writing a Programming Language"
         description="Learn how to write a programming language in a weekend!"
-        image="/cartoons/site.png"
+        image="https://cloud-j7gd4gvvy-hack-club-bot.vercel.app/0site.png"
         color="#ec3750"
       />
-      <Head>
-        <title>{title}</title>
-      </Head>
       <header>
         <div>
           <img
@@ -228,8 +225,7 @@ draw()`,
           language <a href="/submit">here</a>.
         </p>
         <p>
-          High schooler?{' '}
-          <a href="/stickers">Get stickers!</a>{' '}
+          High schooler? <a href="/stickers">Get stickers!</a>{' '}
         </p>
       </section>
       <div className="prose">
