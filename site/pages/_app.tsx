@@ -16,7 +16,7 @@ export default function App({ Component, pageProps }: AppProps) {
         as={Head}
         name="Orpheus' Hacky Guide to Writing a Programming Language"
         description="Learn how to write a programming language in a weekend!"
-        image="https://cloud-j7gd4gvvy-hack-club-bot.vercel.app/0site.png"
+        image="https://cloud-bimy66myq-hack-club-bot.vercel.app/0video-capture-8135_2-min.png"
         color="#ec3750"
       />
       <Component {...pageProps} />
