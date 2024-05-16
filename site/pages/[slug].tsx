@@ -216,7 +216,6 @@ draw()`,
       </header>
       <section className="prose" style={{ marginBottom: '2em' }}>
         <p>
-          High schooler?{' '}
           <a href="https://hackclub.com" target="_blank">
             Hack Club
           </a>{' '}
@@ -229,9 +228,8 @@ draw()`,
           language <a href="/submit">here</a>.
         </p>
         <p>
-          Want limited-edition stickers?{' '}
-          <a href="/stickers">Sign up for Hack Club updates</a> and we'll send
-          you some in the mail!
+          High schooler?{' '}
+          <a href="/stickers">Get stickers!</a>{' '}
         </p>
       </section>
       <div className="prose">

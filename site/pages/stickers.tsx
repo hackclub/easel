@@ -124,25 +124,15 @@ export default function Stickers({
       <main className={styles.form}>
         <div className="prose">
           <h1 style={{ marginTop: '1em' }}>
-            Sign up for Hack Club's mailing list! And if you're a teenager,
-            we'll send you some custom stickers, like{' '}
+            High schooler? Get{' '}
             <a href="/orpheus-writes-interpreter#wizard-orpheus">
               Wizard Orpheus
-            </a>
-            .
+            </a>{' '}
+            stickers!
           </h1>
           {submitted === false ? (
             <>
               <form onSubmit={submit}>
-                <div>
-                  <label className={styles.required}>Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    autoComplete="off"
-                  />
-                </div>
                 <div className={styles.flex}>
                   <div>
                     <label className={styles.required}>First Name</label>
@@ -231,7 +221,18 @@ export default function Stickers({
                   </div>
                 </div>
                 <div>
-                  <button type="submit">Subscribe</button>
+                  <label className={styles.required}>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    autoComplete="off"
+                    placeholder="fiona@hackworth.com"
+                  />
+                  <p>We'll let you know when they're in the mail.</p>
+                </div>
+                <div>
+                  <button type="submit">Get stickers!</button>
                 </div>
               </form>
             </>
