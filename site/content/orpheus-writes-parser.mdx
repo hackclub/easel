@@ -12,7 +12,7 @@ Our lexer produces a bunch of tokens, but we still can't do much with them quite
 
 Orpheus drew a diagram for us last chapter on how lexers turn a blob of text that's meant to be our program into a list of tokens.
 
-Parsers take these tokens and in turn output a tree of sorts that describes how tokens apply to one another. Here's an example of such an transformation:
+Parsers take these tokens and in turn output a tree of sorts that describes how tokens apply to one another. Here's an example of such a transformation:
 
 ```plaintext
 prepare rows as 50
@@ -71,7 +71,7 @@ export class Parser {
 ```
 </Editor>
 
-This is pretty similar to our `scanTokens()` method in our lexer, but last time, we dealt with each character at a time. Tokens have more information then that - being able to see the next token's type would also be pretty useful - so we have two helper `peek()` methods this time instead of one:
+This is pretty similar to our `scanTokens()` method in our lexer, but last time, we dealt with each character at a time. Tokens have more information than that - being able to see the next token's type would also be pretty useful - so we have two helper `peek()` methods this time instead of one:
 
 <Editor initialTab="parser.js">
 ```js
@@ -101,7 +101,7 @@ Cool! Now, what exactly do we do with these tokens?
 
 With our lexer, we looped through every character and checked if it could be a token or belong to a set of characters that would belong to a token. Here, we're going to do something different - we're going to define a grammar for what our program could look like and work our way up until we can describe an entire chunk of code.
 
-First up: what do these have in similar?
+First up: what do these have in common?
 
 <img src="/cartoons/types.png" style={{ width: '40%' }} />
 
@@ -115,7 +115,7 @@ Orpheus has an answer! _They're all super basic._ They're what we'll call **lite
 To give an exact definition we'll reference later when writing our parser, literals in Easel can be: strings, numbers, or booleans.
 
 <aside>
-  I thought the obssession was over pancakes? When did we start talking about Froot Loops.
+  I thought the obsession was over pancakes? When did we start talking about Froot Loops.
 </aside>
 
 Ok, what's the next obvious step from here? I'm thinking like arrays, or data types that build off literals by collecting them and storing them together. In Easel, it's quite simple - I can think of two data types and those are arrays and structs (or maps or whatever you want to call them. Orpheus decided to stick to structs while editing this, although that might not semantically be the best.)
@@ -145,7 +145,7 @@ Ok. So we know literals can form expressions. What can expressions form? It turn
 - Functions are blocks of expressions with attached metadata of sorts, like what arguments we might need to pass in!
 - Return statements
 - For loops and while loops are blocks of expressions also with attached metadata too, like what condition we should check for every iteration.
-- Last but not least in Easel - if-else statements are blocks of expressions with, you guessed it, attached metadata like what conditions we shoud check for.
+- Last but not least in Easel - if-else statements are blocks of expressions with, you guessed it, attached metadata like what conditions we should check for.
 
 <aside>
   This makes so much more sense when you write the code.
@@ -155,7 +155,7 @@ Our job now is to write a parser that can understand this hierarchy. The parser 
 
 ## Back to writing code
 
-Ok! Sturp talking! Let's get to smacking the keyboard instead. By then, it should be pretty obvious that we'll need another utility method we're desparately missing: the good ole' `eat` method for eating tokens up:
+Ok! Sturp talking! Let's get to smacking the keyboard instead. By then, it should be pretty obvious that we'll need another utility method we're desperately missing: the good ole' `eat` method for eating tokens up:
 
 <Editor initialTab="parser.js">
 ```js
@@ -176,7 +176,7 @@ export class Parser {
 </Editor>
 
 <aside>
-  At this point we're going to stop putting the class definition around each
+  At this point, we're going to stop putting the class definition around each
   method or Orpheus is going to have to start writing on napkins soon.
 </aside>
 
@@ -507,7 +507,7 @@ This looks right, but there's just one minor problem... if we run that second no
 
 Oopsies. We forgot about PEMDAS. We should fix that. Never fear! Orpheus has put on her wizard hat and come up with a rather ingenious way to tackle this.
 
-First things first, all operators should have a precedence hierarchy. If I see an addition operator and a multiplication operator in the same expression, then I should combine the operators next to the multiplication operator first before moving onto the addition operator. But if we've already parsed the addition operator, we can do a little switcheroo. Orpheus wants to show you what she means by this. Read the following in what you might imagine to be her voice.
+First things first, all operators should have a precedence hierarchy. If I see an addition operator and a multiplication operator in the same expression, then I should combine the operators next to the multiplication operator first before moving on to the addition operator. But if we've already parsed the addition operator, we can do a little switcheroo. Orpheus wants to show you what she means by this. Read the following in what you might imagine to be her voice.
 
 First things first, at the top of `parser.js`!
 
@@ -566,7 +566,7 @@ And that fixes all our problems! Well, not all of our problems, of course. Right
 (15 + 15) / 3
 ```
 
-If you run this currently, it'll throw a syntax error, because we haven't dealt with parentheses in this scenario! In this scenario, the parentheses represent an expression inside an expression that we should evaluate first. To take care of this precendence, we can place this in `simple()` to take care of this:
+If you run this currently, it'll throw a syntax error, because we haven't dealt with parentheses in this scenario! In this scenario, the parentheses represent an expression inside an expression that we should evaluate first. To take care of this precedence, we can place this in `simple()` to take care of this:
 
 <Editor initialTab="parser.js">
 ```js
@@ -578,7 +578,7 @@ case TOKENS.LeftParen: {
 ```
 </Editor>
 
-An expression inside an expression, essentially. This works because now `expr()` will call `simple()` and evaluate `(15 + 15)` on its own, before peeking at `/`. Now if we run our parser on this, we'll get the proper looking AST and not a syntax error:
+An expression inside an expression, essentially. This works because now `expr()` will call `simple()` and evaluate `(15 + 15)` on its own, before peeking at `/`. Now if we run our parser on this, we'll get the proper-looking AST and not a syntax error:
 
 ## Statements
 
@@ -602,11 +602,11 @@ stmt() {
 }
 ```
 
-Now we'll going to replace that comment with some actual code. What exactly is going there? Well, we're going to parse anything that could lead to a block of expressions or be used to store expressions.
+Now we'll replace that comment with some actual code. What exactly is going there? Well, we're going to parse anything that could lead to a block of expressions or be used to store expressions.
 
 ### Functions
 
-Perhaps the best example to run through first is parsing functions, so let's take a look at that! The structure of a function is as follows: it starts with the `sketch` keyword, then a identifier that's the name of the function. If it takes in parameters, we'll know because the `needs` keyword will come afterwards, followed by a list of identifiers that represent the parameters. Of course, we have the braces and the body that follow afterwards.
+Perhaps the best example to run through first is parsing functions, so let's take a look at that! The structure of a function is as follows: it starts with the `sketch` keyword, then an identifier that's the name of the function. If it takes in parameters, we'll know because the `needs` keyword will come afterwards, followed by a list of identifiers that represent the parameters. Of course, we have the braces and the body that follow afterwards.
 
 We'll have a nested function inside `stmt()`:
 
@@ -947,7 +947,7 @@ export default {
 
 ### Assignment
 
-We should be able to assign values to a variable, but we should also be able to assign values to a property, like `prepare cell.live as false`. We can do this in the same function by simply checking that first identifier and checking if a Period token comes afterward:
+We should be able to assign values to a variable, but we should also be able to assign values to a property, like `prepare cell.live as false`. We can do this in the same function by simply checking that first identifier and checking if a Period token comes afterwards:
 
 <Editor initialTab="parser.js">
 ```js
@@ -1123,7 +1123,7 @@ Orpheus: Like a chain of Froot Loops?
 Narrator: Oh, stop it! We can make Froot Loop necklaces later.
 </aside>
 
-We're missing a extra step between binary expressions and simple literals, and that happens to be function calls and getters. I like to think of this like a chain, like `orpheus.picksUp(phone).numbers[0]`. It's an intermediate step between `expr()` and `simple()` because it can be one half of an expression but evaluates down to a simple value.
+We're missing an extra step between binary expressions and simple literals, and that happens to be function calls and getters. I like to think of this like a chain, like `orpheus.picksUp(phone).numbers[0]`. It's an intermediate step between `expr()` and `simple()` because it can be one-half of an expression but evaluates down to a simple value.
 
 <Editor initialTab="parser.js">
 ```js
@@ -2077,6 +2077,6 @@ Let's test out everything we have so far. Try running `node easel.js test.easel 
 
 Awesome! We've got a parser working. Clap yourself on the back - that wasn't so hard, was it?
 
-That was definitely longer than writing a lexer, for sure, but rev up - we're going to see our programming language in action in the next part, and get Conway's Game of Life running (eventually)!
+That was definitely longer than writing a lexer, for sure, but rev up - we're going to see our programming language in action in the next part and get Conway's Game of Life running (eventually)!
 
 _The complete code here is at [parser.js](https://github.com/hackclub/langjam/blob/main/easel/parser.js)._
