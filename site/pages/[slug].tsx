@@ -189,12 +189,9 @@ draw()`,
         title={`${title}`}
         name="Orpheus' Hacky Guide to Writing a Programming Language"
         description="Learn how to write a programming language in a weekend!"
-        image="/cartoons/site.png"
+        image="https://cloud-bimy66myq-hack-club-bot.vercel.app/0video-capture-8135_2-min.png"
         color="#ec3750"
       />
-      <Head>
-        <title>{title}</title>
-      </Head>
       <header>
         <div>
           <img
@@ -216,16 +213,19 @@ draw()`,
       </header>
       <section className="prose" style={{ marginBottom: '2em' }}>
         <p>
-          High schooler?{' '}
           <a href="https://hackclub.com" target="_blank">
             Hack Club
           </a>{' '}
           is running a{' '}
-          <a href="https://github.com/hackclub/langjam" target="_blank">
+          <a href="https://github.com/hackclub/easel" target="_blank">
             programming language jam
           </a>
-          . Build a fun programming language with friends, get fudge! Ship your
-          programming language <a href="/submit">here</a>.
+          . Build a fun programming language with friends, get fudge and a
+          chance to win a copy of Crafting Interpreters! Ship your programming
+          language <a href="/submit">here</a>.
+        </p>
+        <p>
+          High schooler? <a href="/stickers">Get stickers!</a>{' '}
         </p>
       </section>
       <div className="prose">
@@ -238,6 +238,8 @@ draw()`,
           components={{
             ...components,
             Editor: props => {
+              const [editor, setEditor] = useState(false)
+
               return (
                 <div className="editor-wrapper">
                   {props.children}

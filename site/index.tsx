@@ -17,7 +17,7 @@ export default function Index({
         as={Head}
         title="Orpheus's Hacky Guide to Writing a Programming Language"
         description="Learn how to write a programming language with Orpheus the dino and me, the narrator!"
-        image="/cartoons/wizard.png"
+        image="https://cloud-bimy66myq-hack-club-bot.vercel.app/0video-capture-8135_2-min.png"
         color="#ec3750"
       />
       <main className={styles.main}>
