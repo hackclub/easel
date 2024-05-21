@@ -339,6 +339,12 @@ export default function Submit({
                     placeholder="https://asciinema.org/a/590145"
                   />
                 </div>
+                <div>
+                  <label className={styles.required}>
+                    How long did it take to build this (hours)?
+                  </label>
+                  <input type="number" name="hours" required placeholder="15" />
+                </div>
                 <h2>Hack Club</h2>
                 <div>
                   <label className={styles.required}>
