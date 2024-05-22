@@ -16,19 +16,19 @@ This is a demo video on how to use some of the basic features of elation.
 ## Syntax
 Newlines separate instructions from each other and spaces separate the arguments provided on each line. Loops and if statements are made using jumps and labels.
 
-| instruction (argument0) | argument1 | argument2                        | argument3      | argument4 |
-|-------------------------|-----------|----------------------------------|----------------|-----------|
-| calculate               | argument1 | operator (+ - * / % ^)           | argument2      | result    |
-| compare                 | argument1 | operator (&& || == != > < >= <=) | argument2      | result    |
-| concat                  | argument1 | argument2                        | result         |           |
-| data                    | name      | content                          |                |           |
-| exit                    |           |                                  |                |           |
-| jump                    | label     |                                  |                |           |
-| jump_if                 | boolean   | label_if_true                    |                |           |
-| jump_if_else            | boolean   | label_if_true                    | label_if_false |           |
-| label                   | name      |                                  |                |           |
-| print                   | data      |                                  |                |           |
-| read                    | result    |                                  |                |           |
+| instruction (argument0) | argument1 | argument2                          | argument3      | argument4 |
+|-------------------------|-----------|------------------------------------|----------------|-----------|
+| calculate               | argument1 | operator (+ - * / % ^)             | argument2      | result    |
+| compare                 | argument1 | operator (&& \|\| == != > < >= <=) | argument2      | result    |
+| concat                  | argument1 | argument2                          | result         |           |
+| data                    | name      | content                            |                |           |
+| exit                    |           |                                    |                |           |
+| jump                    | label     |                                    |                |           |
+| jump_if                 | boolean   | label_if_true                      |                |           |
+| jump_if_else            | boolean   | label_if_true                      | label_if_false |           |
+| label                   | name      |                                    |                |           |
+| print                   | data      |                                    |                |           |
+| read                    | result    |                                    |                |           |
 
 `argument1` and `argument2` are both the name of variables to calculate or compare with. `result` is the name of the variable where the result will be stored. `data` is how variables are referred to in elation. Elation does not support spaces in strings as they are a part of the language syntax so you should use a replacement character such as _ instead. `read` is used to get user input. Elation reads and writes to the terminal line by line and does not allow for the printing and/or reading of individual characters without going on to a new line.
 
