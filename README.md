@@ -1,4 +1,4 @@
-From now until the end of the school year (June 30), we're running a [programming language jam](https://langjam.hackclub.com), where you'll have the chance to win a signed copy of [Crafting Interpreters](https://craftinginterpreters.com/).
+From now until the end of the school year (June 29), we're running a [programming language jam](https://langjam.hackclub.com), where you'll have the chance to win a signed copy of [Crafting Interpreters](https://craftinginterpreters.com/).
 
 The gist: write a programming language &rarr; record a demo video and write a quick guide on how to get up and running with your programming language (including build instructions, if any!) &rarr; open a PR with a link to your repo containing these three things and your name, [#ship](https://hackclub.slack.com/archives/C0M8PUPU6) a demo on [Slack](https://hackclub.com/slack). Submission forms for the jam will open separately on June 29.
 
