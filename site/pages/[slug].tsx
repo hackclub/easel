@@ -217,12 +217,13 @@ draw()`,
             Hack Club
           </a>{' '}
           is running a{' '}
-          <a href="https://github.com/hackclub/easel" target="_blank">
+          <a href="https://langjam.hackclub.com" target="_blank">
             programming language jam
-          </a>
-          . Build a fun programming language with friends, get fudge and a
-          chance to win a copy of Crafting Interpreters! Ship your programming
-          language <a href="/submit">here</a>.
+          </a>{' '}
+          from June 08 - 29, where you'll get to hack on and ship a programming
+          language in the span of three weeks and possibly win a chance to get a{' '}
+          <i>signed</i> copy of Crafting Interpreters. Sign up{' '}
+          <a href="https://langjam.hackclub.com/signup">here</a> before June 07!
         </p>
         <p>
           High schooler? <a href="/stickers">Get stickers!</a>{' '}
