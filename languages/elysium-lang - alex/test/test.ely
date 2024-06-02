@@ -1,0 +1,16 @@
+let x = 1
+let y = x + 1
+
+
+if y < 1 {
+  print y
+} else {
+  print x
+}
+
+while x < 6 {
+  print x
+  x = x + 1
+}
+
+
