@@ -87,6 +87,7 @@ export default function Submit({
         value: event.target.compliments.value
       },
       improvements: {
+        required: true,
         value: event.target.improvements.value
       }
     }
@@ -350,7 +351,7 @@ export default function Submit({
                   <label className={styles.required}>
                     How did you find out about this?
                   </label>
-                  <textarea name="discovery"></textarea>
+                  <textarea name="discovery" required></textarea>
                 </div>
                 <div className={styles.flex}>
                   <div>
@@ -359,7 +360,7 @@ export default function Submit({
                   </div>
                   <div>
                     <label>Likewise, anything we could improve on?</label>
-                    <textarea name="improvements"></textarea>
+                    <textarea name="improvements" required></textarea>
                   </div>
                 </div>
                 <div>
