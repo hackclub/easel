@@ -1,0 +1,11 @@
+data i 0
+data one 1
+data max 100
+label loop
+compare i > max loop_over
+jump_if loop_over end
+print i
+calculate i + one i
+jump loop
+label end
+exit

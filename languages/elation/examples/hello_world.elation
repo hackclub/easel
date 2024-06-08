@@ -1,0 +1,5 @@
+data hello Hello
+data world World
+concat hello world hello_world
+print hello_world
+exit

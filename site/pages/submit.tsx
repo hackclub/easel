@@ -313,14 +313,14 @@ export default function Submit({
                   </label>
                   <p>
                     Don't know how to make a pull request? Check out{' '}
-                    <a href="">our guide</a>.
+                    <a href="https://github.com/hackclub/easel?tab=readme-ov-file#step-three-open-a-pr">our guide</a>.
                   </p>
                   <input
                     type="text"
                     name="pr"
                     required
                     autoComplete="off"
-                    placeholder="https://github.com/hackclub/langjam/pull/3"
+                    placeholder="https://github.com/hackclub/easel/pull/9"
                   />
                 </div>
                 <div>
@@ -330,7 +330,7 @@ export default function Submit({
                   </label>
                   <p>
                     Record a demo using Asciinema! Don't know how to get
-                    started? Check out <a href="#">our guide</a>.
+                    started? Check out <a href="https://docs.asciinema.org/getting-started/">our guide</a>.
                   </p>
                   <input
                     type="text"
