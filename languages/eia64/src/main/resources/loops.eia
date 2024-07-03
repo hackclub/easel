@@ -1,0 +1,6 @@
+itr (x: 1 to 20) { }
+itr (y: 20 to 1 by 2) { }
+for (let x = 0, i < 5, i++) { }
+
+let text = "hello"
+itr (c in text) { }

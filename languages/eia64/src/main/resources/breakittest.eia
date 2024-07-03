@@ -1,0 +1,10 @@
+let x = if (false) 5
+println(x)
+
+let someFn = fn hello(name: String) { println("Hello: " + name) }
+println(someFn)
+hello("Kumaraswamy")
+
+var i = 0
+let y = until (i++ < 5) { }
+println(y == 5)

@@ -1,0 +1,173 @@
+stdlib(array)
+
+fn indexOfChar(self: String, letter: Char) {
+  let size = len(self)
+  if (size == 0) return -1
+  for (var i = 0, i < size, i++)
+    if (self[i] == letter) return i
+  return -1
+}
+
+fn indexOfFrom(self: String, piece: String, from: Int) {
+  let selfSize = len(self)
+  let pieceSize = len(piece)
+
+  if (pieceSize > selfSize) return -1
+
+  for (var i = copy(from), i < selfSize, i++) {
+    if (self[i] != piece[0]) continue
+
+    var matched = false
+    var j = 0
+    var k = copy(i)
+    until (true) {
+      if (j == pieceSize) {
+        matched = true
+        break
+      }
+      if (k == selfSize) break
+      if (self[k++] != piece[j++]) break
+    }
+    if (matched) return i
+  }
+  return -1
+}
+
+fn indexOf(self: String, piece: String) = indexOfFrom(self, piece, 0)
+
+fn contains(self: String, piece: String) = indexOf(self, piece) != -1
+
+fn startsWith(self: String, prefix: String): Bool {
+  let selfSize = len(self)
+  let prefixSize = len(prefix)
+
+  if (prefixSize > selfSize) return false
+
+  for (var i = 0, i < prefixSize, i++)
+    if (self[i] != prefix[i])
+      return false
+  return true
+}
+
+fn endsWith(self: String, suffix: String): Bool {
+  let selfSize = len(self)
+  let suffixSize = len(suffix)
+
+  if (suffixSize > selfSize)
+    return false
+
+  let selfLastIndex = selfSize - 1
+  let suffixLastIndex = suffixSize - 1
+
+  for (var i = suffixLastIndex, i != 0, i--)
+    if (suffix[i] != self[selfLastIndex--])
+      return false
+  return true
+}
+
+let UPPER_CASE = arrayOf( 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' )
+
+let LOWER_CASE = arrayOf( 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' )
+
+fn invert(self: String, target: Array, replacement: Array) {
+  let size = len(self)
+  for (var i = 0, i < size, i++) {
+    if ((let index = target.indexOf(self[i])) != -1)
+      self[i] = replacement[index]
+  }
+  return self
+}
+
+fn uppercase(self: String) = invert(copy(self), LOWER_CASE, UPPER_CASE)
+
+fn lowercase(self: String) = invert(copy(self), UPPER_CASE, LOWER_CASE)
+
+fn part(self: String, from: Int, till: Int) {
+  var result = ""
+  let stringSize = len(self)
+
+  for (var i = copy(from), i < copy(till), i++)
+    result += self[i]
+  return result
+}
+
+fn substring(self: String, from: Int) = part(self, from, len(self))
+
+fn replace(self: String, match: String, replacement: String) {
+  let matchSize = len(match)
+  let selfSize = len(self)
+
+  if (matchSize > selfSize) return copy(self)
+  let replacementSize = len(replacement)
+
+  var result = ""
+  var index = 0
+
+  until (index < selfSize) {
+    let nextIndex = indexOfFrom(self, match, index)
+    if (nextIndex != -1) {
+      result += part(self, copy(index), nextIndex)
+      result += replacement
+      index = nextIndex + matchSize
+    } else {
+      result += substring(self, index)
+      break
+    }
+  }
+
+  return result
+}
+
+fn isAlpha(self: String) {
+  itr (char in self) {
+    if (!(UPPER_CASE.contains(char) || LOWER_CASE.contains(char))) {
+     return false
+    }
+  }
+  return true
+}
+
+fn isNumeric(self: String) {
+  if (startsWith(self, "-")) {
+    self = substring(self, 1)
+  }
+  itr (char in self) {
+    if (!contains("1234567890.", str(char))) return false
+  }
+ return true
+}
+
+fn toCharArray(self: String) {
+  let charCount = len(self)
+  let chars = arralloc(charCount)
+  for (var i = 0, i < charCount, i++)
+    chars[i] = self[i]
+  return chars
+}
+
+fn repeat(self: String, n: Int) {
+  var result = ""
+  let times = copy(n)
+  for (var i = 0, i < times, i++)
+    result += self
+  return result
+}
+
+fn splitOnce(self: String, delimiter: String) {
+  let splitIndex = indexOf(self, delimiter)
+  return arrayOf( part(self, 0, splitIndex),
+            substring(self, splitIndex + 1) )
+}
+
+fn splitRecursive(self: String, delimiter: String) {
+  if (!contains(self, delimiter)) return self
+  let onceSplit = splitOnce(self, delimiter)
+  onceSplit[1] = splitRecursive(onceSplit[1], delimiter)
+  return onceSplit
+}
+
+fn split(self: String, delimiter: String) = splitRecursive(self, delimiter).flatten()
+
+fn size(self: String) = len(self)

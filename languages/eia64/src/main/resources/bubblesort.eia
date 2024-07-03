@@ -1,0 +1,21 @@
+fn sort(ints: Array) {
+  let n = len(ints) - 1
+
+  var swapped = false
+  for (var i = 0, i < n, i++) {
+    swapped = false
+    for (var j = 0, j < n - i, j++) {
+      if (ints[j] > ints[j + 1]) {
+        let temp = ints[j]
+        ints[j] = ints[j + 1]
+        ints[j + 1] = temp
+        swapped = true
+      }
+    }
+    if (!swapped) break
+  }
+}
+
+let nums = ~{ 64 34 25 12 22 11 90 }
+sort(nums)
+println(nums)

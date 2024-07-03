@@ -1,0 +1,112 @@
+; a simple math interpreter that takes in basic expressions and evaluates them in order
+; supports +, -, * and /.
+; * and / are evaluated first, then + and -
+; does not yet support brackets
+
+stdlib(string, array)
+
+let PLUS = "+"
+let MINUS = "-"
+let DIVIDE = "/"
+let MULTIPLY = "*"
+
+let SUPPORTED_OPERATORS = arrayOf(PLUS, MINUS, DIVIDE, MULTIPLY)
+
+fn isNumeric(token: String) {
+  if (len(token) == 0) return false
+  itr (ch in token) {
+    if (!("1234567890".contains(str(ch))))
+      return false
+  }
+  return true
+}
+
+fn tokenize(expr: String) {
+  expr = expr.replace("\t", " ")
+  until (expr.contains("  "))
+    expr = expr.replace("  ", " ")
+  return expr.split(" ")
+}
+
+var tokens: Array = arrayOf()
+var i = 0
+var size = 0
+
+fn isEOF() = i == size
+
+fn peek() = tokens[i]
+fn next() = tokens[i++]
+
+fn eatNumeric() {
+  let value: Any = next()
+  if (!isNumeric(value)) {
+    println("Expected numeric type token but got " + value)
+    exit(1)
+  }
+  return value
+}
+
+fn eatOperator() {
+  let op = next()
+  if (SUPPORTED_OPERATORS.contains(op))return op
+  println("Unknown OP Code: " + op)
+  exit(1)
+}
+
+fn parse() {
+  var left: Any = eatNumeric()
+  until (!isEOF()) {
+    var op = eatOperator()
+    until (op == DIVIDE || op == MULTIPLY) {
+      left = arrayOf(left, op, eatNumeric())
+      if (isEOF()) break
+      else op = next()
+    }
+    if (isEOF()) break
+    let right = parse()
+    left = arrayOf(left, op, right)
+  }
+
+  return left
+}
+
+fn execute(node: Array) {
+  var left: Any = node[0]
+  let op = node[1]
+  var right: Any = node[2]
+
+  if (type(left) == "e_array") left = execute(left)
+  if (type(right) == "e_array") right = execute(right)
+
+  left = int(left)
+  right = int(right)
+
+  return if (op == PLUS) left + right
+         else if (op == MINUS) left - right
+         else if (op == MULTIPLY) left * right
+         else if (op == DIVIDE) left / right
+         else {
+           println("Unknown operator code: " + op)
+           exit(1)
+         }
+}
+
+fn evaluate(expr: String) {
+  let lenExpr = len(expr)
+
+  if (lenExpr == 0) {
+    println("Empty input!")
+  }
+
+  tokens = tokenize(expr)
+  i = 0
+  size = len(tokens)
+
+  let parsed = parse()
+  println(execute(parsed))
+}
+
+until (true) {
+  print("> ")
+  evaluate(readln())
+}

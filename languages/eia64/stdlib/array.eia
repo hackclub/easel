@@ -1,0 +1,53 @@
+fn indexOf(self: Array, element: Any) {
+  let upto = len(self)
+  for (var i = 0, i < upto, i++)
+    if (self[i] == element) return i
+  return -1
+}
+
+fn contains(self: Array, element: Any) = indexOf(self, element) != -1
+
+fn isEmpty(self: Array) = len(self) == 0
+
+fn fillRecursive(flattened: Array, unflattened: Array, fillIndex: Int) {
+  itr (element in unflattened) {
+    if (type(element) == "e_array") fillRecursive(flattened, element, fillIndex)
+    else flattened[fillIndex++] = element
+  }
+}
+
+fn recursiveLen(self: Array) {
+  var size = 0
+  itr (element in self) {
+    if (type(element) == "e_array") size += recursiveLen(element)
+    else size++
+  }
+  return size
+}
+
+fn flatten(self: Array) {
+  let flattened = arralloc(recursiveLen(self))
+  fillRecursive(flattened, self, 0)
+  return flattened
+}
+
+fn size(self: Array) = len(self)
+
+fn add(self: Array, element: Any) {
+  let oldSize = len(self)
+  let newAlloc = arralloc(oldSize + 1)
+  for (var i = 0, i < oldSize, i++)
+    newAlloc[i] = self[i]
+  newAlloc[oldSize] = element
+  return newAlloc
+}
+
+fn removeAt(self: Array, index: Int) {
+  let oldSize = len(self)
+  let newAlloc = arralloc(oldSize - 1)
+  var j = 0
+  for (var i = 0, i < oldSize, i++)
+    if (i != index)
+      newAlloc[j++] = self[i]
+  return newAlloc
+}
