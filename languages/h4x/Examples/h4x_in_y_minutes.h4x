@@ -1,0 +1,181 @@
+~ this is a comment
+{
+  this too is also
+  a comment but it
+  can spread over multiple
+  lines as you can
+  see (hopefully)
+}
+
+~ also you might want to experiment with the repl to test out the stuff
+
+{ h4x (this language) is similar to lisp.
+  so that means a lot of parentheses so be warned.
+  everything is a value or a function (and functions are basically values)
+  even operators are functions, to call a function
+  just put in in parentheses with other values (optionally)
+  like this:                                                     }
+(print "print surprisingly prints text")
+~ double quotes forever
+
+{ then you can nest these function calls
+  a program is just a bunch of nested function calls   }
+(print (+ 1 2) )
+~ the + operator is also a function
+
+
+(define variable 43)
+~ define creates a completely new and original (unlike this language)
+~ variable in the scope its in
+
+~ then you can just access it like in any other normal language
+(print (- variable 1) )
+~ OMG!!11!!1!!!! IT PRINTED 42
+
+~ do creates a new scope where you can change variables independently of outside it
+(do
+  ~ but you can still access them in here if you don't change them
+  (print variable) ~ this will print the one outside
+  ~ define redefines it tho
+  (define variable 1337) ~ now it creates one in this scope
+  (print variable) ~ and it prints that one
+)
+~ outside of do the scope is boom destroyed kaput
+~ so you have access to the old one
+(print variable)
+
+~ you can also not get the variable destroyed
+(do
+  (set variable 101) ~ set tries to set a variable in the closest outer scope
+  (print variable)
+)
+(print variable) ~ it changed
+
+
+~ if
+(if true                             ~ (if also creates a new scope)
+  (print "if statements")
+)
+
+(if (= variable 100) ~ (also you can use = to test for equality because why not)
+  ~ if that's true
+  (print "this should not get executed")
+  ~ else (i like to write a comment that says else to separate the if)
+  (print "this is the else body")
+)
+~ there is no elif/else if.
+~ you have to nest ifs
+
+
+{ you can make functions too
+  they act just like any other value so you can make functions ask for functions
+  you make one like this:                      }
+(define my_function
+  (fn (arg1 arg2) ~ it takes 2 arguments, arg1 arg2           (when a function is run it also creates a new scope)
+    (print "Called my function!")
+    (if (< arg1 arg2)
+      (- arg2 arg1)
+      ~ else
+      (- arg1 arg2)
+    ) ~ it returns the result of the last expression. there's no return statement yet
+  )
+)
+
+{ now you can call it just like any other function }
+(print (my_function 5 6) ) ~ <= 1
+(print (my_function 8 4) ) ~ <= 4
+
+~ sadly it doesn't support closures :( the following code will error D: id like to do that sometime tho
+{
+(define closure null) ~ (also there is null type)
+(do
+  (define local_var 10)
+  (set closure (fn () local_var))
+)
+(closure)
+}
+
+
+{ you can also do loops yay }                   ~(loops also create new scopes)
+
+{ for loops have 3 possible syntaxes
+(for varname (amount) will set varname to 0 and increment it by 1 until it reaches amount 
+  (do stuffs)
+) }
+(for i ({amount} 10)
+  (print i)
+)
+{
+(for varname (start end) its like the previous one but varname is set to start
+  (do stuffs)
+) }
+(for i ({start} 5 {end} 15)
+  (print i)
+)
+{
+(for varname (start end increment) its like the previous one but the increment is increment
+  (do stuffs)
+) }
+(for i ({start} 5 {end} 15 {increment} 2)
+  (print i)
+)
+
+(print)
+{ while loops yk repeat stuff until the condition is false }
+(while {condition} (> variable 0)
+  (print variable)
+  (set variable (- variable 4))
+)
+
+
+{ ALL YOUR MATH ARE BELONG TO US }
+~ all the math operators i could think of are in here
+{ 
+  + * / - = (you can also use == if you want)
+  != <= >= < > not and or (no && || ! that's just ugly)
+}
+
+
+{ what would be a lisp without lists lol }
+{
+  the functions that start with a # are list operations (just a convention i invented because i can)
+  to create a list use the #l function
+  also strings are just special lists so most of the list functions should work on strings
+}
+(define my_list (#l 1 2 3) )
+(print my_list)
+
+(print (#len my_list) ) ~ get length of list
+(print (#nth my_list 0) ) ~ #nth indexes. indexing starts at 0! (what is 0 factorial btw?)
+{ the functions that modify lists don't actually modify the list, it modifies a
+  copy that will be returned }
+(print (#set my_list 2 "hello") ) ~ set sets the value at an index of the list.
+(print (#push my_list "world") ) ~ pushes something to the end of a list
+(print (#pop my_list) ) ~ pop removes the last element of a list.
+
+
+{ IMPORT }
+{
+  yeah u can import stuffs
+  it will search for it in h4x.PATH
+  which by default is the current folder and h4x.stdlib
+  its kinda buggy and only supports python modules rn
+
+  (if i make it support h4x modules i guess ill do includes (like it runs the
+  other program) but its kinda complicated with how i handle errors currently
+  so yeah not yet. actually i should move this paragraph to Docs/library.md
+  but ehhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh)
+}
+(import str)   ~ also h4x comes with an str module which includes string manipulation/utilities
+(print (str:upper "hello world"))
+~ you know what ima talk about the str module while we're here
+(print (str:lower "LoWeR cAsE kInDa SuCkS bRo")) ~ make this less sarcastic
+{str:fmt is kinda cool imo, you use %% to escape %}
+(print (str:fmt "this will be %, you use %% to format stuff" "formatted"))
+~ ok there isn't much to talk about the str module
+
+{
+  thanks for reading all of this (or did you)
+  remember i made most of that in 3 weeks so plz don't hate me if
+  i make something horrible, remember javascript was made in 10 days
+}

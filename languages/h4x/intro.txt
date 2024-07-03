@@ -1,0 +1,10 @@
+Hi there!
+This is a demo of h4x
+the programming language I made for langjam.
+Its similar to lisp.
+One of the goals was to make it easy to embed
+in say a game or something.
+
+(sry for all the text i dont have a microphone now)
+
+Lets start by experimenting in the repl
