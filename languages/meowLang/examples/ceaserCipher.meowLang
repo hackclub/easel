@@ -1,0 +1,20 @@
+meow letters meoow "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ~this is how you make a new variable
+meow key meoow 4
+meow in meoow "meow23!"
+
+in = meowclean(in) ~this will get rid of non letters including spaces and capatilize everything
+
+grrr(in) ~this will print
+
+meow out meoow ""
+
+~i am going to write a for loop i will use spaces inside it to help visualize but you dont need to do that
+~also curly brackets are now Meow and meoW
+
+meeow i meeeow (0, in.length) Meow
+ meow place meoow catFind(letters, in[i]) + key
+ place = place % 26
+ out += letters[place]
+meoW
+
+grrr(out)

@@ -1,0 +1,19 @@
+~hehe im just gonna write out a leet code but in meowLang :3
+
+
+
+mmeow TwoSum mmmeow (nums, target) Meow 
+    meeow i meeeow (0, nums.length - 1) Meow
+        meeow j meeeow (i + 1, nums.length) Meow
+            mrow(nums[i] + nums[j] == target) Meow
+                prrr [i, j]
+            meoW
+        meoW
+    meoW
+    prrr []
+meoW
+
+meow list meoow [0,1,3,4]
+
+
+grrr(TwoSum(list, 7))
