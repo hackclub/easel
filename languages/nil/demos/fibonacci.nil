@@ -1,0 +1,22 @@
+Uses User Input to Calculate Fibonacci Sequence
+
+/*
+
+;
+;{output} ,Value:, res
+;{fib} val = res
+;{num_input} ,Enter Number: , = val
+
+) {x} fib
+)
+  ;n1 + n2
+  ;{fib} (x-1) = n2
+  ;{fib} (x-2) = n1
+  ;n2 num
+  ;n1 num
+) else nif x < 2 (
+  ;1
+nif x >= 2 (
+def (
+
+*/

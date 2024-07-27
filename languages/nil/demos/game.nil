@@ -1,0 +1,46 @@
+Simple Higher Or Lower Game
+
+Game Loop
+/*
+)
+
+  )
+  )
+    ;{round} ((high + low) / 2) = guess
+    )
+      ;guess = high
+    ) else nif val != ,Lower, (
+      ;guess = low
+    ;nif val != ,Higher, (
+    ;{str_input} ,Is Your Answer Higher or Lower: , = val
+    
+    ) else nif false (
+      ;true = game_over
+      ;{output} ,You Win!,
+    ;nif guess != 1 || guess != 100 (
+
+  ) else nif ans != ,No, (
+    ;true = game_over
+    ;{output} ,I Win!,
+  ;nif ans != ,Yes, (
+
+  ;{str_input} ,Am I correct?: , = ans
+  ;{output} ,My Guess Is:, guess
+;noop game_over (
+  
+;{output} ,...,
+;{output} ,Pick A Number Between 1 and 100, 
+*/
+
+Gobal Var Init
+/*
+;50 = guess
+;0 = low
+;100 = high
+;low num
+;high num
+;guess num
+
+;false = game_over
+;game_over bool
+*/

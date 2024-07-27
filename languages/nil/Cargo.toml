@@ -1,0 +1,8 @@
+[package]
+name = "nil"
+version = "1.0.0"
+edition = "2021"
+authors = ["Anthony Chester <anthonychester71@gmail.com>"]
+
+[dependencies]
+regex = "*"
