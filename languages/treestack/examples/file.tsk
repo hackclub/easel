@@ -1,0 +1,5 @@
+"hello world!" "test.txt" write 
+; reads two strings, writes the second one into the file designated by the first
+"test.txt" read print 
+; just reads from the given string
+; reads as a string kinda?

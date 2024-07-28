@@ -1,0 +1,14 @@
+; honestly no clue how this works
+fn fib { 
+    --
+    0 1 
+    (( while { 
+        ))
+        over 
+        over 
+        +
+        (( drop --
+    } ))
+}
+
+9 fib .
