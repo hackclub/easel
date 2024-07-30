@@ -1,0 +1,18 @@
+#import churchnums 100
+
++ = λm.λn.λf.λx.((m f) ((n f) x))
+-- = λn.λf.λx.(((n λg.λh.(h (g f))) λu.x) λu.u)
+
+PAIR = λx.λy.λf.((f x) y)
+FIRST = λp.(p TRUE)
+SECOND = λp.(p FALSE)
+
+TRUE = λx.λy.x
+FALSE = λx.λy.y
+IFTHENELSE = λp.λa.λb.((p a) b)
+ISZERO = λn.((n λx.FALSE) TRUE)
+
+FIB = λf.λn.λp.(((IFTHENELSE (ISZERO n)) (SECOND p)) (((f f) (-- n)) ((PAIR (SECOND p)) ((+ (FIRST p)) (SECOND p)))))
+
+OUT = (((FIB FIB) 7) ((PAIR 1) 0))
+// 7 is the num of iterations, ((PAIR 1) 0) is the starting config, lucas numbers would be ((PAIR 1) 3)
