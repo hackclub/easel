@@ -1,0 +1,12 @@
+~ counter = 0
+
+> Loop
+
+- Add
+~ counter = counter + 1
+Your counter is ${counter}
+> Loop
+
+- Loop
++ Add to counter
+> Add
