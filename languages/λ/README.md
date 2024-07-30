@@ -8,4 +8,8 @@ functions: `λ{variable}.{expression}`
 
 applications (the parenthesis are important!!): `({expression} {expression})`
 
+variables: `{singular lowercase letter}`
+
 there is also no combinator because i think other forms of recursion (such as the one shown in the factorial example program) are better. cheers!
+
+to run, clone the repo and run `python3 λ.py examples/helloworld.λ` to run the helloworld program! that can be swapped out for any other programs you want to run.
