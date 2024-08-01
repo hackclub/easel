@@ -1,0 +1,23 @@
+.vscode/
+python/
+bin/
+bin/*
+output/
+node_modules/
+backup/
+build/
+build-editor/
+
+# Cmake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.cmake
+
+experiments/
+node_modules/
+output/
+_tmp_*
+*.zip
+lppide-*
+ignore

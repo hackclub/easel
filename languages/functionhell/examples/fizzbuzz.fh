@@ -1,0 +1,19 @@
+var void fizzbuzz = void <int n, int j> { // The function fizzbuzz returns void and takes two integer functions n and j as arguments
+    if (j % 15 == 0) {
+        log with (string <> { ret "FizzBuzz" })
+    }
+    else if (j % 5 == 0){
+        log with (string <> { ret "Buzz" })
+    }
+    else if (j % 3 == 0){
+        log with (string <> { ret "Fizz" })
+    }
+    else {
+        log with (int <> { ret ^j })
+    }
+    if (j < n) {
+        ^fizzbuzz with (int <> { ret ^n } , int <> { ret ^j + 1 }) // Recursive call
+    }
+}
+
+fizzbuzz with (int <> { ret 100 }, int <> { ret 0 }) // Call the function with n = 100 and j = 0

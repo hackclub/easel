@@ -1,0 +1,18 @@
+{
+  "name": "lppide",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "devDependencies": {
+    "electron": "^31.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build-win": "electron-packager . --platform=win32 --arch=x64 --overwrite",
+    "build-mac": "electron-packager . --platform=darwin --arch=x64 --overwrite",
+    "build-linux": "electron-packager . --platform=linux --arch=x64 --overwrite"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
