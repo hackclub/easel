@@ -1,0 +1,12 @@
+[package]
+name = "screen"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+fateful_peripheral = { git = "https://github.com/commonkestrel/fateful_peripheral" }
+anyhow = "1.0"
+minifb = "0.25"
