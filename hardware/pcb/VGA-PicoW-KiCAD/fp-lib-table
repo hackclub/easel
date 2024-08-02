@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name "RaspberryPI PicoW")(type "KiCad")(uri "${KIPRJMOD}/RPi_Pico.pretty")(options "")(descr "RaspberryPi PicoW"))
-)
