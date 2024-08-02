@@ -1,0 +1,14 @@
+; fib(n) function written to benchmark performance
+
+private fn fib(n: Int): Int =
+    if (n < 2) n
+    else fib(n - 1) + fib(n - 2)
+
+fn main() {
+  let startTime = time()
+
+  println(
+      "Result: " + fib(30),
+      format(" took %d ms", time() - startTime)
+  )
+}

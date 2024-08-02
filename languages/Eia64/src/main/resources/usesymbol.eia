@@ -1,0 +1,15 @@
+let a = 50
+let b = 5
+
+let max = if (a < b) {
+  println("Choose A")
+  := a
+} else {
+  println("Choose B")
+  := if (a == 50) {
+    println("Oh its 50!")
+    := 2
+  } else a
+}
+
+println("Max: " + max)

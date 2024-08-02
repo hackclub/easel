@@ -1,0 +1,18 @@
+include(
+  static:std:array
+)
+
+let PLUS = "+"
+let MINUS = "-"
+let DIVIDE = "/"
+let MULTIPLY = "*"
+
+let SUPPORTED_OPERATORS = arrayOf(PLUS, MINUS, DIVIDE, MULTIPLY)
+
+println(SUPPORTED_OPERATORS[0] == PLUS)
+
+println(SUPPORTED_OPERATORS.size())
+println(SUPPORTED_OPERATORS.contains("+"))
+println(SUPPORTED_OPERATORS.contains("-"))
+println(SUPPORTED_OPERATORS.contains("/"))
+println(SUPPORTED_OPERATORS.contains("*"))

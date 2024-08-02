@@ -1,0 +1,10 @@
+let x = 5
+let y = 8
+
+; static refactor of code snippers
+
+if (x > y) {
+  println("X is greater")
+} else {
+  println("Y is greater")
+}

@@ -1,0 +1,8 @@
+include(
+  "vision/Meow"
+)
+
+let meow = new Meow("Kat")
+println(meow.doMeow())
+println(meow.name)
+println(meow)

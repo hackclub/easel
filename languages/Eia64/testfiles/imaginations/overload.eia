@@ -1,0 +1,7 @@
+visible fn init(a: Int) {
+  println(a)
+}
+
+visible fn init(a: Int, b: Int) {
+  println(a, b)
+}

@@ -1,0 +1,39 @@
+fn testReturn() {
+ if (true) {
+   0
+   if (true) {
+     0
+     0
+     0
+     return true
+   }
+ }
+ return false
+}
+
+println("It is true: " + testReturn())
+
+fn sort(ints: Array) {
+  let n = len(ints) - 1
+  var x = 0
+  var swapped = false
+  for (var i = 0, i < n, i++) {
+    swapped = false
+    for (var j = 0, j < n - i, j++) {
+      if (ints[j] > ints[j + 1]) {
+        let temp = ints[j]
+        ints[j] = ints[j + 1]
+        ints[j + 1] = temp
+        println("j: " + (j + 1))
+        swapped = true
+        x++
+      }
+    }
+    if (!swapped) break
+  }
+  println(x)
+}
+
+let nums = ~{ 2 4 5 3 5 5 3 5 3 }
+sort(nums)
+println(nums)

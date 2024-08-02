@@ -1,0 +1,8 @@
+let a: Number = 5 + 5
+
+let b = 10
+println(b::Number)
+
+let c: Number = 5
+let d: Int = 2
+println(c + d)

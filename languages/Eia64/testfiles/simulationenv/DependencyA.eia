@@ -1,0 +1,13 @@
+include(
+  "simulationenv/Module"
+)
+
+var module: Any = ""
+
+fn init(name: String) {
+  module = new Module(name)
+}
+
+fn string(): String {
+   return "DependencyA(" + module::Module.moduleName + ")"
+}

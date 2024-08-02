@@ -1,0 +1,34 @@
+; calculates levenshtein distance between two strings
+; also an example demonstrating use of arrays
+
+include(
+  static:std:math
+)
+
+private fn compute(first: String, second: String): Int {
+  let lenFirst = len(first)
+  let lenSecond = len(second)
+
+  let dist = arrayOf<Array<Int>>(lenFirst + 1, arrayOf(0))
+  for (var i = 0, i < lenFirst + 1, i++)
+    dist[i] = arrayOf<Int>(lenSecond + 1, 0)
+
+  for (var i = 0, i <= lenFirst, i++) dist[i][0] = copy(i)
+  for (var j = 0, j <= lenSecond, j++) dist[0][j] = copy(j)
+
+  for (var i = 1, i <= lenFirst, i++) {
+    for (var j = 1, j <= lenSecond, j++) {
+      let cost = if (first[i - 1] == second[j - 1]) 0 else 1
+      dist[i][j] = math.min(
+        math.min(dist[i - 1][j] + 1,
+        dist[i][j - 1] + 1),
+        dist[i - 1][j - 1] + cost
+      )
+    }
+  }
+  return dist[lenFirst][lenSecond]
+}
+
+let first = "flamenco"
+let second = "flamingo"
+println("Distance: ", compute(first, second))

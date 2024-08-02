@@ -1,0 +1,6 @@
+let sayHello(name: String) {
+  println(format("Hello %s!", name))
+}
+
+let x = 123
+sayHello(x)

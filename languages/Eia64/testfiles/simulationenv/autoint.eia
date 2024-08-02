@@ -1,0 +1,4 @@
+println('B' > 'A')
+println('B' > 65)
+println(int('B'))
+println(char('B' + 1)

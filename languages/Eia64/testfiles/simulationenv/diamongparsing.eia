@@ -1,0 +1,10 @@
+include(
+  static:std:string
+)
+
+let name: Any = "Ekita"
+println(name::String.contains("kita"))
+
+; casting a value received from a function
+fn getValue(value: Any) = value
+println(getValue("hello")::String.contains("meow"))

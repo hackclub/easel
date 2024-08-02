@@ -1,0 +1,6 @@
+include(
+  static:std:string
+)
+
+let x: Any = 5
+println(x::String.trim())

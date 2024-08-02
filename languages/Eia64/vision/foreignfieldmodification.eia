@@ -1,0 +1,9 @@
+include(
+  "vision/ClassicPerson"
+)
+
+let person = new ClassicPerson("meow")
+
+; dynamic reference parsed by parser
+person.name = "boww"
+println(person)

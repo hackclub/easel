@@ -1,0 +1,59 @@
+let TRASH = "🗑️"
+let HAPPY_RIGHT = "(> ^_^)>"
+let HAPPY_LEFT = "<(^_^ <)"
+let INTERVAL = 500
+
+fn generateSpaces(n: Int): String {
+    var spaces = ""
+    for (var x = 0, x < n, x++)
+      spaces = spaces + " "
+    return spaces
+}
+
+fn trash(text: String) {
+    let size = len(text)
+
+    for (var i = 0, i < size, i++) {
+        var l = text[0]
+        var going_right = true
+
+        var left_space = 0
+        var right_space = 10 + i
+
+        until (true) {
+            println(TRASH,
+                generateSpaces(left_space),
+                if (going_right) HAPPY_RIGHT else l + HAPPY_LEFT,
+                generateSpaces(right_space),
+                text)
+            sleep(INTERVAL)
+
+            if (going_right && left_space >= 10 + i) {
+                going_right = false
+                left_space = 10 + i
+                right_space = 0
+
+                var newText = ""
+                var j = 1
+                until (j < len(text))
+                  newText = newText + text[j++]
+                text = newText
+            } else if (!going_right && right_space >= 10 + i) {
+                println(TRASH, HAPPY_LEFT, generateSpaces(10 + i + 1), text)
+                sleep(INTERVAL)
+                break
+            }
+            if (going_right) {
+                left_space++
+                right_space--
+            } else {
+                left_space--
+                right_space++
+            }
+        }
+    }
+}
+until (true) {
+    print("Enter a word: ")
+    trash(readln())
+}

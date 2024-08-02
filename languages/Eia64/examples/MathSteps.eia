@@ -1,0 +1,14 @@
+println("Are you good at math? Let's start with simple problems, lets see how long you will last!")
+
+var x = 2
+until (true) {
+  println(format("What is %d+%d?", x, x))
+  let answer = int(readln())
+  if (answer == x + x) {
+    print("Ok, ")
+    x++
+  } else {
+    println(format("Eh you only lasted %d rounds", x - 1))
+    x = 2
+  }
+}

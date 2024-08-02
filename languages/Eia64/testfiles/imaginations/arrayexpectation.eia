@@ -1,0 +1,6 @@
+; to meet expectations documented in eia-docs
+
+; array of
+println(arrayOf(5, 4))
+println(arrayOf<Int>(5, 4))
+println(makeArray<Int>(5, 3))

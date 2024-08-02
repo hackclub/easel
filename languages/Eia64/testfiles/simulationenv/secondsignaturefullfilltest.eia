@@ -1,0 +1,8 @@
+let abcd: Int = if (true) {
+  println("meow")
+  7 + 3
+} else {
+  ; println returns number of elements printed
+  println("meoww")
+}
+println("abcd is " + abcd)

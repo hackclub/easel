@@ -1,0 +1,8 @@
+include(static:std:string)
+
+println("1233".isNumeric())
+println("+12.33".isNumeric())
+println("+12232.33".isNumeric())
+println("-.33".isNumeric())
+println("+0.33".isNumeric())
+println("2.3233333333".isNumeric())

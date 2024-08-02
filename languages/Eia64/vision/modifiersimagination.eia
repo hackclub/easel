@@ -1,0 +1,15 @@
+private var a: Int = 1
+private fn meow(name: String) {
+
+}
+
+public fn miw(bool: Boolean) { }
+
+; Default Public -> Indexed by External Parsers / Resolvers
+; Private -> Functions that cannot be indexed/accessed by external resolvers
+;   when other class tries to access a private function, the system should let the users know
+;   about it
+; Public is the default keyword
+
+visible -> public
+private

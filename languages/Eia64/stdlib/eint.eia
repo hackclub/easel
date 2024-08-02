@@ -1,0 +1,47 @@
+visible fn pow(self: Int, power: Int): Int {
+  power = copy(power) - 1
+  self = copy(self)
+
+  var result = self
+  for (var i = 0, i < power, i++) {
+    result *= self
+  }
+  return result
+}
+
+visible fn root(number: Int): Int {
+  if (number < 0) {
+    throw "Cannot find the square root of a negative number."
+  }
+
+  if (number == 0 || number == 1) {
+    return number
+  }
+
+  var start = 1
+  var end = number
+  var result = 0
+
+  until (start <= end) {
+    var mid = (start + end) / 2
+
+    if (mid * mid == number) {
+      return mid
+    }
+
+    if (mid * mid < number) {
+      start = mid + 1
+      result = mid
+    } else {
+      end = mid - 1
+    }
+  }
+
+  return result
+}
+
+visible fn mag(self: Int): Int {
+  self = copy(self)
+  if (0 > self) return -self
+  return self
+}

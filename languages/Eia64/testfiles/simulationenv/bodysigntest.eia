@@ -1,0 +1,7 @@
+fn plus(a: Int, b: Int): Int {
+  if (a == b) {
+    ; conflict of signatures promised vs given
+    return "meow"
+  }
+  return a + b
+}

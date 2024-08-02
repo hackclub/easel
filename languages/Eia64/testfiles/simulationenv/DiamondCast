@@ -1,0 +1,2 @@
+let x: Any = "Hello, World!"
+println(x::String)

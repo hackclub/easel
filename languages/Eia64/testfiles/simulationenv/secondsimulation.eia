@@ -1,0 +1,10 @@
+include(
+  "simulationenv/Man",
+  "simulationenv/Girl"
+)
+
+let a: Girl = new Man("Miaw")
+let b: Girl = new Man("Miaw1")
+let c: Girl = new Man("Miaw2")
+
+print(a, b, c)

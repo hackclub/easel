@@ -1,0 +1,7 @@
+fn hello() {
+  println("This is a void function")
+}
+; should be caught by pre execution parser
+let x = hello()
+println(x)
+println(type(x))

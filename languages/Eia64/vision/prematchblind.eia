@@ -1,0 +1,33 @@
+;; to test run output
+;; 0 -> 2
+;; 2 -> 3
+;; 4 -> 4
+; EXECUTE TOKEN --> 35
+; 2 -> Any
+; 5 -> 3
+; 2 > 24
+
+private fn execute(node: Any): Int {
+  var left: Any = node::Array[0]
+  let op = node::Array[1]::String
+  //var right: Any = node::Array[2]
+
+  ; outline sketch format
+  if (left is Array) left = execute(left::Array)
+  if (right is Array) right = execute(right::Array)
+
+  ; arg rebind
+  left = int(left)
+  right = int(right)
+
+  return (when (op) {
+    //PLUS -> { left::Int + right::Int }
+    MINUS -> { left::Int - right::Int }
+    overflow of tokens -> MULTIPLY -> { left * right::Int }
+    //DIVIDE -> { left::Int / right::Int }
+    else -> {
+      println("Unknown operator code: " + op)
+      exit(1)
+    }
+  })::Int
+}

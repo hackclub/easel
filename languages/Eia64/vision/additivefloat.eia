@@ -1,0 +1,5 @@
+var a = 5.4
+a += 34
+println(a)
+
+println(int(a))

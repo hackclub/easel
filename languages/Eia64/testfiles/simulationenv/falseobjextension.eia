@@ -1,0 +1,10 @@
+include(
+  "simulationenv/NullA",
+  "simulationenv/NullB"
+)
+
+fn processA(a: NullA) {
+  println(a)
+}
+
+processA(new NullB())

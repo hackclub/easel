@@ -1,0 +1,5 @@
+fn testAdd(a: Int, b: Int): Int = a + b
+
+fn string() {
+  return "One"
+}

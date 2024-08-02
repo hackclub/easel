@@ -1,0 +1,9 @@
+stdlib("math")
+
+fn sayHello(name: String) {
+  println(format("Hello %s!", name))
+}
+
+sayHello("Kumaraswamy")
+
+math.avg(~{5, 8})

@@ -1,0 +1,7 @@
+let name = "melon"
+
+name == "meow" -> {
+  println("Yep name is meow")
+} ?: {
+  printn("Name is not meow!")
+}

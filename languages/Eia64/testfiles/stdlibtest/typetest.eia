@@ -1,0 +1,2 @@
+println(typeOf("Melon") == type::String)              ; true
+println(typeOf(arrayOf(5, 2)) == type::Array<Int>)    ; true

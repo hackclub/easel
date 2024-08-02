@@ -1,0 +1,18 @@
+include(
+  "simulationenv/ObjectExample",
+  static:std:string
+)
+
+let startTime = time()
+
+for (var i = 0, i < 1000, i++) {
+  println(new ObjectExample(i))
+}
+
+println("Result: " + format(" took %d ms", time() - startTime))
+
+let startTime1 = time()
+for (var i = 0, i < 100, i++) {
+  println(("" + i).length())
+}
+println("Result Last: " + format(" took %d ms", time() - startTime1))

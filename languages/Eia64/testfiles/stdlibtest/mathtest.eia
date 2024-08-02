@@ -1,0 +1,3 @@
+include(static:std:math)
+
+println(math.max(5, 2))

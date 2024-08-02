@@ -1,0 +1,6 @@
+fn indexOf(self: Array, element: Any) {
+  let upto = len(self)
+  for (var i = 0, i < upto, i++)
+    if (self[i] == element) return i
+  return -1
+}

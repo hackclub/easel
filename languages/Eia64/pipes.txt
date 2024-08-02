@@ -1,0 +1,3 @@
+pipe command where Eia64 displays runtime logs output
+
+mkfifo /tmp/pipe1

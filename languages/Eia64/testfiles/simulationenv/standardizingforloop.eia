@@ -1,0 +1,5 @@
+let places = arrayOf("Japan", "India", "Germany")
+
+for (place in places) {
+  println(place)
+}

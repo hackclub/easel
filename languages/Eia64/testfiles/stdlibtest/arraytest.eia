@@ -1,0 +1,17 @@
+include(
+  static:std:array
+)
+
+let upper_case = arrayOf( 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' )
+
+println(upper_case.contains('A'))
+println(!(upper_case.isEmpty()))
+
+println(upper_case[0])
+println(type(upper_case[0]) == 'A')
+println(upper_case[0] = '5')
+println(upper_case[0])
+
+println(upper_case = upper_case.add(9))
+println(upper_case.removeAt(2))

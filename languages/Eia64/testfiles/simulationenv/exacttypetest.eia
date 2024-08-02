@@ -1,0 +1,15 @@
+include(
+  "simulationenv/Man",
+  "simulationenv/Girl"
+)
+
+; when we do not check the types deeply, it would be possible to pass a 'Girl' type to a man
+; so a parser time verification is required to solve this
+
+
+fn accept(man: Man) {
+  println(man)
+}
+
+; after verifying the runtime type, we shall also need to verify the subtype of Object
+accept(new Girl("Meow"))

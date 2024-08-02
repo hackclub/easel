@@ -1,0 +1,11 @@
+let a = "Meow!"
+println(a is String)            ; true
+println("Meow" + 8 is Int)      ; false
+println(arrayOf("Hack", "Club!") is Array<String>)      ; true
+
+let name: Any = "Meow"
+let reName: String = name::String
+
+; casting from generic Array to Array<Int>
+let gArray: Array = arrayOf(7::Any, 8::Any)        ; gArray has signature Array<Any>
+let eArray = gArray::Array<Int>             ; eArray has signature Array<Int>

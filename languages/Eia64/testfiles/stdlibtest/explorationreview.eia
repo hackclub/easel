@@ -1,0 +1,17 @@
+; exploration code review testing for eia docs demonstration
+fn pow(n: Int, power: Int, callback: Unit) {
+  n = copy(n) - 1   ; do a copy to not change original value
+
+  for (var i = 0, i < n, i++) {
+    var powed = copy(i)
+    for (var j = 1, j < power, j++) {
+      powed *= i
+    }
+    callback(i, powed)
+  }
+}
+let power = 2
+let callback(of: Int, powed: Int) {
+  println(format("%d^%d is %d", of, power, powed))
+}
+pow(5, power, callback)

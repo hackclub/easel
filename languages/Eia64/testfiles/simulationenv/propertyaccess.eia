@@ -1,0 +1,10 @@
+include(
+  "simulationenv/PersonDetails"
+)
+
+let details = new PersonDetails("Melon", 16)
+println(details.personName)
+println(details.personAge)
+
+println(type(details.personName))
+println(type(details.personAge))

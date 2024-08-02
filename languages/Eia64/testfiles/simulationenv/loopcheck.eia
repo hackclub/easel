@@ -1,0 +1,4 @@
+for (var i = 0, i < 73, i++) {
+  // need to implement char() method for int -> char translation
+  println(char(i))
+}

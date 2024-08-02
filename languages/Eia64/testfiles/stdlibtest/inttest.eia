@@ -1,0 +1,8 @@
+include(
+  static:std:eint
+)
+println(25.pow(2))
+for (var i = 0, i < 10, i++) {
+  println(i + " squared: " + i.pow(2) + ", rooted " + i.root())
+}
+println(25.root())

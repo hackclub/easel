@@ -1,0 +1,5 @@
+var personName = ""
+
+fn init(name: String) {
+  personName = name
+}

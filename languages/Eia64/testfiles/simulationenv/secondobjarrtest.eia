@@ -1,0 +1,17 @@
+include(
+  "simulationenv/SimpleElement"
+)
+
+let elements = arrayOf<SimpleElement>(2, new SimpleElement("Meow"))
+println(elements)
+
+; element testing for
+elements[0] = new SimpleElement("Boww")
+elements[1] = new SimpleElement("Boww")
+elements[2] = new SimpleElement("Boww")
+elements[3] = new SimpleElement("Boww")
+println(elements)
+
+for (var i = 0, i < 100, i++) {
+  println(new SimpleElement(str(i)))
+}

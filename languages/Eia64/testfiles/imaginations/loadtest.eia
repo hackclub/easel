@@ -1,0 +1,4 @@
+include("imaginations/overload")
+
+let load = new overload(2, 3)
+println(load)

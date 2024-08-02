@@ -1,0 +1,9 @@
+var moduleName = ""
+
+fn init(name: String) {
+  moduleName = name
+}
+
+fn string(): String {
+  return "Module(" + moduleName + ")"
+}

@@ -1,0 +1,11 @@
+include(
+  static:std:etype
+)
+
+
+let a = type::String
+println(a == type::String)
+
+let array = arrayOf("meow", "world")
+println(typeOf(array))
+println(typeOf(array) == type::Array)

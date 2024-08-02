@@ -1,0 +1,96 @@
+; a debug version from math interpreter to solve a bug
+; a simple math interpreter that takes in basic expressions and evaluates them in order
+; supports +, -, * and /.
+; * and / are evaluated first, then + and -
+; does not yet support brackets
+; * and / are prioritized over + and -
+
+include(
+  static:std:string,
+  static:std:array
+)
+
+let PLUS = "+"
+
+let SUPPORTED_OPERATORS = arrayOf("+", "-", "/", "*")
+
+fn isNumeric(token: String): Bool {
+  for (ch in token) {
+    if (!("1234567890".contains(str(ch)))) {
+      return false
+    }
+  }
+  return true
+}
+
+fn tokenize(expr: String): Array<String> {
+  expr = expr.replace("\t", " ")
+  until (expr.contains("  ")) {
+    expr = expr.replace("  ", " ")
+  }
+  return expr.split(" ")
+}
+
+var tokens: Array<String> = arrayOf<String>(0, "")
+var i = 0
+var size = 0
+
+fn isEOF(): Bool = i == size
+
+fn peek(): String = tokens[i]
+fn next(): String = tokens[i++]
+
+fn eatOperator(): String {
+  let op = next().trim()
+  if (SUPPORTED_OPERATORS.contains(op)) return op
+  throw "Unknown OP Code: " + op
+}
+
+fn parse(): Any {
+  var left: Any = int(next())
+  until (!isEOF()) {
+    var op = eatOperator()
+    until (op == "/" || op == "*") {
+      left = arrayOf(left, op, int(next()))
+      if (isEOF()) break
+      else op = next()
+    }
+    if (isEOF()) break
+    let right = parse()
+    left = arrayOf(left, op, right)
+  }
+  return left
+}
+
+fn execute(node: Any): Int {
+  var left: Any = node::Array[0]
+  let op = node::Array[1]::String
+  var right: Any = node::Array[2]
+
+  if (type(left) == "e_array") left = execute(left::Array)
+  if (type(right) == "e_array") right = execute(right::Array)
+
+  left = int(left)
+  right = int(right)
+
+  return (when (op) {
+    "+" -> { left::Int + right::Int }
+    else -> {
+      println("Unknown operator code: " + op)
+      exit(1)
+    }
+  })::Int
+}
+
+fn evaluate(expr: String) {
+  let lenExpr = len(expr)
+
+  tokens = tokenize(expr)
+  i = 0
+  size = len(tokens)
+
+  let parsed = parse()
+  println(execute(parsed))
+}
+
+evaluate("1 + 1")

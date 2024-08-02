@@ -1,0 +1,8 @@
+fn init() {
+  ; println("Simple B was created ")
+  print("")
+}
+
+fn string(): String {
+  return "SimpleB"
+}

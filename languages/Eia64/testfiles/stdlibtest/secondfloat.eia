@@ -1,0 +1,4 @@
+let value = 5.5
+let aFloat: Float = float(value)
+println(value)
+println(value + 7)

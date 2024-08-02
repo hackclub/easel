@@ -1,0 +1,14 @@
+include(
+  "simulationenv/Person"
+)
+
+fn hello(person: Person) {
+  println("Hello " + person.getName())
+}
+
+hello(new Person("Melon"))
+
+let miaw(p: Person) {
+  println(p)
+}
+miaw("Ekita")

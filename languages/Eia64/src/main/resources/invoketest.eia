@@ -1,0 +1,5 @@
+stdlib(math)
+
+println(math.max(5, 7))
+println(math.min(5, 7))
+println(math.avg(~{5 7 3 5 2 5}))

@@ -1,0 +1,5 @@
+; right now logical magnitude comparison is only limited to Int
+; but we have to extend support for other data types like char
+
+;println('B' > 'A')
+println(int('B') > int('A'))

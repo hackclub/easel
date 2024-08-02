@@ -1,0 +1,6 @@
+include(
+  "src/main/resources/fnHello"
+)
+let obj = new fnHello()
+obj.hello()
+println("meow")

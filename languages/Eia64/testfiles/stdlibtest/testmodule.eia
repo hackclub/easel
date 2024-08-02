@@ -1,0 +1,16 @@
+include(
+  "vision/Secondary"
+)
+
+var module: Any = ""
+
+fn init(name: String) {
+  module = new Module(name)
+  for (var i = 0, i < len(name), i++) {
+    println(i)
+  }
+}
+
+fn string(): String {
+   return "DependencyA(" + module::Module.moduleName + ")"
+}

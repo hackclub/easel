@@ -1,0 +1,20 @@
+include(
+  "simulationenv/ExternalA"
+)
+
+println("meow" is String)
+println(7 + 3 + "meow" is String)
+
+let x: Any = "meow"
+println(x is String)
+
+let ea: Any = new ExternalA("meow")
+println(ea is ExternalA)
+
+let a = arrayOf("meow", "kat")
+println(a is Array)
+println(a is Array<String>)
+
+println(type(ea))
+println(type(ea) == "e_object<ExternalA>")
+println(type(a))

@@ -1,0 +1,11 @@
+include(
+  static:std:string
+)
+
+var name: String = nil
+
+; TODO:
+;  we need to add checks at runtime such that any
+;  action such as foreign field accessing, foreign method access
+;  are prohibited on nil elements (EiNilPtr?)
+println(name.trim())

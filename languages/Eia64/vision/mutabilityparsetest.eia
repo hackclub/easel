@@ -1,0 +1,4 @@
+; should be handled at pre-execution time
+
+let name = "meow"
+name = "boww"

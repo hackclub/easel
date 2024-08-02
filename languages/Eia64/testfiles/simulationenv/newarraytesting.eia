@@ -1,0 +1,4 @@
+let names = arrayOf<String>(5, "hello")
+println(names)
+names[0] = "meow"
+println(names)

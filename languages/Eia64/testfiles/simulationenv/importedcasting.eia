@@ -1,0 +1,7 @@
+include(
+  "simulationenv/Person"
+)
+
+let melon: Any = new Person("Melon")
+
+println(melon::Person.getName())

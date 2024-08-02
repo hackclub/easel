@@ -1,0 +1,10 @@
+fn printUser(name: String) {
+  println("Username: " + name)
+}
+
+fn printUser(name: String, age: Int) {
+  println(format("Username: %s, age: %d", name, age))
+}
+
+printUser("Meow")
+printUser("Melon", 16)

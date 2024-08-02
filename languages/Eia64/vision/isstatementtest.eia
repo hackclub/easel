@@ -1,0 +1,16 @@
+include(
+  "vision/SimpleDeclaration"
+)
+
+let places = arrayOf("Bengaluru", "Mumbai", "Chennai")
+println(places is Array)
+println(places is Array<String>)
+
+let names: Array = arrayOf("Melon", "Ekita")
+println(places is Array)
+println(places is Array<String>)
+println(!(places is Array<Int>))
+
+let declaration = new SimpleDeclaration(5)
+println(declaration is Object)
+println(declaration is SimpleDeclaration)

@@ -1,0 +1,7 @@
+let names = arrayOf("Japan", "India")
+println(names is Array<String>)
+
+let integers = arrayOf(7, 3)
+
+println(names is Array<Int>)
+println(integers is Array<Int>)

@@ -1,0 +1,8 @@
+include(
+  "simulationenv/hello"
+)
+
+let x = new hello()
+if ((x.sayTrue())) {
+  println("Hello, World!")
+}

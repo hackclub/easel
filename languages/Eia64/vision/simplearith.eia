@@ -1,0 +1,5 @@
+; simple arithmetic testing to know everything works
+
+println(2 + 2)
+println(2 >= 2)
+println(2 + 1 >= 2)

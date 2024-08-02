@@ -1,0 +1,11 @@
+var square_result = 0
+var n = 0
+fn square(upto: Int, callback: Unit) {
+    for (n = 0, n < upto, n++) {
+        square_result = n * n
+        ~callback
+    }
+}
+
+let callback = { println(n + " squared is " + square_result) }
+square(5, callback)

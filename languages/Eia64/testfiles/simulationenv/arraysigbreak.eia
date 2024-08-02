@@ -1,0 +1,3 @@
+let strings = arrayOf<String>(2, "meow")
+strings[0] = 123
+println(strings)

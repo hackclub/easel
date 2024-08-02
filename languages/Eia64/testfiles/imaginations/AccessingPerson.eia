@@ -1,0 +1,7 @@
+include("imaginations/Person")
+
+let person = new Person("Melon", 16)
+person.printUser()
+println(person.age)
+
+println(person)

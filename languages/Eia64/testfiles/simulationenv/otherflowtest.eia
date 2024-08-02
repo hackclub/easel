@@ -1,0 +1,9 @@
+fn loop(from: Int, till: Int): Int {
+  for (var i = from, i < till, i++) {
+    println(i)
+    if (i == 2) return "hello world"
+  }
+  return 0
+}
+
+println(loop(0, 7))

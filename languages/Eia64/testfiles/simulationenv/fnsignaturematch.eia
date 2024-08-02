@@ -1,0 +1,6 @@
+fn plus(first: Int, second: Int) {
+  println(first + second)
+}
+
+plus(1, 2)
+plus("1", "2")

@@ -1,0 +1,13 @@
+private var name = ""
+
+fn init(_name: String) {
+  name = _name
+}
+
+private fn doMeow() {
+  println("Meow! " + name)
+}
+
+fn string(): String {
+  return "Miaw(" + name + ")"
+}

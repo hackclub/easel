@@ -1,0 +1,10 @@
+let a = "meow"
+
+fn main() {
+  println(a)
+
+  fn meow() {
+    println("i am a meow")
+  }
+  meow()
+}

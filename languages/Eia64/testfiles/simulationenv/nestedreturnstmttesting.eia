@@ -1,0 +1,10 @@
+fn sayHello(name: String): String {
+  fn greet(): String {
+    println("Hello " + name)
+    return "miw"
+  }
+  println("Meow")
+  return greet()
+}
+println(sayHello("Melon"))
+println(type(sayHello("Melon")))

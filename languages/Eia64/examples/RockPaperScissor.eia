@@ -1,0 +1,50 @@
+; a rock-paper-scissor game written in Eia, you pick 'rock', 'paper' or a 'scissor'
+; robot picks it's option randomly
+
+include(
+  static:std:string
+)
+
+private let choices = arrayOf("rock", "paper", "scissor")
+
+private fn robotChoose(user: String): Array {
+  let robot = choices[rand(0, 2)]
+  if (user == robot) return arrayOf(robot, 0)
+
+  if ((user == "rock" && robot == "scissor")
+        || (user == "paper" && robot == "rock")
+        || (user == "scissor" && robot == "paper")) {
+    return arrayOf(robot, 1)
+  }
+
+  return arrayOf(robot, 2)
+}
+
+fn play() {
+  println("Pick 'rock' 'paper' or 'scissor'")
+
+  until (true) {
+    print("Enter your choice: ")
+    let input = readln().lowercase()
+    if (input == "endgame") {
+      break
+    }
+    if (!(input == "rock" || input == "paper" || input == "scissor")) {
+      println("Invalid Choice, pick 'rock' 'paper' or 'scissor'")
+    } else {
+      let result = robotChoose(input)
+      println("Robot picked " + result[0])
+      if (result[1] == 1) {
+        println("You won!")
+        break
+      } else if (result[1] == 2) {
+        println("Ono! Human looses to Robot!")
+        break
+      }
+    }
+  }
+}
+
+fn main() {
+  play()
+}
