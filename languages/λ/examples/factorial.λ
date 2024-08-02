@@ -1,0 +1,12 @@
+#include churchnums 24
+
+* = λm.λn.λf.(m (n f))
+-- = λn.λf.λx.(((n λg.λh.(h (g f))) λu.x) λu.u)
+
+TRUE = λx.λy.x
+FALSE = λx.λy.y
+IFTHENELSE = λp.λa.λb.((p a) b)
+ISZERO = λn.((n λx.FALSE) TRUE)
+
+FACT = λf.λn.(((IFTHENELSE (ISZERO n)) 1) ((* n) ((f f) (--n))))
+OUT = ((FACT FACT) 4)
