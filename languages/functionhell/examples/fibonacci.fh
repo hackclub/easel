@@ -1,0 +1,11 @@
+var int fibonacci = int <int i> {
+    if (i <= 1){
+        ret i
+    }
+    ret ^fibonacci with (int <> {ret i - 2}) + ^fibonacci with (int <> {ret i - 1})
+}
+
+log with (fibonacci with (int <> {ret 5}))
+log with (fibonacci with (int <> {ret 10}))
+log with (fibonacci with (int <> {ret 15}))
+log with (fibonacci with (int <> {ret 20}))

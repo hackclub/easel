@@ -1,0 +1,12 @@
+var float factorial = float <int i>{
+    if (i <= 0) {
+        ret 1
+    }
+    log with (i)
+    ret i * ^factorial with (int <> { ret ^i - 1 })
+}
+
+log with (factorial with (int <> { ret 35 }))
+log with (factorial with (int <> { ret 25 }))
+log with (factorial with (int <> { ret 15 }))
+log with (factorial with (int <> { ret 5 }))

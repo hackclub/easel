@@ -1,0 +1,95 @@
+
+var fn nl = fn <> {
+    ret string <> {
+        ret "\n"
+    }
+}
+var int factorial = int <int x> {
+    if (x <= 1) {
+        ret 1
+    }
+    ret ^factorial with (int <> { ret ^x - 1 }) * x
+}
+
+var int intPow = int <int a, int b, int c> {
+    if (b <= 0) {
+        ret c
+    }
+    ret ^intPow with (int <> { ret ^a }, int <> { ret ^b - 1 }, int <> { ret c * a })
+}
+
+var float prefix = float <> {
+    ret 2 * ^sqrt with (float <> { ret 2.0 }) / (99 * 99)
+}
+
+var int maxIters = int <> {
+    ret 10
+}
+
+var float seriesPre = float <int k> {
+    ret ^factorial with (int <> { ret 4 * k }) /
+        ^factorial with (int <> { ret k })
+}
+
+var float seriesPost = float <int k>{
+    ret (26390 * ^k + 1103) /
+                ^intPow with (
+                    int <> { ret 396 }, 
+                    int <> { ret 4 * ^k }, 
+                    int <> { ret 1 }
+        )
+}
+
+var float series = float <int k, float cur> {
+    if (k >= ^maxIters) {
+        ret 1/^prefix*cur
+    }
+    ret ^series with (
+        int <> { ret ^k + 1 },
+        float <> {
+            ret ^cur + (^seriesPre with (int <> {ret ^k}) * ^seriesPost with (int <> {ret ^k}))
+                
+        }
+    )
+}
+
+// Tests
+
+
+var void runTests = void <> {
+
+    var bool inMargin = bool <float a, float b, float percent> {
+        ret ^abs with (float <> { ret ^a - ^b }) <= percent/100
+    }
+
+    // Test factorial
+    log with (string <> {ret "factorial():"}, ^nl)
+    log with (string <> {ret "\t5! = "}, int <> { ret ^factorial with (int <> { ret 5 }) }, ^nl)
+    log with (string <> {ret "\t0! = "}, int <> { ret ^factorial with (int <> { ret 0 }) }, ^nl)
+    log with (string <> {ret "\t1! = "}, int <> { ret ^factorial with (int <> { ret 1 }) }, ^nl)
+
+    // Test intPow
+    log with (string <> {ret "intPow():"}, ^nl)
+    log with (string<>{ret"\t"},int <> { ret 2 }, string <> { ret "^" }, int <> { ret 3 }, string <> { ret " = "}, int <> { ret ^intPow with (int <> { ret 2 }, int <> { ret 3 }, int <> { ret 1 }) }, ^nl)
+    log with (string<>{ret"\t"},int <> { ret 5 }, string <> { ret "^" }, int <> { ret 0 }, string <> { ret " = "}, int <> { ret ^intPow with (int <> { ret 5 }, int <> { ret 0 }, int <> { ret 1 }) }, ^nl)
+
+    // Test prefix
+    log with (string <> {ret "prefix() = "}, float <> { ret ^prefix }, ^nl)
+
+    // Test maxIters
+    log with (string <> {ret "maxiters() = "}, int <> { ret ^maxIters }, ^nl)
+    
+    log with (string <> {ret "seriesPre() = "}, float <> {ret ^seriesPre with (int <> { ret 1})}, ^nl)
+
+    log with (string <> {ret "seriesPost() = "}, float <> {ret ^seriesPost with (int <> { ret 1})}, ^nl)
+    // Test series
+    log with (string <> {ret "series() = "}, float <> { ret ^series with (int <> { ret 0 }, float <> { ret 0 }) }, ^nl)
+}
+
+
+runTests
+
+
+//log with (float <> { ret ^series with (int <> { ret 0 }, float <> { ret 0 }) }) // PI!
+
+

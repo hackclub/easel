@@ -1,0 +1,68 @@
+cmake_minimum_required(VERSION 3.10)
+project(fnhell)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+
+
+# Find LLVM package
+#find_package(LLVM REQUIRED CONFIG)
+
+# Print out the LLVM version and libraries
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+# Set LLVM include directories
+#include_directories(${LLVM_INCLUDE_DIRS})
+#add_definitions(${LLVM_DEFINITIONS})
+
+# Source files
+set(SRC_DIR src)
+set(SRCS 
+    ${SRC_DIR}/main.cpp 
+    ${SRC_DIR}/lexer/lexer.cpp 
+    ${SRC_DIR}/lexer/tokens/tokens.cpp 
+    ${SRC_DIR}/errors/error.cpp 
+    ${SRC_DIR}/parser/ast/ASTNodes.cpp 
+    ${SRC_DIR}/parser/ast/ASTNodesToTS.cpp 
+    ${SRC_DIR}/parser/parser.cpp 
+    ${SRC_DIR}/transpiler/transpiler.cpp
+    ${SRC_DIR}/typeChecker/typeChecker.cpp
+    #${SRC_DIR}/LLVMCompiler/compiler.cpp
+    ${SRC_DIR}/utils/utils.cpp
+)
+
+# Output directories
+set(OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin)
+set(OBJECT_DIR ${OUTPUT_DIR}/obj)
+
+# Include directories
+include_directories(${SRC_DIR})
+
+# Add the executable
+add_executable(${PROJECT_NAME} ${SRCS})
+
+# Link LLVM libraries
+#llvm_map_components_to_libnames(llvm_libs core orcjit native)
+#target_link_libraries(${PROJECT_NAME} ${llvm_libs})
+
+# Create necessary directories before linking
+add_custom_command(TARGET ${PROJECT_NAME} PRE_LINK
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_DIR}
+)
+
+# Set the output directory for the target
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}
+)
+
+# Custom clean target (mimicking the `clean` target)
+add_custom_target(clean-all
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${OBJECT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${OUTPUT_DIR}
+)
