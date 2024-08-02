@@ -1,0 +1,4 @@
+3 4 5
+; should give an error at the last .
+. . . .
+4 5 6

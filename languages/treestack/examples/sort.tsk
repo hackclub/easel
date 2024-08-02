@@ -1,0 +1,5 @@
+1[ 1 100 range "drop 1 10 random" map ]
+dup .
+[ ( while { ) over over > if { drop swap } else { drop } (( } ]
+10 ,
+.

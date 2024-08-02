@@ -1,0 +1,26 @@
+fn factorial { 
+    1 
+    ; adds one to start the 1..n range
+    swap
+    ; swaps the one as before it was after n
+    range
+    ; creates the 1..n range
+    (
+    ; kinda evil, but moves into the stack
+    ; this and the while loop makes sure you don't experience a 
+    ; stack underflow as the while will run even if there is only 
+    ; one value
+    while {
+        )
+        ; moves back to stack end
+        *
+        ; multiples
+        (
+        ; does the same as before while
+    }
+    ) 
+    ; moves back to stack end
+}
+
+10 factorial
+.

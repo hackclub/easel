@@ -1,0 +1,46 @@
+&root 0 [ 0, 0 ] 1 [ 3 &x 4 &y ]
+2 [ &screen 20 while { 1 [ 80 while { 1 swap -- } ] swap -- } ]
+
+fn drawscreen {
+    ^root )))
+    [
+    drop
+    while { 
+        [ drop while { 1 = if { '#' , } else { ' ' , } drop } ]
+        drop
+        10 ,
+    }
+    ]
+}
+
+fn draw_room {
+    ^root
+    ))) 
+    3 6 random &height
+    3 6 random &width
+    1 14 random &y
+    1 74 random &x
+    ((((
+    [ ( 
+    
+    *y while { swap ( -- } drop
+
+    *height
+    while { 
+        -- swap 
+        [ ( 
+
+        *x while { swap ( -- } drop
+
+        *width
+        while {
+            -- swap 1 + (
+        } drop
+        ] ( 
+    } 
+    drop
+    ]
+}
+
+^root ) [ 10 &count while { draw_room ^count -- }
+drawscreen

@@ -1,0 +1,15 @@
+[package]
+name = "treestack"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.7", features = ["derive"] }
+crossterm = "0.27.0"
+fehler = "1.0.0"
+rand = "0.8.5"
+strum = { version = "0.26.2", features = ["derive"] }
+strum_macros = "0.26.4"
+
+[target.'cfg(unix)'.dependencies]
+syscalls = "0.6.18"
