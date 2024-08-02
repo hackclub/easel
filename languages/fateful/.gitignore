@@ -1,0 +1,10 @@
+target
+.fateful-cache
+zig-cache
+zig-out
+/.vscode
+*.dll
+*.so
+*.dylib
+*.exe
+*.bin

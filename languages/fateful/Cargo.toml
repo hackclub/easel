@@ -1,0 +1,43 @@
+[package]
+name = "fateful"
+version = "0.1.0"
+edition = "2021"
+description = "A command line utility to create and test programs for the F8ful CPU"
+authors = ["commonkestrel"]
+license = "MIT"
+build = "build.rs"
+rust-version = "1.70.0"
+
+[workspace]
+members = ["peripherals/advanced", "peripherals/multi-port", "peripherals/rust-peripheral", "peripherals/screen"]
+
+[dependencies]
+async-std = { version="1", features = ["attributes"] }
+bitflags = "2.4"
+clap = { version = "4.4", features = ["derive"] }
+clap-verbosity-flag = "2.1"
+clio = { version = "0.3", features = ["clap-parse"] }
+colored = "2"
+env_logger = "0.10"
+git2 = "0.18"
+humantime = "2.1"
+lazy-regex = "3.1"
+libloading = "0.8"
+logos = "0.13"
+minifb = { git = "https://github.com/emoon/rust_minifb", rev = "d62b0f5" }
+modular-bitfield = "0.11"
+once_cell = "1.18"
+serialport = "4.3"
+shadow-rs = "0.26"
+thiserror = "1"
+
+[build-dependencies]
+shadow-rs = "0.26"
+logos = "0.13"
+bitflags = "2.4"
+anyhow = "1"
+thiserror = "1"
+
+[features]
+default = ["http"]
+http = ["clio/http", "clio/http-ureq"]
