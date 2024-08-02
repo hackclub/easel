@@ -1,0 +1,63 @@
+fn indexOf(self: String, match: String): Int {
+  let size = len(self)
+  let matchSize = len(match)
+
+  for (var i = 0, i < size, i++)
+    if (self[i] == match[0]) {
+      let matchUntil = i + matchSize
+      var matchIndex = 0
+
+      for (var j = i, j < matchUntil, j++)
+        if (self[j] != match[matchIndex++]) {
+          matchIndex = -1
+          break
+        }
+
+      if (matchIndex != -1)
+        return matchIndex
+    }
+  return -1
+}
+
+fn lastIndexOf(self: String, match: Char): Int {
+  let size = len(self)
+  var lastSeenIndex = -1
+  for (var i = 0, i < size, i++)
+      if (self[i] == match)
+        lastSeenIndex = i
+  return lastSeenIndex
+}
+
+fn startsWith(self: String, prefix: String): Bool {
+  let selfSize = len(self)
+  let prefixSize = len(prefix)
+
+  if (prefixSize > selfSize)
+    return false
+
+  for (var i = 0, i < prefixSize, i++)
+    if (self[i] != prefix[i])
+      return false
+  return true
+}
+
+fn endsWith(self: String, suffix: String): Bool {
+  let selfSize = len(self)
+  let suffixSize = len(suffix)
+
+  if (suffixSize > selfSize)
+    return false
+
+  let selfLastIndex = selfSize - 1
+  let suffixLastIndex = suffixSize - 1
+
+  for (var i = suffixLastIndex, i != 0, i--)
+    if (suffix[i] != self[selfLastIndex--])
+      return false
+  return true
+}
+
+println(indexOf("hello", "l"))
+println(lastIndexOf("hello", 'l') == 3)
+println(startsWith("melon", "melo"))
+println(endsWith("melon", "elon"))

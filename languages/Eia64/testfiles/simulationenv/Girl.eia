@@ -1,0 +1,9 @@
+let girlName = ""
+
+fn init(name: String) {
+  girlName = name
+}
+
+fn getName() = girlName
+
+fn string() = "Girl(" + girlName + ")"

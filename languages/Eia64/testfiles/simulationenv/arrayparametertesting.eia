@@ -1,0 +1,8 @@
+fn printPlaces(places: Array<String>) {
+  each (place in places) {
+    println(place)
+  }
+}
+
+let places = arrayOf("Japan", "India", "Russia", "UAE")
+printPlaces(places)

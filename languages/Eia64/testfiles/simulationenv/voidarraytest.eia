@@ -1,0 +1,8 @@
+fn nothing() {
+  ; this does nothing
+}
+
+let a = arrayOf(nothing(), nothing(), nothing())
+println(a)
+println(type(a[0]))
+println(a[0] == 0)

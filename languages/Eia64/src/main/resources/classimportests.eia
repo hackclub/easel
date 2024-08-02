@@ -1,0 +1,5 @@
+stdlib(math, array, string)
+
+println("m i a w".split(" "))
+println(math.min(5, 6))
+println(~{1 2 3}.contains(3))

@@ -1,0 +1,10 @@
+include(
+  "simulationenv/ExtentiveObj"
+)
+
+fn operateObject(obj: Object) {
+  println(obj)
+}
+
+let wrappedObject = new ExtentiveObj()
+operateObject(wrappedObject)

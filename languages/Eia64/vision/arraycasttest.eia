@@ -1,0 +1,11 @@
+; Array<N> to Array
+let rawArray: Array = arrayOf("hello", "world")
+println(type(rawArray))
+
+; Array to Array<N>
+let stringArray = rawArray::Array<String>
+println(type(stringArray))
+
+; Array<String> to Array
+let rawArray = stringArray::Arraya
+println(type(rawArray))

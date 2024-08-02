@@ -1,0 +1,123 @@
+include(
+  static:std:string
+)
+
+var list = makeArray<Any>(0, 0)
+var size = 0
+var index = 0
+
+visible fn init(initSize: Int) {
+  list = makeArray<Any>(initSize, 0)
+  size = initSize
+  index = 0
+}
+
+fn initArray(array: Array) {
+  size = len(array)
+  index = 0
+  list = array
+}
+
+fn enlarge() {
+  let newSize = size * 2
+  let newList = makeArray<Any>(newSize, 0)
+  for (var i = 0, i < index, i++) {
+    newList[i] = list[i]
+  }
+  list = newList
+  size = newSize
+}
+
+fn checkBounds(at: Int) {
+  if (0 > at || at >= index) {
+    throw format("Index Out of Bounds, index=%d, size=%d", at, index)
+  }
+}
+
+visible fn get(at: Int): Any {
+  checkBounds(at)
+  return list[at]
+}
+
+visible fn set(element: Any, at: Int) {
+  checkBounds(at)
+  list[at] = element
+}
+
+fn size(): Int = index
+fn isEmpty(): Bool = size == 0
+
+visible fn add(element: Any) {
+  if (index == size) enlarge()
+  list[index++] = element
+}
+
+visible fn addAt(element: Any, at: Int) {
+  checkBounds(at)
+  let newList = makeArray<Any>(size + 1, 0)
+  var j = 0
+  for (var i = 0, i < size, i++) {
+    if (i == at) {
+      newList[j++] = element
+    }
+    newList[j++] = list[i]
+  }
+  list = newList
+  size++
+  index++
+}
+
+visible fn indexOf(match: Any): Int {
+  for (var i = 0, i < index, i++) {
+    if (list[i] == match) return i
+  }
+  return -1
+}
+
+visible fn contains(match: Any): Bool = indexOf(match) != -1
+
+visible fn remove(at: Int): Any {
+  checkBounds(at)
+  let element = list[at]
+  for (var i = copy(at), i < index - 1, i++) {
+    list[i] = list[i + 1]
+  }
+  index--
+  return element
+}
+
+visible fn removeElement(element: Any): Any {
+  let index = indexOf(element)
+  if (index == -1) return false
+  return remove(index)
+}
+
+visible fn clear() {
+  index = 0
+}
+
+visible fn arrayOfRange(from: Int, end: Int): Array {
+  checkBounds(from)
+  checkBounds(end - 1)
+
+  let sublistSize = end - from
+  let subarray = makeArray<Any>(sublistSize, 0)
+
+  for (var i = 0, i < sublistSize, i++) {
+    subarray[i] = list[from + i]
+  }
+  return subarray
+}
+
+visible fn toArray(): Array = arrayOfRange(0, index)
+
+visible fn string(): String {
+  if (size == 0) return "[]"
+  var result = "["
+  for (var i = 0, i < index, i++) {
+    result += str(list[i]) + ", "
+  }
+  result = result.part(0, result.size() - 2)
+  result += "]"
+  return result
+}

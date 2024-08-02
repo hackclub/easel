@@ -1,0 +1,9 @@
+var aValue = ""
+
+fn init(value: String) {
+  aValue = value
+}
+
+fn string(): String {
+  return "Element(" + aValue + ")"
+}

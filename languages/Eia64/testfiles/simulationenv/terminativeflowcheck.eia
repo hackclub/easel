@@ -1,0 +1,7 @@
+fn plus(a: Int, b: Int): Int {
+  if (a == b) {
+    return a * b
+  }
+  return a + b
+}
+println(plus(1, 2))

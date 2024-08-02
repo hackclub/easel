@@ -1,0 +1,9 @@
+; direct auto declaration using [ ]
+
+let names = ["India", "Japan", "Russia"]
+let otherSet = array<Int>(5, 2, 2)
+let otherSet2 = array<Any>(5, 2, 2)
+
+println(type(names))
+println(type(otherSet))
+println(type(otherSet) == type(otherSet2))

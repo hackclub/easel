@@ -1,0 +1,8 @@
+// private variable declarations
+
+fn _init(x: Int, y: Int) {
+  // the class would begin here
+  // these type of classes would be initialized using
+  // let myList = init(:List, 5, 10)
+  //   myList would be of an Object element type that could be dynamically called
+}

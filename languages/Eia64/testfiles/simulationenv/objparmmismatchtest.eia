@@ -1,0 +1,11 @@
+include(
+ "simulationenv/SimpleA",
+ "simulationenv/SimpleB"
+)
+
+fn aFunction(simpleA: SimpleA) {
+  ; here is where we f up, intention was to receive simpleA, but we got simpleB
+  println(simpleA)
+}
+
+aFunction(new SimpleB())

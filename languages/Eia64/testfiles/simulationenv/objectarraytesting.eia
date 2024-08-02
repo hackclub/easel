@@ -1,0 +1,8 @@
+include(
+  "simulationenv/SimpleElement"
+)
+
+let elements = arrayOf<SimpleElement>(2, new SimpleElement("Meow"))
+println(elements)
+elements[0] = new SimpleElement("Boww")
+println(elements)

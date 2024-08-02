@@ -1,0 +1,4 @@
+visible fn isStdLib(self: Type): Bool =
+        self == type::String || self == type::Char
+        || self == type::Int || self == type::Nil
+        || type::Array

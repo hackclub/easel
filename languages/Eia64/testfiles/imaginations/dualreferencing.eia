@@ -1,0 +1,12 @@
+; testing conditions that could cause program breaks, this time its two bi referencing functions
+
+fn meow() {
+  boww()
+}
+
+fn boww() {
+  meow()
+}
+
+; only SO can break it
+meow()

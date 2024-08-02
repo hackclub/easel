@@ -1,0 +1,23 @@
+let a: Any = 10
+if (true) 7 else 2 * a::Int
+
+fn execute(node: Array) {
+  var left: Any = node[0]
+  let op = node[1]::String
+  var right: Any = node[2]
+
+  if (type(left) == "e_array") left = execute(left)
+  if (type(right) == "e_array") right = execute(right)
+
+  left = int(left)
+  right = int(right)
+
+  return if (op == PLUS) left::Int + right::Int
+         else if (op == MINUS) left::Int - right::Int
+         else if (op == MULTIPLY) left::Int * right::Int
+         else if (op == DIVIDE) left::Int / right::Int
+         else {
+           println("Unknown operator code: " + op)
+           exit(1)
+         }
+}

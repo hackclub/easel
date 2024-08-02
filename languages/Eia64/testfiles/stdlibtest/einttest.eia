@@ -1,0 +1,41 @@
+include(
+  static:std:eint,
+  static:std:string
+)
+
+println(25.pow(2))
+for (var i = 0, i < 10, i++) {
+  println(i + " squared: " + i.pow(2) + ", rooted " + i.root())
+}
+println(25.root())
+
+println(-523.mag() == 523)
+
+println("1234".toInt() == 1234)
+println("00012340".toInt() == 12340)
+println("-123".toInt() == -123)
+println("-0".toInt() == 0)
+println("12223333".toInt() == 12223333)
+
+println("10".toIntRadix(2) == 2)
+println("101010".toIntRadix(2) == 42)
+println("101".toIntRadix(2) == 5)
+
+println("173".toIntRadix(8) == 123)
+println("354574".toIntRadix(8) == 121212)
+println("23417".toIntRadix(8) == 9999)
+
+println("122".toIntRadix(6) == 50)
+println("12212".toIntRadix(6) == 1808)
+println("12212".toIntRadix(6) == 1808)
+println("54342".toIntRadix(6) == 7478)
+
+println("232".toIntRadix(5) == 67)
+println("11212".toIntRadix(5) == 807)
+println("442121".toIntRadix(5) == 15286)
+
+println("12121".toIntRadix(7) == 3151)
+println("1122222".toIntRadix(7) == 140058)
+println("12121".toIntRadix(7) == 3151)
+println("325642".toIntRadix(7) == 57262)
+println("2313123".toIntRadix(7) == 289215)

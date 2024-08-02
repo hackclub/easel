@@ -1,0 +1,7 @@
+let text = "hello world"
+let size = len(text)
+let i = 0
+
+until (i != size) {
+   fout(text[i++])
+}

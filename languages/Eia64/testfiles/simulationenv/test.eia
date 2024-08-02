@@ -1,0 +1,8 @@
+include(
+  "simulationenv/hello"
+)
+
+let x: hello = new hello()
+let y = x
+let z: String = y.sayHello()
+println(z)

@@ -1,0 +1,7 @@
+include(
+  "simulationenv/Cat",
+  "simulationenv/Boww"
+)
+
+let aCat: Any = new Cat()
+println(aCat::Boww.bark())

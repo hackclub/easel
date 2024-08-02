@@ -1,0 +1,5 @@
+when (10) {
+  2 -> { println("Two!") }
+  (5 * 2) -> { println("Damn its 10!") }
+  else -> { }
+}

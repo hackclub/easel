@@ -1,0 +1,41 @@
+fn factorial(n: Int): Int =
+    if (n <= 1) 1
+    else n * factorial(n - 1)
+
+for (var i = 1, i < 11, i++) {
+  println(factorial(i))
+}
+
+fn root(number: Int) {
+  if (number < 0) {
+    throw "Cannot find the square root of a negative number."
+  }
+
+  if (number == 0 || number == 1) {
+    return number
+  }
+
+  var start = 1
+  var end = number
+  var result = 0
+
+  until (start <= end) {
+    var mid = (start + end) / 2
+
+    if (mid * mid == number) {
+      return mid
+    }
+
+    if (mid * mid < number) {
+      start = mid + 1
+      result = mid
+    } else {
+      end = mid - 1
+    }
+  }
+
+  return result
+}
+
+
+println(root(626))

@@ -1,0 +1,252 @@
+include(
+  static:std:array
+)
+
+visible fn indexOfChar(self: String, letter: Char): Int {
+  let size = len(self)
+  if (size == 0) return -1
+  for (var i = 0, i < size, i++)
+    if (self[i] == letter) return i
+  return -1
+}
+
+visible fn indexOfFrom(self: String, piece: String, from: Int): Int {
+  let selfSize = len(self)
+  let pieceSize = len(piece)
+
+  if (pieceSize > selfSize) return -1
+
+  for (var i = copy(from), i < selfSize, i++) {
+    if (self[i] != piece[0]) continue
+
+    var matched = false
+    var j = 0
+    var k = copy(i)
+    until (true) {
+      if (j == pieceSize) {
+        matched = true
+        break
+      }
+      if (k == selfSize) break
+      if (self[k++] != piece[j++]) break
+    }
+    if (matched) return i
+  }
+  return -1
+}
+
+; Now the ordering does not matter!
+visible fn contains(self: String, piece: String): Bool = indexOf(self, piece) != -1
+
+visible fn indexOf(self: String, piece: String): Int = indexOfFrom(self, piece, 0)
+
+visible fn startsWith(self: String, prefix: String): Bool {
+  let selfSize = len(self)
+  let prefixSize = len(prefix)
+
+  if (prefixSize > selfSize) return false
+
+  for (var i = 0, i < prefixSize, i++)
+    if (self[i] != prefix[i])
+      return false
+  return true
+}
+
+visible fn endsWith(self: String, suffix: String): Bool {
+  let selfSize = len(self)
+  let suffixSize = len(suffix)
+
+  if (suffixSize > selfSize)
+    return false
+
+  let selfLastIndex = selfSize - 1
+  let suffixLastIndex = suffixSize - 1
+
+  for (var i = suffixLastIndex, i >= 0, i--)
+    if (suffix[i] != self[selfLastIndex--])
+      return false
+  return true
+}
+
+let UPPER_CASE = arrayOf( 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' )
+
+let LOWER_CASE = arrayOf( 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' )
+
+fn invert(self: String, target: Array, replacement: Array<Char>): String {
+  let size = len(self)
+  for (var i = 0, i < size, i++) {
+    if ((let index = target.indexOf(self[i])) != -1)
+      self[i] = replacement[index]
+  }
+  return self
+}
+
+visible fn uppercase(self: String): String = invert(copy(self), LOWER_CASE, UPPER_CASE)
+
+visible fn lowercase(self: String): String = invert(copy(self), UPPER_CASE, LOWER_CASE)
+
+visible fn part(self: String, from: Int, till: Int): String {
+  var result = ""
+  let stringSize = len(self)
+
+  for (var i = copy(from), i < copy(till), i++)
+    result += self[i]
+  return result
+}
+
+visible fn substring(self: String, from: Int): String = part(copy(self), from, len(self))
+
+visible fn trim(self: String): String {
+  var copySelf = copy(self)
+  until (startsWith(copySelf, " ")
+        || startsWith(copySelf, "\t")
+        || startsWith(copySelf, "\n")) {
+    copySelf = substring(copySelf, 1)
+  }
+  until (endsWith(copySelf, " ")
+        || endsWith(copySelf, "\t")
+        || endsWith(copySelf, "\n")) {
+      copySelf = substring(copySelf, 1)
+  }
+  return copySelf
+}
+
+visible fn replace(self: String, match: String, replacement: String): String {
+  let matchSize = len(match)
+  let selfSize = len(self)
+
+  if (matchSize > selfSize) return copy(self)
+  let replacementSize = len(replacement)
+
+  var result = ""
+  var index = 0
+
+  until (index < selfSize) {
+    let nextIndex = indexOfFrom(self, match, index)
+    if (nextIndex != -1) {
+      result += part(self, copy(index), nextIndex)
+      result += replacement
+      index = nextIndex + matchSize
+    } else {
+      result += substring(self, index)
+      break
+    }
+  }
+
+  return result
+}
+
+visible fn isAlpha(self: String): Bool {
+  for (ch in self) {
+    if (!(UPPER_CASE.contains(ch) || LOWER_CASE.contains(ch))) {
+     return false
+    }
+  }
+  return true
+}
+
+visible fn isNumeric(self: String): Bool {
+  var trimmed = trim(self)
+  var size = len(trimmed)
+
+  if (size == 0) return false
+
+  var hasDigits = false
+  var hasDecimalPoint = false
+
+  for (var i = 0, i < size, i++) {
+    let c = trimmed[i]
+
+    if (c == '-' || c == '+' && i == 0) {
+      continue
+    } else if (contains("0123456789", str(c))) {
+      hasDigits = true
+    } else if (c == '.' && !hasDecimalPoint) {
+      hasDecimalPoint = true
+    } else {
+      return false
+    }
+  }
+  return hasDigits
+}
+
+visible fn toCharArray(self: String): Array<Char> {
+  let charCount = len(self)
+  ; Allocate a char array
+  let chars = makeArray<Char>(charCount, ' ')
+  for (var i = 0, i < charCount, i++)
+    chars[i] = self[i]
+  return chars
+}
+
+visible fn repeat(self: String, n: Int): String {
+  var result = ""
+  let times = copy(n)
+  for (var i = 0, i < times, i++)
+    result += self
+  return result
+}
+
+visible fn splitOnce(self: String, delimiter: String): Array {
+  let splitIndex = indexOf(self, delimiter)
+  return arrayOf( part(self, 0, splitIndex),
+            substring(self, splitIndex + 1) )
+}
+
+fn splitRecursive(self: String, delimiter: String): Any {
+  if (!contains(self, delimiter)) return self
+  let onceSplit = splitOnce(self, delimiter)
+  onceSplit[1] = splitRecursive(onceSplit[1]::String, delimiter)
+  return onceSplit
+}
+
+visible fn split(self: String, delimiter: String): Array<String> {
+  if (contains(self, delimiter)) {
+    let not_flat = splitRecursive(self, delimiter)::Array
+    return not_flat.flatten(makeArray<String>(not_flat.recursiveLen(), ""))::Array<String>
+  }
+  return arrayOf(self)
+}
+
+visible fn size(self: String): Int = len(self)
+
+fn numberFormatError(string: String) {
+    throw "toInt() Number Format Error for string \"" + string + "\""
+}
+
+visible fn toIntRadix(self: String, radix: Int): Int {
+  var negative = false
+  var i = 0
+  let size = len(self)
+
+  if (size == 0) {
+    numberFormatError(self)
+  }
+  let firstChar = self[0]
+  if (firstChar < '0') {
+    if (firstChar == '-') {
+       negative = true
+    } else if (firstChar != '+') {
+      numberFormatError(self)
+    }
+    if (size == 1) {
+      numberFormatError(self)
+    }
+    i++
+  }
+  var result = 0
+  until (i < size) {
+    ; workaround, we first convert char -> string -> int
+    ; or doing directly char -> int will give us codepoint of char
+    ; rather than actually converting it into a int digit
+    let digit = int(str(self[i++]))
+    result *= radix
+    result -= digit
+  }
+  return if (negative) result else -result
+}
+
+; opps, the problem still exists!
+visible fn toInt(self: String): Int = toIntRadix(self, 10)

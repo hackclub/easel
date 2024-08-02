@@ -1,0 +1,5 @@
+; function sub() references itself, so when it
+; comes to resolution of return type, type ANY is picked
+fn sub(n: Int) =
+  if (n == 0) 0 else sub(n - 1)
+println(sub(1))

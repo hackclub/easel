@@ -1,0 +1,7 @@
+include(
+  static:std:list
+)
+
+let names = new list(50)
+names.add("meow")
+names.add("ekita")

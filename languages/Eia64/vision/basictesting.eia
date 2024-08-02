@@ -1,0 +1,10 @@
+println(
+  "Meow World",   ; a string
+  'H',            ; a character
+  true,           ; boolean type
+  123,            ; an integer
+  2.8,            ; a float
+
+  arrayOf("meow", "world"),      ; implicit array declaration (type is auto resolved)
+  arrayOf<Any>(2, "hello"),      ; an array containing mixed data types
+)

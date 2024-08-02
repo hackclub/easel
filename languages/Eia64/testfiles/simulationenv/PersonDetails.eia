@@ -1,0 +1,7 @@
+var personName = ""
+var personAge = 0
+
+fn init(name: String, age: Int) {
+  personName = name
+  personAge = age
+}

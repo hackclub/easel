@@ -1,0 +1,34 @@
+include(static:std:string)
+
+; trying to replicate isNumeric() function behaviour to analysize signature verification bypass
+
+; proxy for debugging
+visible fn contains(self: String, piece: String): Bool = self.contains(piece)
+
+visible fn isNumeric(self: String): Bool {
+  var trimmed = self.trim()
+  var size = len(trimmed)
+
+  if (size == 0) return false
+
+  var hasDigits = false
+  var hasDecimalPoint = false
+
+  for (var i = 0, i < size, i++) {
+    let c = trimmed[i]
+    println(typeOf(c))
+    contains("0123456789", c)
+    if (c == '-' || c == '+' && i == 0) {
+      continue
+    } else if (contains("0123456789", c)) {
+      hasDigits = true
+    } else if (c == '.' && !hasDecimalPoint) {
+      hasDecimalPoint = true
+    } else {
+      return false
+    }
+  }
+  return hasDigits
+}
+
+isNumeric("aa")

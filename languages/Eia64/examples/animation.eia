@@ -1,0 +1,68 @@
+; TrashGuy Animation written in Eia64!
+; You type in some text in the terminal and he steals them! 👀
+; https://zac.cy/trashguy/
+
+include(
+  static:std:string
+)
+
+private let RESET = "[0m"
+private let BLUE_COLOR = "[0;34m"
+private let GOLD_COLOR = "[0;33m"
+private let PURPLE_COLOR = "[0;35m"
+private let BOLD = "[1m"
+
+private let TRASH = "🗑"
+private let HAPPY_RIGHT = BLUE_COLOR + BOLD + "(> ^_^)>" + RESET
+private let HAPPY_LEFT = BLUE_COLOR + BOLD + "<(^_^ <)" + RESET
+private let INTERVAL = 500
+
+private fn trash(text: String) {
+    let size = len(text)
+
+    for (var i = 0, i < size, i++) {
+        var l = text[0]
+        var going_right = true
+
+        var left_space = 0
+        var right_space = 10 + i
+
+        until (true) {
+            println(TRASH,
+                " ".repeat(left_space),
+                if (going_right) HAPPY_RIGHT else (GOLD_COLOR + BOLD + l + RESET) + HAPPY_LEFT,
+                " ".repeat(right_space),
+                PURPLE_COLOR, BOLD, text, RESET)
+            sleep(INTERVAL)
+
+            if (going_right && left_space >= 10 + i) {
+                going_right = false
+                left_space = 10 + i
+                right_space = 0
+
+                text = text.substring(1)
+            } else if (!going_right && right_space >= 10 + i) {
+                println(TRASH, HAPPY_LEFT, " ".repeat(10 + i + 1), PURPLE_COLOR, BOLD, text, RESET)
+                sleep(INTERVAL)
+                break
+            }
+            if (going_right) {
+                left_space++
+                right_space--
+            } else {
+                left_space--
+                right_space++
+            }
+        }
+    }
+}
+
+fn main(): Int {
+  until (true) {
+      print("Enter a word: ")
+      let line = readln()
+      if (line == "break") return 0
+      trash(line)
+  }
+  return 0
+}

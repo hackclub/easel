@@ -1,0 +1,15 @@
+; anything can be assigned to nil
+let name: String = nil
+
+; both the below statements are equal
+let name: Nil = nil
+let name = nil
+
+let name: String = nil
+; can be accessed, printed, compared
+name
+println(name)
+name == nil
+
+; what is not allowed?
+println(name.trim())

@@ -1,0 +1,7 @@
+include(
+  "simulationenv/Person"
+)
+
+let anObject: Object = new Person("Ekita")
+println(type(anObject))
+println(anObject::Person.getName())

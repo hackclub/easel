@@ -1,0 +1,7 @@
+include("simulationenv/Person")
+
+let x = new Person("Melon")
+let y = new Person("Ekita")
+
+let name = (if (true) x else y).getName()
+println("Name is " + name)

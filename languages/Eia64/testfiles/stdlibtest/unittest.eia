@@ -1,0 +1,6 @@
+fn sub(value: Int) {
+  return
+    if (value == 0) 0
+    else sub(value - 1)
+}
+println(sub(25))

@@ -1,0 +1,6 @@
+let a = 1
+let square = 0
+until ((square = a * 3) != 9) {
+    fout(a)
+    a++
+}

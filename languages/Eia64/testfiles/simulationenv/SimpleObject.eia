@@ -1,0 +1,11 @@
+var value = ""
+
+fn init(_value: String) {
+  value = _value
+}
+
+fn getValue(): String = value
+
+fn string(): String {
+  return "SimpleObject(" + value + ")"
+}

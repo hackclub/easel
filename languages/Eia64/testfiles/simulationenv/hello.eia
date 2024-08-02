@@ -1,0 +1,5 @@
+fn sayHello(): String {
+  return "Hello, World!"
+}
+
+fn sayTrue(): Bool = true

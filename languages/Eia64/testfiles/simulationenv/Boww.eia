@@ -1,0 +1,7 @@
+fn bark() {
+  println("Bark")
+}
+
+fn string(): String {
+  return "This is a dog"
+}

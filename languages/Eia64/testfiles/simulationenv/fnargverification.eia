@@ -1,0 +1,4 @@
+fn printAny(any: Any) {
+  println(any)
+}
+printAny("Hello, World!")

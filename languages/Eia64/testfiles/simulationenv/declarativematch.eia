@@ -1,0 +1,8 @@
+include(
+  "simulationenv/Man",
+  "simulationenv/Girl"
+)
+
+; if we do not handle it by depth, it will just pass through
+let a: Girl = new Man("Miaw")
+print(a)

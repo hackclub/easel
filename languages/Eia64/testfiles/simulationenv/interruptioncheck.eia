@@ -1,0 +1,10 @@
+let x = 5
+let y = 10 / 2
+
+if (x == y) {
+  ; this would error out, since we are not in a for type loop
+  ; this statement is not allowed here
+  break
+  println("Miaw")
+}
+println("World")

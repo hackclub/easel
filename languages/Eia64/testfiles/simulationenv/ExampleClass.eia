@@ -1,0 +1,12 @@
+var name = ""
+
+fn init(_name: String) {
+  ; lets see how it behaves while overclass calling
+  println(_name)
+  println(type(_name))
+  name = _name
+}
+
+fn someFunction(x: Int, y: Int) {
+  println()
+}

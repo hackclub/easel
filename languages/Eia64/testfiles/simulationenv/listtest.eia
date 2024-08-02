@@ -1,0 +1,22 @@
+include(
+  "stdlib/list"
+)
+
+let names = new list(1)
+names.add("melon")
+names.add("ekita")
+
+println(names.size() == 2)
+println(names.string())
+names.remove(0)
+names.add("meow")
+names.addAt("miw", 1)
+println("current: " + names.string())
+println(names.get(0) == "ekita")
+println(names.get(1) == "miw")
+names.set("miww", 2)
+println(names.get(2) == "miww")
+println()
+println(names.string())
+; this should error out
+names.get(7)

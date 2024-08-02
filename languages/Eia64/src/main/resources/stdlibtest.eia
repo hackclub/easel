@@ -1,0 +1,3 @@
+stdlib(string)
+
+println("hello".indexOf("llo"))

@@ -1,0 +1,9 @@
+var aValue: Int = nil
+
+fn init(value: Int) {
+  aValue = value
+}
+
+fn string(): String {
+  return "SimpleDeclaration(" + aValue + ")"
+}

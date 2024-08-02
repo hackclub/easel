@@ -1,0 +1,3 @@
+fn string(): String {
+  return "This is an extensive object (wrapped upon objet)"
+}

@@ -1,0 +1,10 @@
+fn meow(text: String) {
+  println(text)
+}
+
+fn doMeow() {
+  let astring = "meow"
+  meow(astring[0])
+}
+
+doMeow()

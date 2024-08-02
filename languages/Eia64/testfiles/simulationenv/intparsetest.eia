@@ -1,0 +1,12 @@
+include(
+  static:std:string
+)
+
+let aNumber = "-123"
+println(aNumber.toInt())
+
+let bNumber = "123456"
+println(bNumber.toInt() == 123456)
+
+let cNumber = "+789"
+println(cNumber.toInt() == 789)

@@ -1,0 +1,10 @@
+let personName = ""
+
+fn init(name: String) {
+  personName = name
+}
+
+fn getName() {
+  println("getName() was called")
+  return personName
+}

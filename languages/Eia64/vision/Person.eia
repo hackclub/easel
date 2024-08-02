@@ -1,0 +1,11 @@
+; imagining how classes would look like
+
+class Person {
+    const Person(name: String) {
+
+    }
+
+    const Person(name: String, age: Int) {
+
+    }
+}

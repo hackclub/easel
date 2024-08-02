@@ -1,0 +1,2 @@
+let integers: Array<Any> = arrayOf(5, 10)
+println(integers)

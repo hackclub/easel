@@ -1,0 +1,7 @@
+include(
+  static:std:eint
+)
+
+let x: Int = 25
+let y = x
+println(x.root())

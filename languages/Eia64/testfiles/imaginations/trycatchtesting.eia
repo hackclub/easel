@@ -1,0 +1,5 @@
+try {
+  throw "meow"
+} catch message {
+  println(message)
+}

@@ -1,0 +1,4 @@
+stdlib(math)
+
+let x = ~{2 4 6 8}
+println(math.avg(x))

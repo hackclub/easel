@@ -1,0 +1,4 @@
+let names = arrayOf("meow", "aaa")
+println(names is Array)
+println(names is Array<String>)
+println(names is Array<Int>)

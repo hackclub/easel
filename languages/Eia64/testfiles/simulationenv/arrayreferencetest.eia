@@ -1,0 +1,15 @@
+include(
+  "simulationenv/SimpleObject"
+)
+
+let names = arrayOf(
+    new SimpleObject("melon"),
+    new SimpleObject("ekita"),
+    new SimpleObject("meow"))
+
+let first = names[0]
+println("First: " + first)
+
+names[0] = names[1]
+println(names[0])
+println("First: " + first)

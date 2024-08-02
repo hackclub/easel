@@ -1,0 +1,20 @@
+visible var person: String = nil
+visible var age: Int = nil
+
+visible fn init(name: String) {
+  person = name
+  age = 20  ; default age
+}
+
+visible fn init(name: String, _age: Int) {
+  person = name
+  age = _age
+}
+
+visible fn printUser() {
+  println(format("Person named %s of age %d", person, age))
+}
+
+visible fn string(): String {
+  return "Person(name=" + person + ", age=" + age + ")"
+}

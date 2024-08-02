@@ -1,0 +1,7 @@
+let names = ["melon", "ekita", shado(x, y) {x * y * x}]
+println(names)
+itr (name in names) {
+  println("Who: " + name)
+}
+; calling a shado function stored inside an array list
+println(names[2](5, 2))

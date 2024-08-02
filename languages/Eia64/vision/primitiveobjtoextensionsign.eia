@@ -1,0 +1,9 @@
+include(
+  "vision/SimpleDeclaration"
+)
+
+let simple = new SimpleDeclaration(7)
+
+println(simple)
+println(simple is Object)
+println(simple is SimpleDeclaration)

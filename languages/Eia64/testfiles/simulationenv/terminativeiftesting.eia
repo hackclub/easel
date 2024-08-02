@@ -1,0 +1,7 @@
+fn hello(meow: Bool) {
+  if (meow) {
+    println("Its a meow")
+    return 0
+  }
+  return 2
+}

@@ -1,0 +1,7 @@
+include("simulationenv/Person")
+
+let x = new Person("First")
+let y = new Person("Second")
+
+let name = (if (false) x else y).getName()
+println("Invokcation Of" + name)

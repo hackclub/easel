@@ -1,0 +1,42 @@
+include(
+  static:std:string
+)
+
+let myString = "Hello".trim()
+println(myString)
+
+fn trim(self: String): String {
+  let copySelf = copy(self)
+  until (startsWith(copySelf, " ")
+        || startsWith(copySelf, "\t")
+        || startsWith(copySelf, "\n")) {
+    copySelf = substring(copySelf, 1)
+  }
+  until (endsWith(copySelf, " ")
+        || endsWith(copySelf, "\t")
+        || endsWith(copySelf, "\n")) {
+      copySelf = substring(copySelf, 1)
+  }
+  return copySelf
+}
+
+; general redefinition testing
+fn endsWith(self: String, suffix: String): Bool {
+  let selfSize = len(self)
+  let suffixSize = len(suffix)
+
+  if (suffixSize > selfSize)
+    return false
+
+  let selfLastIndex = selfSize - 1
+  let suffixLastIndex = suffixSize - 1
+
+  for (var i = suffixLastIndex, i >= 0, i--)
+    if (suffix[i] != self[selfLastIndex--])
+      return false
+  return true
+}
+
+fn hello(person: Person) {
+  println("Hello " + person.getName())
+}

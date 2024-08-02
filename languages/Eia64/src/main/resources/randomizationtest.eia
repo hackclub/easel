@@ -1,0 +1,6 @@
+let printRandomNum: Unit = {
+  let n = rand(0, 9999)
+  println("A random number: " + n)
+}
+~printRandomNum
+~printRandomNum

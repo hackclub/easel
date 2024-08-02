@@ -1,0 +1,3 @@
+include(static:std:string)
+
+; then we need to do recursive testing
