@@ -1,0 +1,186 @@
+; A Math Interpreter written in Eia!
+; Fun statement: This is an interpreter that is written in an interpreted language Eia64
+;   which is written in a language called Kotlin
+
+include(
+  static:std:string,
+  static:std:array,
+  static:std:math
+)
+
+private let DELIMITERS = arrayOf("+", "-", "/", "*", "(", ")")
+private let DELIMITERS_SIZE = DELIMITERS.size()
+
+private fn containsDelimiter(expr: String): Bool {
+  for (delimiter in DELIMITERS) {
+    if (expr.contains(delimiter)) {
+      return true
+    }
+  }
+  return false
+}
+
+; splitOnce is not called if there's no delimiter remaining!
+private fn splitOnce(expr: String): Array {
+  ; find the nearest possible delimiter
+  var nearestDelimiter = 99999999
+  for (var i = 0, i < DELIMITERS_SIZE, i++) {
+    let index = expr.indexOf(DELIMITERS[i])
+    if (index > -1) {
+      nearestDelimiter = math.min(nearestDelimiter, index)
+    }
+  }
+  let delimiterPart = str(expr[nearestDelimiter])
+  let firstPart = expr.part(0, nearestDelimiter).trim()
+  let lastPart = expr.substring(nearestDelimiter + 1).trim()
+
+  return arrayOf<Any>(
+      expr.part(0, nearestDelimiter).trim(),
+      str(expr[nearestDelimiter]),
+      expr.substring(nearestDelimiter + 1).trim()
+    )
+}
+
+private fn splitRecursive(expr: String): Any {
+  if (!containsDelimiter(expr)) return expr
+  let splitOnce = splitOnce(expr)
+  splitOnce[2] = splitRecursive(splitOnce[2]::String)
+  return splitOnce
+}
+
+private fn fillRecursive(flattened: Array, unflattened: Array, fillIndex: Int) {
+  for (element in unflattened) {
+    if (element is Array) {
+      fillRecursive(flattened, element::Array, fillIndex)
+    } else if (!(element::String.isEmpty())) {
+      flattened[fillIndex++] = element
+    }
+  }
+}
+
+private fn recursiveLen(tokens: Array): Int {
+  var size = 0
+  for (element in tokens) {
+    if (element is Array) size += recursiveLen(element::Array)
+    else if (!(element::String.isEmpty())) size++
+  }
+  return size
+}
+
+private fn tokenize(expr: String): Array<String> {
+  ; +, -, *, /, ( and ) are the only possible delimiters
+  if (containsDelimiter(expr)) {
+    let unflat_array = splitRecursive(expr)::Array
+    let flat_size = recursiveLen(unflat_array)
+    let flat_array = makeArray<String>(flat_size, "")
+
+    fillRecursive(flat_array, unflat_array, 0)
+    return flat_array
+  }
+  return arrayOf(expr)
+}
+
+private fn lex(expr: String): Array<String> = tokenize(expr.trim())
+
+private var tokens: Array<String> = nil
+private var index = 0
+private var size = 0
+
+private fn next(): String = tokens[index++]
+private fn peek(): String = tokens[index]
+private fn isEOF(): Bool = index == size
+
+private fn numeric(): Float = float(next())
+
+private fn operator(): Char {
+  let operator = next()
+  for (delimiter in DELIMITERS) {
+    if (delimiter == operator) {
+      ; a recognized operator
+      return operator[0]
+    }
+  }
+  throw "Unknown operator '" + operator + "'"
+  return '_'        ; never reached
+}
+
+private fn expression(): Any {
+  if (peek() == "(") {
+    ; ( eat this one
+    ; ) will be eaten by parse()
+    next()
+    return parse()
+  }
+  return numeric()
+}
+
+private fn parse(): Any {
+  var left: Any = expression()
+  until (!isEOF()) {
+    if (peek() == ")") {
+      ; just eat and break
+      next()
+      break
+    }
+    var op = operator()
+    until (op == '/' || op == '*') {
+      left = arrayOf(left, op, expression())
+      if (isEOF() || peek() == ")") break
+      else op = operator()
+    }
+    if (isEOF()) break
+    let right = parse()
+    left = arrayOf(left, op, right)
+  }
+  return left
+}
+
+private fn execute(node: Any): Float {
+  let nodeArray = node::Array
+  var left: Any = nodeArray[0]::String
+  let op = nodeArray[1]::String
+  var right: Any = nodeArray[2]
+
+  if (left is Array) left = execute(left)
+  if (right is Array) right = execute(right)
+
+  left = float(left)
+  right = float(right)
+
+  return (when (op) {
+    '+' -> { left::Float + right::Float }
+    '-' -> { left::Float - right::Float }
+    '*' -> { left::Float * right::Float }
+    '/' -> { left::Float / right::Float }
+    else -> {
+      println("Unexpected operator '" + op + "'")
+      exit(1)
+    }
+  })::Float
+}
+
+
+private let RESET = "[0m"
+private let BLUE_COLOR = "[0;34m"
+private let GOLD_COLOR = "[0;33m"
+private let PURPLE_COLOR = "[0;35m"
+private let BOLD = "[1m"
+
+private fn eval(expr: String) {
+  tokens = lex(expr)
+  index = 0
+  size = len(tokens)
+  let parsed = parse()
+  println(BLUE_COLOR, execute(parsed), RESET)
+}
+
+println("\nWelcome to math interpreter v2!")
+
+fn main() {
+  until (true) {
+    print(GOLD_COLOR, "math>", RESET, " ")
+    let expr = readln().trim()
+    if (expr == "break") break
+    eval(expr)
+  }
+}

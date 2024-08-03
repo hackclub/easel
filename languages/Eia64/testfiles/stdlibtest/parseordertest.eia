@@ -1,0 +1,9 @@
+let a {
+  println("a was accessed")
+  := false
+}
+let b = {
+  println("b was accessed")
+  := true
+}
+println(a() && b())

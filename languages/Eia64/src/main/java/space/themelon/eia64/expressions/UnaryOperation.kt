@@ -19,31 +19,23 @@ data class UnaryOperation(
         val exprSign = expr.sig()
         if (towardsLeft) {
             when (operator) {
-                Type.NEGATE ->
-                    if (!exprSign.isNumeric()) where.error<String>("Expected expression type Numeric for (- Negate)")
-
-                Type.INCREMENT ->
-                    if (!exprSign.isNumeric()) where.error<String>("Expected expression type Numeric for (++ Increment)")
-
-                Type.DECREMENT ->
-                    if (!exprSign.isNumeric()) where.error<String>("Expected expression type Numeric for (-- Decrement)")
-
-                Type.NOT ->
-                    if (exprSign != Sign.BOOL) where.error<String>("Expected expression type Bool for (! Not)")
-
+                Type.NEGATE -> if (!exprSign.isNumeric()) applyError("Numeric", "- Negate")
+                Type.INCREMENT -> if (!exprSign.isNumeric()) applyError("Numeric", "++ Increment")
+                Type.DECREMENT -> if (!exprSign.isNumeric()) applyError("Numeric", "-- Decrement")
+                Type.NOT -> if (exprSign != Sign.BOOL) applyError("Bool", "! Not")
                 else -> where.error<String>("Unknown unary operator towards left")
             }
         } else {
             when (operator) {
-                Type.INCREMENT ->
-                    if (!exprSign.isNumeric()) where.error<String>("Expected expression type Numeric for (++ Increment)")
-
-                Type.DECREMENT ->
-                    if (!exprSign.isNumeric()) where.error<String>("Expected expression type Numeric for (-- Decrement)")
-
+                Type.INCREMENT -> if (!exprSign.isNumeric()) applyError("Numeric", "++ Increment")
+                Type.DECREMENT -> if (!exprSign.isNumeric()) applyError("Numeric", "-- Decrement")
                 else -> where.error<String>("Unknown unary operator towards left")
             }
         }
         return exprSign
+    }
+
+    private fun applyError(type: String, operator: String) {
+        where.error<String>("Expected $type expression for ($operator) but got ${expr.sig().logName()}")
     }
 }

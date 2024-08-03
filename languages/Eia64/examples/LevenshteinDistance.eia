@@ -9,9 +9,9 @@ private fn compute(first: String, second: String): Int {
   let lenFirst = len(first)
   let lenSecond = len(second)
 
-  let dist = arrayOf<Array<Int>>(lenFirst + 1, arrayOf(0))
+  let dist = makeArray<Array<Int>>(lenFirst + 1, arrayOf(0))
   for (var i = 0, i < lenFirst + 1, i++)
-    dist[i] = arrayOf<Int>(lenSecond + 1, 0)
+    dist[i] = makeArray<Int>(lenSecond + 1, 0)
 
   for (var i = 0, i <= lenFirst, i++) dist[i][0] = copy(i)
   for (var j = 0, j <= lenSecond, j++) dist[0][j] = copy(j)

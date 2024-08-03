@@ -22,7 +22,7 @@ private fn binarySearch(array: Array<Int>, x: Int): Int {
 
 private fn toNumberArray(array: Array<String>): Array<Int> {
   let size = len(array)
-  let numeric = arrayOf<Int>(size, 0)
+  let numeric = makeArray<Int>(size, 0)
   for (var i = 0, i < size, i++) {
     numeric[i] = int(array[i])
   }

@@ -35,10 +35,11 @@ visible fn indexOfFrom(self: String, piece: String, from: Int): Int {
   return -1
 }
 
-; Now the ordering does not matter!
+visible fn indexOf(self: String, piece: String): Int = indexOfFrom(self, piece, 0)
+
 visible fn contains(self: String, piece: String): Bool = indexOf(self, piece) != -1
 
-visible fn indexOf(self: String, piece: String): Int = indexOfFrom(self, piece, 0)
+visible fn isEmpty(self: String): Bool = len(self) == 0
 
 visible fn startsWith(self: String, prefix: String): Bool {
   let selfSize = len(self)
@@ -108,9 +109,17 @@ visible fn trim(self: String): String {
   until (endsWith(copySelf, " ")
         || endsWith(copySelf, "\t")
         || endsWith(copySelf, "\n")) {
-      copySelf = substring(copySelf, 1)
+      copySelf = part(copySelf, 0, len(copySelf) - 1)
   }
   return copySelf
+}
+
+visible fn reverse(self: String): String {
+  var reversed = ""
+  for (var i = len(self) - 1, i >= 0, i--) {
+    reversed += self[i]
+  }
+  return reversed
 }
 
 visible fn replace(self: String, match: String, replacement: String): String {

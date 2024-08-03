@@ -1,0 +1,13 @@
+include(static:std:string)
+
+let value: Any = "Meow"
+println(!("Meow"::String.isEmpty()))
+
+private fn toTestBoolArray(array: Array<String>): Array<Bool> {
+  let size = len(array)
+  let numeric = makeArray<Bool>(size, 0)
+  for (var i = 0, i < size, i++) {
+    numeric[i] = bool(array[i])
+  }
+  return numeric
+}

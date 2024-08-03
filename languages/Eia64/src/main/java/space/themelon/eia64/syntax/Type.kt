@@ -10,7 +10,7 @@ enum class Type {
     EQUALS, NOT_EQUALS,
     RIGHT_DIAMOND, LEFT_DIAMOND,
     GREATER_THAN_EQUALS, LESSER_THAN_EQUALS,
-    SLASH, TIMES, POWER,
+    SLASH, TIMES, REMAINDER, POWER,
     PLUS, NEGATE,
     NOT, INCREMENT, DECREMENT,
     USE,
@@ -20,7 +20,7 @@ enum class Type {
     COLON, DOUBLE_COLON,
     ASSIGNMENT,
     ADDITIVE_ASSIGNMENT, DEDUCTIVE_ASSIGNMENT,
-    MULTIPLICATIVE_ASSIGNMENT, DIVIDIVE_ASSIGNMENT,
+    MULTIPLICATIVE_ASSIGNMENT, DIVIDIVE_ASSIGNMENT, REMAINDER_ASSIGNMENT,
     OPEN_CURVE, CLOSE_CURVE,
     OPEN_SQUARE, CLOSE_SQUARE,
     OPEN_CURLY, CLOSE_CURLY,
@@ -69,6 +69,7 @@ enum class Type {
                 it["-="] = StaticToken(DEDUCTIVE_ASSIGNMENT, arrayOf(Flag.ASSIGNMENT_TYPE, Flag.OPERATOR, Flag.NONE))
                 it["*="] = StaticToken(MULTIPLICATIVE_ASSIGNMENT, arrayOf(Flag.ASSIGNMENT_TYPE, Flag.OPERATOR, Flag.NONE))
                 it["/="] = StaticToken(DIVIDIVE_ASSIGNMENT, arrayOf(Flag.ASSIGNMENT_TYPE, Flag.OPERATOR, Flag.NONE))
+                it["%="] = StaticToken(REMAINDER_ASSIGNMENT, arrayOf(Flag.ASSIGNMENT_TYPE, Flag.OPERATOR, Flag.NONE))
 
                 it["||"] = StaticToken(LOGICAL_OR, arrayOf(Flag.LOGICAL_OR, Flag.OPERATOR))
                 it["&&"] = StaticToken(LOGICAL_AND, arrayOf(Flag.LOGICAL_AND, Flag.OPERATOR))
@@ -86,6 +87,8 @@ enum class Type {
 
                 it["/"] = StaticToken(SLASH, arrayOf(Flag.BINARY_L2, Flag.PRESERVE_ORDER, Flag.OPERATOR))
                 it["*"] = StaticToken(TIMES, arrayOf(Flag.BINARY_L2, Flag.PRESERVE_ORDER, Flag.OPERATOR))
+                it["%"] = StaticToken(REMAINDER, arrayOf(Flag.BINARY_L2, Flag.PRESERVE_ORDER, Flag.OPERATOR))
+
                 it["^"] = StaticToken(POWER, arrayOf(Flag.BINARY_L3, Flag.PRESERVE_ORDER, Flag.OPERATOR))
 
                 it["+"] = StaticToken(PLUS, arrayOf(Flag.BINARY, Flag.OPERATOR))

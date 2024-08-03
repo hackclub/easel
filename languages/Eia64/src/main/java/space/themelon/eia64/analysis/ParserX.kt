@@ -10,6 +10,7 @@ import space.themelon.eia64.syntax.Flag
 import space.themelon.eia64.syntax.Token
 import space.themelon.eia64.syntax.Type
 import java.io.File
+import java.util.StringJoiner
 
 class ParserX(
     private val executor: Executor,
@@ -247,8 +248,12 @@ class ParserX(
         val module = readAlpha()
         val arguments = callArguments()
         val argsSize = arguments.size
+
         val reference = executor.getModule(module).resolveGlobalFn(token, "init", argsSize)
-                    ?: token.error("Could not find init() function of argument size $argsSize")
+        if (reference == null) {
+            token.error<String>("Could not find init(${arguments.toSignString()}) function")
+            throw RuntimeException() // never reached
+        }
         return NewObj(token,
             module,
             arguments,
@@ -807,9 +812,12 @@ class ParserX(
         // bump argsSize if it's linked invocation
         val argsSize = if (moduleInfo.linked) arguments.size + 1 else arguments.size
 
-        val fnReference = executor.getModule(moduleInfo.name)
-            .resolveGlobalFn(moduleInfo.where, elementName, argsSize)
-            ?: moduleInfo.where.error("Could not find function '$elementName' in module ${moduleInfo.name}")
+        val fnReference = executor.getModule(moduleInfo.name).resolveGlobalFn(moduleInfo.where, elementName, argsSize)
+
+        if (fnReference == null) {
+            moduleInfo.where.error<String>("Could not find $elementName(${arguments.toSignString()}) function in module ${moduleInfo.name}")
+            throw RuntimeException() // not reached
+        }
 
         return ClassMethodCall(
             where = objectExpression.marking!!,
@@ -1104,4 +1112,10 @@ class ParserX(
     }
 
     private fun isEOF() = index == size
+}
+
+private fun List<Expression>.toSignString(): String {
+    val string = StringJoiner(", ")
+    for (expression in this) string.add(expression.sig().logName())
+    return string.toString()
 }

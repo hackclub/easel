@@ -208,13 +208,14 @@ class Evaluator(
         NEGATE -> numericExpr(expr.left) - numericExpr(expr.right)
         TIMES -> numericExpr(expr.left) * numericExpr(expr.right)
         SLASH -> numericExpr(expr.left) / numericExpr(expr.right)
+        REMAINDER -> numericExpr(expr.left) % numericExpr(expr.right)
         EQUALS, NOT_EQUALS -> {
             val left = unboxEval(expr.left)
             val right = unboxEval(expr.right)
             EBool(if (type == EQUALS) valueEquals(left, right) else !valueEquals(left, right))
         }
-        LOGICAL_AND -> booleanExpr(expr.left).and(booleanExpr(expr.right))
-        LOGICAL_OR -> booleanExpr(expr.left).or(booleanExpr(expr.right))
+        LOGICAL_AND -> EBool(booleanExpr(expr.left).get() && (booleanExpr(expr.right).get()))
+        LOGICAL_OR -> EBool(booleanExpr(expr.left).get() || booleanExpr(expr.right).get())
         RIGHT_DIAMOND -> EBool(numericExpr(expr.left) > numericExpr(expr.right))
         LEFT_DIAMOND -> EBool(numericExpr(expr.left) < numericExpr(expr.right))
         GREATER_THAN_EQUALS -> EBool(intExpr(expr.left) >= intExpr(expr.right))
@@ -240,28 +241,24 @@ class Evaluator(
             element
         }
         DEDUCTIVE_ASSIGNMENT -> {
-            val element = unboxEval(expr.left)
-            when (element) {
-                is Numeric -> element.minusAssign(numericExpr(expr.right))
-                else -> throw RuntimeException("Cannot apply -= operator on element $element")
-            }
-            element
+            val variable = numericExpr(expr.left)
+            variable /= (numericExpr(expr.right))
+            variable
         }
         MULTIPLICATIVE_ASSIGNMENT -> {
-            val element = unboxEval(expr.left)
-            when (element) {
-                is Numeric -> element.timesAssign(numericExpr(expr.right))
-                else -> throw RuntimeException("Cannot apply *= operator on element $element")
-            }
-            element
+            val variable = numericExpr(expr.left)
+            variable *= (numericExpr(expr.right))
+            variable
         }
         DIVIDIVE_ASSIGNMENT -> {
-            val element = unboxEval(expr.left)
-            when (element) {
-                is Numeric -> element.divAssign(intExpr(expr.right))
-                else -> throw RuntimeException("Cannot apply /= operator on element $element")
-            }
-            element
+            val variable = numericExpr(expr.left)
+            variable /= (numericExpr(expr.right))
+            variable
+        }
+        REMAINDER_ASSIGNMENT -> {
+            val variable = numericExpr(expr.left)
+            variable %= (numericExpr(expr.right))
+            variable
         }
         POWER -> {
             val left = numericExpr(expr.left)

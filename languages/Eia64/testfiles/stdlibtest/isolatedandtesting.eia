@@ -1,0 +1,10 @@
+fn isEOF(): Bool {
+  println("isEOF() was accessed")
+  return false
+}
+fn peek(): String {
+  println("peek() was accessed")
+  return "123"
+}
+
+println(!isEOF() && peek() != ")")

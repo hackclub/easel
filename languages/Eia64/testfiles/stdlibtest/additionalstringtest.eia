@@ -1,0 +1,6 @@
+include(static:std:string)
+
+; bug where if the spaces are towards right, it deletes the character itself
+println("2 ".trim())
+println("  2   ".trim())
+println("  2      ".trim())

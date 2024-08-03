@@ -1,0 +1,17 @@
+; recreating small part of rock paper scissor to analyze edge conditions
+
+private fn robotChoose(user: String): Array {
+  let choices = arrayOf("rock", "paper", "scissor")
+  let robot = choices[rand(0, 2)]
+  if (user == robot) return arrayOf(robot, 0)
+  if ((user == "rock" && robot == "scissor") || (user == "paper" && robot == "rock") || (user == "scissor" && robot == "paper")) {
+    return arrayOf(robot, 1)
+  }
+
+  return arrayOf(robot, 2)
+}
+
+
+for (var i = 0, i < 5, i++) {
+  println(robotChoose("Rock"))
+}
