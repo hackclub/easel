@@ -1,0 +1,27 @@
+(import str) ~ so we can use str:fmt
+
+(define number (+ (rand 1 100) 1)) ~ generate a random number
+(define guess -1) ~ initialise the guess variable
+(define tries 0) ~ the amount of tries
+
+(print "the guessing game")
+(while (!= guess number) ~ repeat until the player guesses correctly
+  (print "guess a number 1-100")
+  (set guess (int_input)) ~ int_input will ask for input until the user gives a number
+
+  (if (< guess number)
+    (print "too low")
+    ~ else
+    (if (> guess number)
+      (print "too high")
+    )
+  )
+  (set tries (+ tries 1)) ~ increment tries
+)
+(print 
+  (str:fmt
+    "good job! you found the number in % tr%" ~ str:fmt my favorite function
+    tries
+    (if (= tries 1) "y" "ies") ~ pluralize tries if it took more than one
+  )
+)

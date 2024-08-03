@@ -1,0 +1,33 @@
+(print " IF ")
+(print (if true "true" ) ) ~ <= "true"
+(print (if false "true" ) ) ~ <= null
+(print (if true "true" "false" ) )~ <= "true"
+(print (if false "true" "false" ) ) ~ <= "false"
+(print (if false "true" "false" ) ) ~ <= "false"
+~ (print (if true)) ~ <= error
+~ (print (if)) ~ <= error
+~ (print (if false "true" "false" "bad")) ~ <= error
+
+(print " FOR ")
+(print (for i (10) (print i) ) ) ~ numbers 0-9
+(print (for zoob (10) (print zoob) ) ) ~ numbers 0-9
+(print (for i (1 11) (print i) ) ) ~ numbers 1-10
+(print (for i (0 10 2) (print i) ) ) ~ numbers [0, 2, 4, 6, 8]
+(print (for i (10 0 -1) (print i) ) ) ~ numbers 10-1
+
+~(print (for i (print i) ) ) ~ error
+~(print (for (print i) ) ) ~ error
+~(print (for) ) ~ error
+~(print (for i () (print i) ) ) ~ error
+
+(print " REPEAT ")
+(print (repeat 10 (print "repeating") ) ) ~ should say repeating 10 times
+~(print (repeat 5) ) ~ error
+~(print (repeat "hello" ) ) ~ error
+(print (repeat "hello" (print "yo")) ) ~ error
+(print (repeat ) ) ~ error
+
+
+(print " WHILE ")
+~ im too lazy to write more tests
+""
