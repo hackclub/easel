@@ -1,0 +1,13 @@
+let left = 2.4
+let right = 24.4
+let op = '+'
+
+let a =  (when (op) {
+    '+' -> { left::Float + right::Float }
+    '-' -> { left::Float - right::Float }
+    '*' -> { left::Float * right::Float }
+    '/' -> { left::Float / right::Float }
+    else -> {
+      exit(1)
+    }
+})::Float

@@ -18,6 +18,8 @@ class EBool(initialValue: Boolean): Primitive<EBool> {
     override fun isCopyable() = true
     override fun copy() = EBool(boolValue)
 
+    // they must NOT be used as logical operators, we need to always
+    // apply manual and() and or() while performing logical operations
     fun and(other: EBool) = EBool(boolValue && other.boolValue)
     fun or(other: EBool) = EBool(boolValue || other.boolValue)
 

@@ -42,6 +42,11 @@ class EInt(initialValue: Int): Primitive<EInt>, Comparable<EInt>, Numeric {
         intValue /= number.get().toInt()
     }
 
+    override operator fun rem(number: Numeric) = EInt(intValue % number.get().toInt())
+    override operator fun remAssign(number: Numeric) {
+        intValue %= number.get().toInt()
+    }
+
     override fun and(number: Numeric) = EInt(intValue and number.get().toInt())
     override fun or(number: Numeric) = EInt(intValue or number.get().toInt())
 

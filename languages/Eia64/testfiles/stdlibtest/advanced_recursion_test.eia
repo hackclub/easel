@@ -1,0 +1,25 @@
+; some really simple well known algorithms benchmarked mark for testing
+
+private fn fib(n: Int): Int {
+  if (n <= 1) return n
+  return fib(n - 1) + fib(n - 2)
+}
+
+private fn gcd(a: Int, b: Int): Int {
+  if (b == 0) return a
+  return gcd(b, a % b) ;; new feat for % remainder
+}
+
+var startTime = time()
+
+println(
+  "Result fib: " + fib(2),
+  format(" took %d ms", time() - startTime)
+)
+
+startTime = time()
+
+println(
+  "Result: gcd" + gcd(3, 90),
+  format(" took %d ms", time() - startTime)
+)

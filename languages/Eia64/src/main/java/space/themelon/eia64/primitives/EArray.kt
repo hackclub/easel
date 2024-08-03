@@ -41,5 +41,5 @@ class EArray(
     }
 
     override fun hashCode() = arrayValue.contentHashCode()
-    override fun toString() = "EArray(${arrayValue.contentToString()})"
+    override fun toString() = "EArray${arrayValue.contentToString()}"
 }

@@ -37,7 +37,7 @@ class Lexer(private val source: String) {
             '*' ->
                 if (consumeNext('=')) createOp("*=") else createOp("*")
             '/' -> if (consumeNext('=')) createOp("/=") else createOp("/")
-
+            '%' -> if (consumeNext('=')) createOp("%=") else createOp("%")
             '+' ->
                 if (consumeNext('+')) createOp("++")
                 else if (consumeNext('=')) createOp("+=")

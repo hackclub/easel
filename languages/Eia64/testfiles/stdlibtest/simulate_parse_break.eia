@@ -1,0 +1,11 @@
+for (var i = 0, i < 5, i++) {
+    var powed = copy(i)
+    ; RM --> LV --> Final Parse Result
+    for (var j = 1, j < 3, j++) {
+      powed *= i
+    }
+    println(powed)
+}
+
+println(2 ** 64)
+println(2 ** (128)

@@ -50,6 +50,8 @@ class EFloat(initialValue: Float): Primitive<EFloat>, Comparable<EFloat>, Numeri
         floatValue *= number.get().toFloat()
     }
 
+    override fun rem(number: Numeric) = EFloat(floatValue % number.get().toFloat())
+
     override operator fun div(number: Numeric) = EFloat(floatValue / number.get().toFloat())
     override operator fun divAssign(number: Numeric) {
         floatValue /= number.get().toFloat()

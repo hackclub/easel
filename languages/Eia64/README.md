@@ -1,5 +1,6 @@
 # Eia64
 
+(Git) To find up-to-date sources: https://github.com/XomaDev/Eia64
 
 <a href="https://asciinema.org/a/zIBiB6Zh36CEppeWcOsKALxNn" target="_blank"><img src="https://asciinema.org/a/zIBiB6Zh36CEppeWcOsKALxNn.svg" /></a>
 

@@ -33,7 +33,7 @@ private fn tokenize(expr: String): Array<String> {
   return expr.split(" ")
 }
 
-var tokens: Array<String> = arrayOf<String>(0, "")
+var tokens: Array<String> = makeArray<String>(0, "")
 var i = 0
 var size = 0
 
