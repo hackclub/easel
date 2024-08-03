@@ -37,7 +37,7 @@ window.container=document.getElementById("container"),window.writingList=[],wind
         `try{${node.name} = ${node.value}}catch{'Error: Struggling with variable ${node.name}'}`,
       );
     } else if (node.type === Types["If"]) {
-      list.push(`if(${node.condition}){`);
+      list.push(`if(${node.condition.slice(0, -1)}){`);
       node.body.forEach((child) => {
         this.push(child, list);
       });
