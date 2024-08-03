@@ -1,0 +1,50 @@
+~ date = 0
+
+> Loop
+
+- Next_day
+~ date = date + 1
+
+? date > 7 {
+~ date = 0
+> Next_day
+}
+
+? date == 1 {
+Today is Monday
+> Loop
+}
+
+? date == 2 {
+Today is Tuesday
+> Loop
+}
+
+? date == 3 {
+Today is Wednesday
+> Loop
+}
+
+? date == 4 {
+Today is Thursday
+> Loop
+}
+
+? date == 5 {
+Today is Friday
+> Loop
+}
+
+? date == 6 {
+Today is Saturday
+> Loop
+}
+
+? date == 7 {
+Today is Sunday
+> Loop
+}
+
+- Loop
++ Go to the next day!
+> Next_day

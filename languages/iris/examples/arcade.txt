@@ -1,0 +1,16 @@
+21/0/2024
+
+Hackclub Arcade
+
++ Do some stuffs
+> Get_prizes
++ Sleep
+> Not_get_prizes
+
+- Get_prizes
+You get many prizes
+> end
+
+- Not_get_prizes
+You don't get prizes
+> end
