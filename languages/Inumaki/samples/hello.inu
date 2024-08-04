@@ -1,0 +1,39 @@
+Kelp <-- this indicates a comment
+Kelp this file is an example of the Inumaki language features
+
+Kelp variables 
+Tuna Seaweed Tuna Salmon Kelp Salmon is true and Bonito_Flakes is false
+
+Kelp conditionals 
+Mustard_Leaf Tuna 1 == 1 And Seaweed Tuna {
+    Tuna_Tuna("This will print")
+} Explode {
+    Tuna_Tuna("This will not print")
+}
+
+Kelp for loops 
+Twist Tuna Tuna Rice Tuna 0 Tuna Rice < 10 Tuna Tuna Rice Tuna Rice + 1 Tuna {
+    Tuna_Tuna(Seaweed)
+}
+
+Kelp while loops 
+Plummet Tuna Seaweed Tuna {
+    Tuna_Tuna("This will print")
+    Tuna Seaweed Tuna Bonito_Flakes
+}
+
+Kelp functions 
+Tuna_Mayo Cod Tuna Eel Chicken Tuna {
+    Tuna_Tuna(Eel)
+    Tuna_Tuna(Chicken)
+
+    Return Eel
+}
+
+Cod("My", "Function")
+Tuna Tomato Tuna Cod("Also", "Works") Kelp storing return value of a function
+Tuna_Tuna(Tomato)
+
+Kelp builtin functions
+Tuna_Tuna("Hello, World!") Kelp prints "Hello, World!" to the console
+Tuna_Tuna(2*6+2-3) Kelp basic arithmetic operators (no order of operations sorry)
