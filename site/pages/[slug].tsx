@@ -211,24 +211,7 @@ draw()`,
           ))}
         </div>
       </header>
-      <section className="prose" style={{ marginBottom: '2em' }}>
-        <p>
-          <a href="https://hackclub.com" target="_blank">
-            Hack Club
-          </a>{' '}
-          is running a{' '}
-          <a href="https://langjam.hackclub.com" target="_blank">
-            programming language jam
-          </a>{' '}
-          from June 08 - 29, where you'll get to hack on and ship a programming
-          language in the span of three weeks and possibly win a chance to get a{' '}
-          <i>signed</i> copy of Crafting Interpreters. Sign up{' '}
-          <a href="https://langjam.hackclub.com/signup">here</a> before June 07!
-        </p>
-        <p>
-          High schooler? <a href="/stickers">Get stickers!</a>{' '}
-        </p>
-      </section>
+
       <div className="prose">
         <div className="toc">
           <MDXRemote {...toc} />
