@@ -7,7 +7,7 @@ edition = "2021"
 clap = { version = "4.5.7", features = ["derive"] }
 crossterm = "0.27.0"
 fehler = "1.0.0"
-rand = "0.8.5"
+rand = "0.8.6"
 strum = { version = "0.26.2", features = ["derive"] }
 strum_macros = "0.26.4"
 
