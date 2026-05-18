@@ -15,7 +15,7 @@
     "@codemirror/language": "^6.10.1",
     "@codesandbox/sandpack-react": "^2.13.8",
     "@hackclub/icons": "^0.0.14",
-    "@hackclub/meta": "^1.1.33",
+    "@hackclub/meta": "~1.1.33",
     "@lezer/highlight": "^1.2.0",
     "@lezer/lr": "^1.4.0",
     "@uiw/codemirror-theme-quietlight": "^4.22.0",
