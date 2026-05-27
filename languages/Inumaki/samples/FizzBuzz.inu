@@ -1,0 +1,16 @@
+Twist Tuna Tuna num Tuna 1 Tuna num < 101 Tuna Tuna num Tuna num + 1 Tuna {
+    Mustard_Leaf Tuna (num % 3 == 0) And (num % 5 == 0) Tuna {
+        Tuna_Tuna("FizzBuzz")
+    } Explode {
+        Mustard_Leaf Tuna num % 3 == 0 Tuna {
+            Tuna_Tuna("Fizz")
+        } Explode {
+            Mustard_Leaf Tuna num % 5 == 0 Tuna {
+                Tuna_Tuna("Buzz")
+            } Explode {
+                Tuna_Tuna(num)
+                Kelp Cough_Syrup <-- commented out code
+            }
+        }
+    }
+}

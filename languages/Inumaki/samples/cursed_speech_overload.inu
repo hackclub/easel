@@ -1,0 +1,9 @@
+Tuna_Mayo Liver Tuna Tuna {
+    Twist Tuna Tuna Rice Tuna 0 Tuna Rice < 4 Tuna Tuna Rice Tuna Rice + 1 Tuna {
+        Return "Hello"
+    }
+}
+
+Twist Tuna Tuna Egg Tuna 0 Tuna Egg < 100 Tuna Tuna Egg Tuna Egg + 1 Tuna {
+    Tuna_Tuna(Liver() + str(Egg))
+}
